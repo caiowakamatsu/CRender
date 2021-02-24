@@ -1,0 +1,10 @@
+{
+  "1": "Generic error code",
+  "2": "Failed to load asset",
+
+  "11": "GLFW - Failed to init",
+  "12": "GLFW - Couldn't create window",
+
+  "20": "GLAD - Failed to load functions"
+
+}
