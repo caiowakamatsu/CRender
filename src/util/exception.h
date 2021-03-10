@@ -1,5 +1,14 @@
-void exit(std::string_view reason, int error_code = 1)
+#pragma once
+
+#include <fmt/core.h>
+
+#include <cstdlib>
+
+namespace cr
 {
-    fmt::print("Exiting program with fatal error: {}", reason);
-    exit(error_code);
+    inline void exit(std::string_view reason, int error_code = 1)
+    {
+        fmt::print("Exiting program with fatal error: {}", reason);
+        std::exit(error_code);
+    }
 }

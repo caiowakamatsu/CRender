@@ -11,4 +11,10 @@ FetchContent_Declare(
         GIT_TAG        7.0.3
 )
 
-FetchContent_MakeAvailable(glfw fmt)
+FetchContent_Declare(
+        glm
+        GIT_REPOSITORY https://github.com/g-truc/glm
+        GIT_TAG 0.9.9.8
+)
+
+FetchContent_MakeAvailable(glfw fmt glm)
