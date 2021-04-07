@@ -5,6 +5,8 @@
   "11": "GLFW - Failed to init",
   "12": "GLFW - Couldn't create window",
 
-  "20": "GLAD - Failed to load functions"
+  "20": "GLAD - Failed to load functions",
 
+  "30": "Embree - Couldn't create vertex buffer",
+  "31": "Embree - Couldn't create index buffer"
 }

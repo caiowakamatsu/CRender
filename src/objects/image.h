@@ -6,8 +6,6 @@
 
 #include <glm/glm.hpp>
 
-
-
 namespace cr
 {
     class image
@@ -15,7 +13,9 @@ namespace cr
     public:
         image() = default;
 
-        image(const std::vector<uint32_t>& data, uint64_t width, uint64_t height);
+        image(const std::vector<uint32_t> &data, uint64_t width, uint64_t height);
+
+        image(uint64_t width, uint64_t height);
 
         [[nodiscard]] bool valid() const noexcept;
 
@@ -29,9 +29,11 @@ namespace cr
 
         [[nodiscard]] glm::vec3 get(uint64_t x, uint64_t y) const noexcept;
 
+        void set(uint64_t x, uint64_t y, const glm::vec3 &colour) noexcept;
+
     private:
         std::vector<uint32_t> _image_data;
-        uint64_t _width = std::numeric_limits<uint64_t>::max();
-        uint64_t _height = std::numeric_limits<uint64_t>::max();
+        uint64_t              _width  = std::numeric_limits<uint64_t>::max();
+        uint64_t              _height = std::numeric_limits<uint64_t>::max();
     };
-}
+}    // namespace cr

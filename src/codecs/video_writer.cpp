@@ -27,14 +27,18 @@ cr::video_writer::video_writer(const std::string &file, uint64_t width, uint64_t
     _codec_context->width     = width;
     _codec_context->height    = height;
     _codec_context->pix_fmt   = AV_PIX_FMT_YUV420P;
-    _codec_context->time_base = (AVRational) { 1, 25 };
+
+    auto time_base = AVRational();
+    time_base.num = 1;
+    time_base.den = 25;
+    _codec_context->time_base = time_base;
 
     if (_output_context->oformat->flags & AVFMT_GLOBALHEADER)
         _codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     avcodec_open2(_codec_context, codec, nullptr);
 
-    _stream->time_base = (AVRational) { 1, 25 };
+    _stream->time_base = time_base;
     av_dump_format(_output_context, 0, file.c_str(), 1);
     avio_open(&_output_context->pb, file.c_str(), AVIO_FLAG_WRITE);
     auto ret = avformat_write_header(_output_context, nullptr);
@@ -89,7 +93,10 @@ void cr::video_writer::submit_frame(const cr::image &frame)
 
     if (got_output)
     {
-        av_packet_rescale_ts(&_packet, (AVRational) { 1, 25 }, _stream->time_base);
+        auto time_base = AVRational();
+        time_base.num = 1;
+        time_base.den = 25;
+        av_packet_rescale_ts(&_packet, time_base, _stream->time_base);
 
         _packet.stream_index = _stream->index;
 

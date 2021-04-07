@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <algorithm>
 #include <cmath>
 
 namespace cr::colour

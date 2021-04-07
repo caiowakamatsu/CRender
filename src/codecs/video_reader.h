@@ -4,6 +4,7 @@
 
 #include <ffmpeg/ffmpeg.h>
 #include <util/exception.h>
+#include <algorithm>
 
 #include <objects/image.h>
 #include <util/colour.h>

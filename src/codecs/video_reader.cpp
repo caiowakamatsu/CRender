@@ -25,7 +25,7 @@ cr::video_reader::video_reader()
         {
             codec_index = i;
 
-            _video_width = local_codec_parameters->width;
+            _video_width  = local_codec_parameters->width;
             _video_height = local_codec_parameters->height;
 
             codec            = local_codec;
@@ -88,7 +88,7 @@ cr::video_reader::video_reader()
 
 cr::image *cr::video_reader::next_frame() noexcept
 {
-    return _frames.data() + std::max(1UL, _current_frame++) % _frames.size();
+    return _frames.data() + std::max(uint64_t(1), _current_frame++) % _frames.size();
 }
 
 cr::image *cr::video_reader::get_frame(uint64_t index) noexcept
