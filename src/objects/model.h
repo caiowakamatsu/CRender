@@ -11,35 +11,20 @@
 
 #include <render/material/material.h>
 #include <render/ray.h>
+#include <render/entities/components.h>
+#include <util/model_loader.h>
 #include <util/exception.h>
 
 namespace cr
 {
-    class model
+    namespace model
     {
-    public:
-        model(
-          const std::vector<glm::vec3> &   vertices,
-          const std::vector<cr::material> &materials,
-          const std::vector<uint32_t>      vertex_indices,
-          const std::vector<uint32_t>      material_indices);
+        [[nodiscard]] cr::entity::model_geometry
+          instance_geometry(const std::vector<glm::vec3> &vertices, const std::vector<uint32_t> &indices);
 
-        void add_transform(const glm::mat4 &transform);
+        [[nodiscard]] cr::ray::intersection_record
+          intersect(const cr::ray &ray, const cr::entity::transforms &transforms, const cr::entity::model_geometry &geometry, const cr::entity::model_materials &materials);
 
-        [[nodiscard]] cr::ray::intersection_record intersect(const cr::ray &ray);
+    }    // namespace model
 
-    private:
-        [[nodiscard]] cr::ray::intersection_record _intersect_self(const cr::ray &ray);
-
-        std::vector<glm::mat4> _transforms;
-
-        struct
-        {
-            std::vector<cr::material> data;
-            std::vector<uint32_t>     indices;
-        } _materials;
-
-        RTCScene    _scene;
-        RTCGeometry _geometry;
-    };
 }    // namespace cr

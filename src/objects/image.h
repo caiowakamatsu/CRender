@@ -17,6 +17,8 @@ namespace cr
 
         image(uint64_t width, uint64_t height);
 
+        void clear();
+
         [[nodiscard]] bool valid() const noexcept;
 
         [[nodiscard]] uint32_t *data() noexcept;

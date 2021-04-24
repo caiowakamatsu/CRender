@@ -1,5 +1,8 @@
 #include "display.h"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb/stbi_image_write.h>
+
 cr::display::display()
 {
     glfwSetErrorCallback([](int error, const char *description) {
@@ -23,268 +26,626 @@ cr::display::display()
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     imnodes::Initialize();
+
+    glGenTextures(1, &_scene_texture_handle);
+    glGenTextures(1, &_target_texture);
+    _reload_compute();
 }
 
-void cr::display::start()
+void cr::display::_reload_compute()
 {
+    // Create our compute shader for moving around the image
+    auto compute_shader = std::ifstream("./assets/shaders/compute.glsl");
+    auto string_stream  = std::stringstream();
+    string_stream << compute_shader.rdbuf();
+    auto source_str = string_stream.str();
+    auto source_c   = source_str.c_str();
+
+    _compute_shader_id = glCreateShader(GL_COMPUTE_SHADER);
+    glShaderSource(_compute_shader_id, 1, &source_c, nullptr);
+    glCompileShader(_compute_shader_id);
+    GLint isCompiled = 0;
+    glGetShaderiv(_compute_shader_id, GL_COMPILE_STATUS, &isCompiled);
+    if (isCompiled == GL_FALSE)
+    {
+        GLint maxLength = 1024;
+        glGetShaderiv(_compute_shader_id, GL_INFO_LOG_LENGTH, &maxLength);
+
+        // The maxLength includes the NULL character
+        std::vector<char> errorLog(maxLength);
+        glGetShaderInfoLog(_compute_shader_id, maxLength, &maxLength, &errorLog[0]);
+
+        std::cout << errorLog.data() << std::endl;
+        // Provide the infolog in whatever manor you deem best.
+        // Exit with failure.
+        glDeleteShader(_compute_shader_id);    // Don't leak the shader.
+        return;
+    }
+
+    isCompiled              = 0;
+    _compute_shader_program = glCreateProgram();
+    glAttachShader(_compute_shader_program, _compute_shader_id);
+    glLinkProgram(_compute_shader_program);
+    glGetProgramiv(_compute_shader_program, GL_LINK_STATUS, &isCompiled);
+    if (isCompiled == GL_FALSE)
+    {
+        GLint maxLength = 1024;
+        glGetProgramiv(_compute_shader_program, GL_INFO_LOG_LENGTH, &maxLength);
+
+        // The maxLength includes the NULL character
+        std::vector<char> errorLog(maxLength);
+        glGetProgramInfoLog(_compute_shader_program, maxLength, &maxLength, &errorLog[0]);
+
+        std::cout << errorLog.data() << std::endl;
+        // Provide the infolog in whatever manor you deem best.
+        // Exit with failure.
+        glDeleteProgram(_compute_shader_program);    // Don't leak the program.
+        return;
+    }
+}
+
+void cr::display::start(
+  std::unique_ptr<cr::scene> *      scene,
+  std::unique_ptr<cr::renderer> *   renderer,
+  std::unique_ptr<cr::thread_pool> *thread_pool)
+{
+    auto work_group_max = std::array<int, 3>();
+
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &work_group_max[0]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &work_group_max[1]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &work_group_max[2]);
+    fmt::print(
+      "Maximum compute work group count [x: {}, y: {}, z: {}]\n",
+      work_group_max[0],
+      work_group_max[1],
+      work_group_max[2]);
+
     auto &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-    cr::ImGuiThemes::Red();
+    cr::ImGuiThemes::CorporateGrey();
 
     ImGui_ImplGlfw_InitForOpenGL((GLFWwindow *) _glfw_window, true);
     ImGui_ImplOpenGL3_Init("#version 450");
 
     while (!glfwWindowShouldClose(_glfw_window))
     {
-        auto pre_render_response = _prerender_callback.value()(*this);
-        if (pre_render_response.to_display.has_value())
-        {
-            glGenTextures(1, reinterpret_cast<GLuint *>(&_main_texture_handle));
-
-            glBindTexture(GL_TEXTURE_2D, _main_texture_handle);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-            glTexImage2D(
-              GL_TEXTURE_2D,
-              0,
-              GL_RGBA8,
-              pre_render_response.to_display->width(),
-              pre_render_response.to_display->height(),
-              0,
-              GL_RGBA,
-              GL_UNSIGNED_BYTE,
-              pre_render_response.to_display->data());
-        }
-
         glfwPollEvents();
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        static auto dockspace_flags   = ImGuiDockNodeFlags_PassthruCentralNode;
-        auto [window_flags, viewport] = IMGUI_init(dockspace_flags);
+        auto ui_ctx = cr::ui::init();
 
-        ImGui::Begin("DockSpace", nullptr, window_flags);
-        ImGui::PopStyleVar(3);
-
-        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-            IMGUI_setup_dock(dockspace_flags, window_flags, viewport);
-
-        ImGui::End();
-
-        IMGUI_scene_preview(pre_render_response, _main_texture_handle);
-
-        const auto scene_hierarchy = IMGUI_scene_editor(pre_render_response.renderer);
-
-        //        if (ImGui::CollapsingHeader("Material Editor"))
-        //        {
-        //            if (materials.has_value())
-        //            {
-        //                static auto current_material = -1;
-        //
-        //                if (ImGui::BeginCombo(
-        //                      "Selected Material",
-        //                      current_material == -1 ? ""
-        //                                             :
-        //                                             materials.value()[current_material].name().c_str()))
-        //                {
-        //                    for (auto i = 0; i < materials.value().size(); i++)
-        //                    {
-        //                        auto &material = materials.value()[i];
-        //
-        //                        auto is_selected =
-        //                          current_material != -1 && material ==
-        //                          materials.value()[current_material];
-        //
-        //                        if (ImGui::Selectable(material.name().c_str(), &is_selected))
-        //                            current_material = i;
-        //
-        //                        if (is_selected) ImGui::SetItemDefaultFocus();
-        //                    }
-        //
-        //                    ImGui::EndCombo();
-        //                }
-        //
-        //                if (current_material != -1)
-        //                {
-        //                    ImGui::Indent(16.f);
-        //                    auto &material = materials.value()[current_material];
-        //
-        //                    auto selected_material = static_cast<int>(material._material_type);
-        //                    auto material_types    = std::vector<const char *>();
-        //                    material_types.push_back("Metal");
-        //                    material_types.push_back("Smooth");
-        //
-        //                    ImGui::Combo(
-        //                      "Type",
-        //                      &selected_material,
-        //                      material_types.data(),
-        //                      material_types.size());
-        //
-        //                    material._material_type =
-        //                    static_cast<material::type>(selected_material);
-        //
-        //                    ImGui::SliderFloat3("RGB", glm::value_ptr(material._base_colour),
-        //                    0.0f, 1.0f); ImGui::SliderFloat("Emission", &material._emission,
-        //                    0.0f, 1.0f);
-        //
-        //                    switch (material.mat_type())
-        //                    {
-        //                    case material::metal:
-        //                        ImGui::SliderFloat("Roughness", &material._roughness, 0.0f, 1.0f);
-        //                        break;
-        //
-        //                    case material::smooth: break;
-        //                    }
-        //                    ImGui::Unindent(16.f);
-        //                }
-        //            }
-        //
-        //            if (ImGui::Button("Update Materials"))
-        //            {
-        //                auto renderer = pre_render_response.renderer->from_config(
-        //                  pre_render_response.renderer->current_config());
-        //
-        //                renderer->scene()->update_materials(materials.value());
-        //
-        //                if (_updated_renderer_callback.has_value())
-        //                    _updated_renderer_callback.value()(std::move(renderer));
-        //            }
-        //        }
-        //
-        //        if (ImGui::CollapsingHeader("Light Editor"))
-        //        {
-        //            auto lights = std::vector<const char *>();
-        //            lights.emplace_back("Directional Light");
-        //            lights.emplace_back("Point Light");
-        //
-        //            static auto current_light_type = 0;
-        //            if (ImGui::BeginCombo("Create light", lights[current_light_type]))
-        //            {
-        //                for (auto i = 0; i < lights.size(); i++)
-        //                {
-        //                    auto is_selected = (current_light_type == i);
-        //                    if (ImGui::Selectable(lights[i], &is_selected)) current_light_type =
-        //                    i;
-        //
-        //                    if (is_selected) ImGui::SetItemDefaultFocus();
-        //                }
-        //                ImGui::EndCombo();
-        //            }
-        //
-        //            ImGui::Indent(16.f);
-        //            static auto strength  = 0.f;
-        //            static auto colour    = glm::vec3();
-        //            static auto position  = glm::vec3();
-        //            static auto direction = glm::vec3();
-        //
-        //            switch (current_light_type)
-        //            {
-        //            case 0:
-        //                ImGui::SliderFloat("Strength", &strength, 0, 15);
-        //                ImGui::SliderFloat3("RGB", &colour[0], 0, 1);
-        //                ImGui::InputFloat3("DIR", &direction[0]);
-        //                break;
-        //            case 1:
-        //                ImGui::SliderFloat3("RGB", &colour[0], 0, 1);
-        //                ImGui::InputFloat3("XYZ", &position[0]);
-        //                ImGui::SliderFloat("Strength", &strength, 0, 15);
-        //                break;
-        //            default: break;
-        //            }
-        //
-        //            if (ImGui::Button("Add light"))
-        //            {
-        //                auto renderer = pre_render_response.renderer->from_config(
-        //                  pre_render_response.renderer->current_config());
-        //
-        //                if (current_light_type == 0)
-        //                    renderer->scene()->_directional_lights.emplace_back(
-        //                      direction,
-        //                      colour,
-        //                      strength);
-        //                else if (current_light_type == 1)
-        //                    renderer->scene()->_point_lights.emplace_back(position, colour,
-        //                    strength);
-        //
-        //                if (_updated_renderer_callback.has_value())
-        //                    _updated_renderer_callback.value()(std::move(renderer));
-        //            }
-        //            ImGui::Unindent(16.f);
-        //        }
-        //        ImGui::End();
-
-        ImGui::Begin("General");
-
-        static auto camera_position = glm::vec3(3, 2, 2);
-        static auto camera_look_at  = glm::vec3(0, 0, 0);
-        static auto fov             = 75.0f;
-
-        static auto thread_count = std::thread::hardware_concurrency();
-
-        static auto resolution = std::array<uint32_t, 2>({ 512, 512 });
-
-        auto changed = false;
-        if (ImGui::CollapsingHeader("Rendering"))
         {
-            ImGui::InputFloat3("Position", &camera_position[0]);
-            ImGui::InputFloat3("Look At", &camera_look_at[0]);
-            ImGui::SliderFloat("FOV", &fov, 30.f, 120.f);
-            ImGui::SliderInt(
-              "Thread count",
-              reinterpret_cast<int *>(&thread_count),
-              1,
-              static_cast<int>(std::thread::hardware_concurrency()));
+            // Root imgui node (Not visible)
+            ImGui::Begin("DockSpace", nullptr, ui_ctx.window_flags);
+            ImGui::PopStyleVar(3);
 
-            ImGui::InputInt2("Resolution (X, Y)", reinterpret_cast<int *>(&resolution[0]));
-            for (auto &val : resolution) val = std::max(uint32_t(256), val);
+            // Setup the dock
+            cr::ui::init_dock(
+              ui_ctx,
+              "Scene Objects",
+              "Create Light",
+              "Model Loader",
+              "Scene Preview",
+              "Export",
+              "Property Editor",
+              "Render Quality");
 
-            if (ImGui::Button("Update")) { changed = true; }
+            ImGui::End();
         }
 
-        if (ImGui::CollapsingHeader("Output Settings"))
         {
-            static int resolution[2];
-            ImGui::InputInt2("Resolution", &resolution[0]);
-            static int fps;
-            ImGui::InputInt("Frames Per Seconds (FPS)", &fps);
-            ImGui::NewLine();
-            ImGui::Button("Render");
+            ImGui::Begin("Render Quality");
+
+            static auto resolution = glm::ivec2();
+            static auto bounces    = int(5);
+
+            ImGui::InputInt2("Resolution", glm::value_ptr(resolution));
+            ImGui::InputInt("Max Bounces", &bounces);
+
+            if (ImGui::Button("Update"))
+            {
+                renderer->get()->update([renderer]() {
+                    renderer->get()->set_max_bounces(bounces);
+                    renderer->get()->set_resolution(resolution.x, resolution.y);
+                });
+            }
+
+            ImGui::End();
         }
 
-        ImGui::End();
+        {
+            // Render export frame
+            ImGui::Begin("Export");
+
+            static auto file_string = std::array<char, 32>();
+            ImGui::InputTextWithHint("File Name (JPG)", "Max 32 chars", file_string.data(), 32);
+
+            if (ImGui::Button("Save"))
+            {
+                // Checking if the file already exists
+                auto directory      = std::string("./out/") + file_string.data() + ".jpg";
+                auto attempt_number = 1;
+                while (std::filesystem::exists(directory))
+                    directory = std::string("./out/") + file_string.data() + ' ' + "(" +
+                      std::to_string(attempt_number++) + ")" + ".jpg";
+
+                const auto data = renderer->get()->current_progress();
+                stbi_write_jpg(
+                  directory.c_str(),
+                  data->width(),
+                  data->height(),
+                  4,
+                  data->data(),
+                  100);
+            }
+
+            ImGui::End();
+        }
+
+        {
+            // Render light creator
+            ImGui::Begin("Create Light");
+            ImGui::Indent(16.f);
+
+            // Light name
+            static auto light_name = std::array<char, 32>({ 'L', 'i', 'g', 'h', 't' });
+            ImGui::InputTextWithHint("Name", "Max 32 chars", light_name.data(), 32);
+
+            // Light type
+            const char *       items[]      = { "Directional", "Point", "Area" };
+            static const char *current_item = items[2];
+
+            if (ImGui::BeginCombo(
+                  "Light Type",
+                  current_item))    // The second parameter is the label previewed before opening
+                                    // the combo.
+            {
+                for (auto &item : items)
+                {
+                    bool is_selected =
+                      (current_item == item);    // You can store your selection however you want,
+                                                 // outside or inside your objects
+                    if (ImGui::Selectable(item, is_selected)) current_item = item;
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();    // You may set the initial focus when
+                                                         // opening the combo (scrolling + for
+                                                         // keyboard navigation support)
+                }
+                ImGui::EndCombo();
+            }
+
+            static auto light_colour = glm::vec3(1, 1, 1);
+            ImGui::ColorEdit3("Light Colour", glm::value_ptr(light_colour));
+
+            if (ImGui::Button("Create Light"))
+            {
+                // Get the enum
+                auto light_type = cr::entity::type();
+                if (current_item == items[0])
+                    light_type = cr::entity::type::DIRECTIONAL_LIGHT;
+                else if (current_item == items[1])
+                    light_type = cr::entity::type::POINT_LIGHT;
+                else if (current_item == items[2])
+                    light_type = cr::entity::type::AREA_LIGHT;
+
+                renderer->get()->update([&scene, &light_type]() {
+                    scene->get()->registry()->register_light(
+                      light_type,
+                      light_colour,
+                      std::string(light_name.data()));
+                });
+            }
+
+            ImGui::Unindent(16.f);
+            ImGui::End();
+        }
+
+        {
+            // Render model loader
+            ImGui::Begin("Model Loader");
+
+            static std::filesystem::path current_model;
+            bool                         throw_away = false;
+
+            if (ImGui::BeginCombo("Select Model", current_model.filename().string().c_str()))
+            {
+                for (const auto &entry : std::filesystem::directory_iterator("./assets/models"))
+                {
+                    if (
+                      entry.is_regular_file() &&
+                      ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
+                    {
+                        current_model = entry;
+                        break;
+                    }
+                }
+                ImGui::EndCombo();
+            }
+
+            if (current_model != std::filesystem::path() && ImGui::Button("Load Model"))
+            {
+                // Load model in
+                renderer->get()->update([&scene, current_model = current_model] {
+                    const auto model_data = cr::model_loader::load(current_model.string());
+                    scene->get()->add_model(model_data);
+                });
+            }
+
+            ImGui::End();
+        }
+
+        {
+            // Render bottom left thing
+            ImGui::Begin("Scene Objects");
+
+            auto &registry = scene->get()->registry()->entities;
+
+            static auto index = 0;
+            registry.each([&registry, &index = index, this](auto entity) {
+                static auto selected = 0;
+                if (ImGui::RadioButton(registry.get<std::string>(entity).c_str(), &selected, index))
+                    _current_entity = entity;
+                index++;
+            });
+            index = 0;
+
+            ImGui::End();
+        }
+
+        {
+            // Render middle thing
+            ImGui::Begin("Scene Preview");
+
+            auto window_size = ImGui::GetContentRegionAvail();
+
+            glBindTexture(GL_TEXTURE_2D, _target_texture);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexImage2D(
+              GL_TEXTURE_2D,
+              0,
+              GL_RGBA8,
+              static_cast<int>(window_size.x),
+              static_cast<int>(window_size.y),
+              0,
+              GL_RGBA,
+              GL_UNSIGNED_BYTE,
+              nullptr);
+            glBindImageTexture(0, _target_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+
+            const auto current_progress = renderer->get()->current_progress();
+            // Upload rendered scene to GPU
+            glBindTexture(GL_TEXTURE_2D, _scene_texture_handle);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+//            fmt::print("Updating image texture with [X: {}, Y: {}]\n", static_cast<int>(window_size.x), static_cast<int>(window_size.y));
+            glTexImage2D(
+              GL_TEXTURE_2D,
+              0,
+              GL_RGBA8,
+              current_progress->width(),
+              current_progress->height(),
+              0,
+              GL_RGBA,
+              GL_UNSIGNED_BYTE,
+              current_progress->data());
+            glActiveTexture(GL_TEXTURE1);
+
+            // Set uniforms
+            {
+                static auto current_translation = glm::vec2(0.0f, 0.0f);
+                static auto current_zoom        = float(1);
+                if (ImGui::IsWindowHovered())
+                {
+                    current_zoom += io.MouseWheel;
+                    current_zoom = fmaxf(current_zoom, 1);
+
+                    if (ImGui::IsMouseDown(0))
+                    {
+                        const auto delta =
+                          glm::vec2(io.MouseDelta.x, io.MouseDelta.y) * glm::vec2(-1, -1);
+                        current_translation.x += delta.x;
+                        current_translation.y += delta.y;
+                    }
+                }
+
+//                glUniform2fv(
+//                  glGetUniformLocation(_compute_shader_program, "translation"),
+//                  1,
+//                  glm::value_ptr(current_translation));
+//
+//                glUniform1f(glGetUniformLocation(_compute_shader_program, "zoom"), current_zoom);
+            }
+
+            {
+                if (glfwGetKey(_glfw_window, GLFW_KEY_R) == GLFW_PRESS)
+                {
+                    fmt::print("Reloading Compute Shader\n");
+                    _reload_compute();
+                }
+                glUseProgram(_compute_shader_program);
+
+                glDispatchCompute(
+                  static_cast<int>(window_size.x),
+                  static_cast<int>(window_size.y),
+                  1);
+            }
+
+            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+            ImGui::Image((void *) _target_texture, window_size);
+            ImGui::End();
+        }
+
+        {
+            // Render right thing
+            ImGui::Begin("Property Editor");
+
+            if (_current_entity.has_value())
+            {
+                auto       should_update = false;
+                auto &     registry      = scene->get()->registry()->entities;
+                const auto current_type  = registry.get<cr::entity::type>(_current_entity.value());
+                auto       should_reset  = false;
+                {
+                    static auto current_entity = std::optional<uint64_t>();
+                    if (
+                      !current_entity.has_value() ||
+                      current_entity.value() != _current_entity.value())
+                    {
+                        should_reset   = true;
+                        current_entity = _current_entity.value();
+                    }
+                }
+
+                if (ImGui::Button("Update"))
+                {
+                    renderer->get()->pause();
+                    should_update = true;
+                }
+
+                ImGui::Indent(16.f);
+
+                if (current_type == cr::entity::type::CAMERA)
+                {
+                    const auto &camera = registry.get<cr::camera>(_current_entity.value());
+
+                    static auto position = std::optional<glm::vec3>();
+                    if (!position.has_value()) position = camera.position;
+                    static auto look_at = std::optional<glm::vec3>();
+                    if (!look_at.has_value()) look_at = camera.look_at;
+                    static auto fov = std::optional<float>();
+                    if (!fov.has_value()) fov = camera.fov;
+
+                    ImGui::InputFloat3("Position", glm::value_ptr(position.value()));
+                    ImGui::InputFloat3("Look At", glm::value_ptr(look_at.value()));
+                    ImGui::SliderFloat("FOV", &fov.value(), 10, 120);
+
+                    if (should_update)
+                    {
+                        registry.get<cr::camera>(_current_entity.value()) =
+                          cr::camera(position.value(), look_at.value(), fov.value());
+
+                        position.reset();
+                        look_at.reset();
+                        fov.reset();
+                    }
+                }
+                else if (current_type == cr::entity::type::POINT_LIGHT)
+                {
+                    static auto point = std::optional<cr::entity::light::point>();
+                    if (!point.has_value() || should_reset)
+                        point = registry.get<cr::entity::light::point>(_current_entity.value());
+
+                    ImGui::ColorEdit3("Colour", glm::value_ptr(point.value().colour));
+                    ImGui::InputFloat("Intensity", &point.value().intensity);
+                    ImGui::InputFloat3("Position", glm::value_ptr(point.value().position));
+
+                    if (should_update)
+                    {
+                        registry.get<cr::entity::light::point>(_current_entity.value()) =
+                          point.value();
+
+                        point.reset();
+                    }
+                }
+                else if (current_type == cr::entity::type::DIRECTIONAL_LIGHT)
+                {
+                    static auto directional = std::optional<cr::entity::light::directional>();
+                    if (!directional.has_value() || should_reset)
+                        directional =
+                          registry.get<cr::entity::light::directional>(_current_entity.value());
+
+                    ImGui::ColorEdit3("Colour", glm::value_ptr(directional.value().colour));
+                    ImGui::InputFloat("Intensity", &directional.value().intensity);
+                    ImGui::InputFloat3("Direction", glm::value_ptr(directional.value().direction));
+
+                    if (should_update)
+                    {
+                        registry.get<cr::entity::light::directional>(_current_entity.value()) =
+                          directional.value();
+
+                        directional.reset();
+                    }
+                }
+                else if (current_type == cr::entity::type::AREA_LIGHT)
+                {
+                    auto &area = registry.get<cr::entity::light::area>(_current_entity.value());
+
+                    static auto position = std::optional<glm::vec3>();
+                    if (!position.has_value() || should_reset)
+                        position = area.position;
+
+                    static auto size = std::optional<glm::vec2>();
+                    if (!size.has_value() || should_reset)
+                        size = area.size;
+
+                    static auto colour = std::optional<glm::vec3>();
+                    if (!colour.has_value() || should_reset)
+                        colour = area.colour;
+
+                    static auto intensity = std::optional<float>();
+                    if (!intensity.has_value() || should_reset)
+                        intensity = area.intensity;
+
+                    ImGui::ColorEdit3("Colour", glm::value_ptr(colour.value()));
+                    ImGui::InputFloat("Intensity", &intensity.value());
+                    ImGui::InputFloat3("Position", glm::value_ptr(position.value()));
+                    ImGui::InputFloat2("Size", glm::value_ptr(size.value()));
+
+                    if (should_update)
+                    {
+                        area.position = position.value();
+                        area.size = size.value();
+                        area.colour = colour.value();
+                        area.intensity = intensity.value();
+
+                        area.recalc_mat();
+
+                        position.reset();
+                        size.reset();
+                        colour.reset();
+                        intensity.reset();
+                    }
+
+                }
+                else if (current_type == cr::entity::type::MODEL)
+                {
+                    // This code initializes the value only once with the current model
+                    // Transformations
+                    static auto transforms = std::optional<std::vector<glm::mat4>>();
+                    if (!transforms.has_value() || should_reset)
+                    {
+                        transforms =
+                          registry.get<cr::entity::transforms>(_current_entity.value()).data;
+                    }
+
+                    // Materials
+                    static auto materials = std::optional<cr::entity::model_materials>();
+                    if (!materials.has_value() || should_reset)
+                    {
+                        materials =
+                          registry.get<cr::entity::model_materials>(_current_entity.value());
+                    }
+
+                    // Editor
+                    if (ImGui::CollapsingHeader("Transformations"))
+                    {
+                        ImGui::Indent(16.f);
+                        for (auto &transform : transforms.value())
+                        {
+                            static auto position = glm::vec3(0, 0, 0);
+                            static auto scale    = glm::vec3(1, 1, 1);
+                            ImGui::InputFloat3("Position##Camera", glm::value_ptr(position));
+                            ImGui::InputFloat3("Scale##Camera", glm::value_ptr(scale));
+
+                            transform = glm::translate(transform, -position);
+                            transform = glm::scale(transform, scale);
+                        }
+                        ImGui::Unindent(16.f);
+                    }
+
+                    if (ImGui::CollapsingHeader("Materials"))
+                    {
+                        ImGui::Indent(16.f);
+                        for (auto &material : materials.value().materials)
+                        {
+                            ImGui::Text("%s", material.name().c_str());
+                            ImGui::Indent(16.f);
+
+                            // Light type
+                            const char *       items[]      = { "Metal", "Smooth" };
+                            static const char *current_item = nullptr;
+
+                            switch (material._material_type)
+                            {
+                            case cr::material::type::metal: current_item = items[0]; break;
+
+                            case cr::material::type::smooth: current_item = items[1]; break;
+                            }
+
+                            if (ImGui::BeginCombo(
+                                  (std::string("Type") + "##" + material.name()).c_str(),
+                                  current_item))    // The second parameter is the label
+                                                    // previewed before opening the combo.
+                            {
+                                for (auto &item : items)
+                                {
+                                    bool is_selected =
+                                      (current_item ==
+                                       item);    // You can store your selection however you
+                                                 // want, outside or inside your objects
+                                    if (ImGui::Selectable(item, is_selected)) current_item = item;
+                                    if (is_selected)
+                                        ImGui::SetItemDefaultFocus();    // You may set the
+                                                                         // initial focus when
+                                                                         // opening the combo
+                                                                         // (scrolling + for
+                                                                         // keyboard navigation
+                                                                         // support)
+                                }
+                                ImGui::EndCombo();
+                            }
+
+                            if (current_item == items[0])
+                                material._material_type = cr::material::type::metal;
+                            else if (current_item == items[1])
+                                material._material_type = cr::material::type::smooth;
+
+                            ImGui::SliderFloat(
+                              (std::string("IOR") + "##" + material.name()).c_str(),
+                              &material._ior,
+                              0,
+                              1);
+                            ImGui::SliderFloat(
+                              (std::string("Roughness") + "##" + material.name()).c_str(),
+                              &material._roughness,
+                              0,
+                              1);
+                            ImGui::ColorEdit3(
+                              (std::string("Colour") + "##" + material.name()).c_str(),
+                              glm::value_ptr(material._base_colour));
+                            ImGui::Unindent(16.f);
+                        }
+                        ImGui::Unindent(16.f);
+                    }
+
+                    if (should_update)
+                    {
+                        // Update the value
+                        registry.get<cr::entity::transforms>(_current_entity.value()).data =
+                          transforms.value();
+                        registry.get<cr::entity::model_materials>(_current_entity.value()) =
+                          materials.value();
+
+                        transforms.reset();
+                        materials.reset();
+                    }
+                }
+
+                ImGui::Unindent(16.f);
+                if (should_update) renderer->get()->start();
+            }
+
+            ImGui::End();
+        }
 
         ImGui::Render();
         glClearColor(1, 1, 1, 1);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        auto result = cr::display::post_render_result();
-        if (changed && _postrender_callback.has_value())
-        {
-            auto config = cr::renderer::config();
-
-            config.camera = cr::camera(
-              camera_position,
-              camera_look_at,
-              fov,
-              resolution[0] / static_cast<float>(resolution[1]));
-
-            config.thread_count = thread_count;
-
-            config.resolution.x = resolution[0];
-            config.resolution.y = resolution[1];
-
-            result.render_display_config = config;
-        }
-        _postrender_callback.value()(*this, result);
         glfwSwapBuffers(_glfw_window);
-        glDeleteTextures(1, reinterpret_cast<const GLuint *>(&_main_texture_handle));
+
+        glDeleteTextures(1, &_scene_texture_handle);
     }
     stop();
 }
@@ -292,214 +653,11 @@ void cr::display::start()
 void cr::display::stop()
 {
     glfwSetWindowShouldClose(_glfw_window, true);
-    if (_close_callback.has_value()) _close_callback.value()(*this);
 }
-
-void cr::display::register_updated_renderer_callback(
-  const std::function<void(std::unique_ptr<renderer>)> &callback)
+cr::display::~display()
 {
-    _updated_renderer_callback = callback;
-}
-
-void cr::display::register_close_callback(const std::function<void(cr::display &)> &callback)
-{
-    _close_callback = callback;
-}
-
-void cr::display::register_prerender_callback(
-  const std::function<pre_render_response(cr::display &)> &callback)
-{
-    _prerender_callback = callback;
-}
-
-void cr::display::register_postrender_callback(
-  const std::function<void(cr::display &, post_render_result)> &callback)
-{
-    _postrender_callback = callback;
-}
-cr::display::ImGuiSetup cr::display::IMGUI_init(const ImGuiDockNodeFlags &dockspace_flags)
-{
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-
-    ImGuiViewport *viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(viewport->Pos);
-    ImGui::SetNextWindowSize(viewport->Size);
-    ImGui::SetNextWindowViewport(viewport->ID);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-    if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-        window_flags |= ImGuiWindowFlags_NoBackground;
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-    ImGuiSetup value {};
-    value.window_flags = window_flags;
-    value.viewport     = viewport;
-    return value;
-}
-
-void cr::display::IMGUI_setup_dock(
-  const ImGuiDockNodeFlags &dockspace_flags,
-  const ImGuiWindowFlags &  flags,
-  const ImGuiViewport *     viewport)
-{
-    ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-
-    static auto first_time = true;
-    if (first_time)
-    {
-        first_time = false;
-
-        ImGui::DockBuilderRemoveNode(dockspace_id);    // clear any previous layout
-        ImGui::DockBuilderAddNode(dockspace_id, dockspace_flags | ImGuiDockNodeFlags_DockSpace);
-        ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
-
-        auto dock_id_right =
-          ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Right, 0.2f, nullptr, &dockspace_id);
-        auto dock_id_bottom_left =
-          ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.3f, nullptr, &dockspace_id);
-        auto dock_id_top_left = ImGui::DockBuilderSplitNode(
-          dock_id_bottom_left,
-          ImGuiDir_Up,
-          0.1f,
-          nullptr,
-          &dock_id_bottom_left);
-        auto dock_id_middle = dockspace_id;
-
-        ImGui::DockBuilderDockWindow("General", dock_id_right);
-        ImGui::DockBuilderDockWindow("Scene Hierarchy", dock_id_bottom_left);
-        ImGui::DockBuilderDockWindow("Model Loader", dock_id_top_left);
-        ImGui::DockBuilderDockWindow("Scene Preview", dock_id_middle);
-        ImGui::DockBuilderFinish(dockspace_id);
-    }
-}
-
-void cr::display::IMGUI_scene_preview(
-  const cr::display::pre_render_response &pre_render_response,
-  uint64_t                                texture_handle)
-{
-    ImGui::Begin("Scene Preview");
-    if (pre_render_response.to_display.has_value())
-        ImGui::Image(
-          (void *) (intptr_t) texture_handle,
-          ImVec2(
-            pre_render_response.to_display->width(),
-            pre_render_response.to_display->height()));
-    ImGui::End();
-}
-
-cr::display::SceneEditorResponse cr::display::IMGUI_scene_editor(cr::renderer *renderer)
-{
-    static std::optional<std::vector<cr::material>> materials;
-
-    ImGui::Begin("Scene Hierarchy");
-
-    {
-        const auto model = IMGUI_model_loader();
-        if (model.has_value())
-        {
-            // Load the model into the scene
-            auto new_renderer = std::make_unique<cr::renderer>(renderer->current_config());
-            auto scene        = std::make_unique<cr::scene>(*renderer->scene());
-
-            const auto model_data = cr::model::load_model(model.value().string());
-
-            scene->add_triangles(model_data.vertices, model_data.vertex_indices);
-            scene->add_materials(model_data.materials, model_data.material_indices);
-            materials = model_data.materials;
-
-            new_renderer->attach_scene(std::move(scene));
-
-            if (_updated_renderer_callback.has_value())
-                _updated_renderer_callback.value()(std::move(new_renderer));
-        }
-    }
-
-    {
-        ImGui::Indent(16.f);
-
-        if (ImGui::CollapsingHeader("Model"))
-            ;    // Empty for now
-
-        if (ImGui::CollapsingHeader("Lights"))
-            ;
-
-        if (ImGui::CollapsingHeader("Material"))
-        {
-            // Display material list and return the selected one
-            static auto previous_selected_index = -1;
-            const auto  selected_material_index =
-              IMGUI_material_list(renderer->scene()->loaded_materials());
-
-            // If it's 0 we don't have a material selected
-            if (selected_material_index != -1 && previous_selected_index != selected_material_index)
-            {
-                _selected_object.material =
-                  &renderer->scene()->loaded_materials()[selected_material_index];
-                _current_selected_type = _SelectedType::MATERIAL;
-            }
-
-            previous_selected_index = selected_material_index;
-        }
-
-        ImGui::Unindent(16.f);
-    }
-
-    ImGui::End();
-    return cr::display::SceneEditorResponse();
-}
-
-std::optional<std::filesystem::path> cr::display::IMGUI_model_loader()
-{
-    static std::filesystem::path current_model;
-    bool                         throw_away = false;
-
-    ImGui::Begin("Model Loader");
-    if (ImGui::BeginCombo("Select Model", current_model.filename().string().c_str()))
-    {
-        for (const auto &entry : std::filesystem::directory_iterator("./assets/models"))
-        {
-            if (
-              entry.is_regular_file() &&
-              ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
-            {
-                current_model = entry;
-                break;
-            }
-        }
-        ImGui::EndCombo();
-    }
-
-    if (current_model != std::filesystem::path() && ImGui::Button("Load Model"))
-    {
-        ImGui::End();
-        return current_model;
-    }
-    ImGui::End();
-
-    return {};
-}
-
-int cr::display::IMGUI_material_list(const std::vector<cr::material> &material_list)
-{
-    static auto current_material = -1;
-
-    if (material_list.empty()) current_material = -1;
-
-    for (auto i = 0; i < material_list.size(); i++)
-    {
-        auto &material    = material_list[i];
-        auto  is_selected = current_material != -1 && material == material_list[current_material];
-
-        if (ImGui::Selectable(material.name().c_str(), &is_selected)) current_material = i;
-
-        if (is_selected) ImGui::SetItemDefaultFocus();
-    }
-
-    return current_material;
+    glDeleteTextures(1, &_target_texture);
+    glDeleteTextures(1, &_scene_texture_handle);
+    glDeleteShader(_compute_shader_id);
+    glDeleteProgram(_compute_shader_program);
 }

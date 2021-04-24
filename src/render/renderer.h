@@ -19,131 +19,55 @@
 
 namespace cr
 {
-    class new_renderer
-    {
-    public:
-        new_renderer(
-          const cr::camera &camera,
-          const uint64_t    res_x,
-          const uint64_t    res_y,
-          cr::thread_pool * pool,
-          cr::new_scene *   scene);
-
-        ~new_renderer();
-
-        void start();
-
-        void pause();
-
-        [[nodiscard]] cr::image *current_progress() noexcept;
-
-        cr::thread_pool *thread_pool;
-        cr::new_scene *  scene;
-
-    private:
-        [[nodiscard]] std::vector<std::function<void()>> _get_tasks();
-
-        void _sample_pixel(uint64_t x, uint64_t y);
-
-        const cr::camera _camera;
-        const uint64_t   _res_x;
-        const uint64_t   _res_y;
-
-        cr::image _buffer;
-
-        std::atomic<bool>     _run_management;
-        std::atomic<bool>     _pause;
-        std::atomic<uint64_t> _current_sample = 0;
-        std::thread           _management_thread;
-
-        std::mutex              _start_mutex;
-        std::condition_variable _start_cond_var;
-    };
-
     class renderer
     {
     public:
-        struct config
-        {
-            enum mode
-            {
-                TILE,
-                LINE,
-            };
-            mode render_mode = LINE;
-            enum termination_strategy
-            {
-                //                RUSSIAN_ROULETTE,
-                NUMERICAL_CUTOFF,
-                ATTENUATION_CUTOFF
-            };
-            termination_strategy termination_strategy = NUMERICAL_CUTOFF;
-            union
-            {
-                uint32_t max_bounce;
-                //                float attenuation_cutoff;
-            } termination_val;
-            struct
-            {
-                uint32_t x = 512;
-                uint32_t y = 512;
-            } resolution;
-            cr::camera camera;
-            uint16_t   thread_count = 16;
-        };
-
-        explicit renderer(cr::renderer::config config);
+        renderer(
+          const uint64_t                    res_x,
+          const uint64_t                    res_y,
+          const uint64_t                    bounces,
+          std::unique_ptr<cr::thread_pool> *pool,
+          std::unique_ptr<cr::scene> *      scene);
 
         ~renderer();
 
         void start();
 
-        void stop();
+        void pause();
 
-        void attach_scene(std::unique_ptr<cr::scene> scene);
+        void update(const std::function<void()> &update);
 
-        [[nodiscard]] cr::renderer::config current_config() const noexcept;
+        void set_resolution(int x, int y);
 
-        [[nodiscard]] cr::scene *scene() const noexcept;
+        void set_max_bounces(int bounces);
 
-        [[nodiscard]] cr::image current_progress();
-
-        [[nodiscard]] std::unique_ptr<cr::renderer> from_config(config config);
+        [[nodiscard]] cr::image *current_progress() noexcept;
 
     private:
-        [[nodiscard]] bool _should_render();
-
         [[nodiscard]] std::vector<std::function<void()>> _get_tasks();
 
         void _sample_pixel(uint64_t x, uint64_t y);
 
-        struct _processed_hit
-        {
-            float     emission;
-            float     reflectiveness;
-            cr::ray   ray;
-            glm::vec3 albedo;
-        };
-        [[nodiscard]] _processed_hit _process_hit(
-          const cr::ray &                       ray,
-          const cr::scene::intersection_record &record) const noexcept;
+        cr::camera *_camera;
+        uint64_t    _res_x;
+        uint64_t    _res_y;
+        float _aspect_correction = 1;
+        uint64_t    _max_bounces;
 
-        [[nodiscard]] static float _rand() noexcept;
+        std::unique_ptr<cr::thread_pool> *_thread_pool;
+        std::unique_ptr<cr::scene> *      _scene;
 
-        cr::renderer::config _config;
+        cr::image _buffer;
 
-        bool     _should_render_val    = true;
-        uint64_t _current_sample_count = 0;
+        std::atomic<bool>     _run_management = true;
+        std::atomic<bool>     _pause          = false;
+        std::atomic<uint64_t> _current_sample = 0;
+        std::thread           _management_thread;
 
-        std::mutex _should_render_mutex;
-        std::mutex _buffer_mutex;
+        std::mutex              _start_mutex;
+        std::condition_variable _start_cond_var;
 
-        cr::image _current_buffer;
-
-        cr::thread_pool _thread_pool;
-
-        std::unique_ptr<cr::scene> _scene;
-
-        std::thread _render_thread;
+        std::mutex              _pause_mutex;
+        std::condition_variable _pause_cond_var;
     };
 }    // namespace cr

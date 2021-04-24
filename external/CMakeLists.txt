@@ -1,5 +1,17 @@
 option(EMBREE_ISPC_SUPPORT "" OFF)
 
+option(GLFW_BUILD_TESTS "" OFF)
+option(GLFW_BUILD_DOCS "" OFF)
+option(GLFW_INSTALL "" OFF)
+option(GLFW_BUILD_EXAMPLES "" OFF)
+
+option(FMT_PEDANTIC  "" OFF)
+option(FMT_WERROR   "" OFF)
+option(FMT_DOC   "" OFF)
+option(FMT_TEST   "" OFF)
+option(FMT_FUZZ   "" OFF)
+option(FMT_CUDA_TEST   "" OFF)
+
 include(FetchContent)
 
 FetchContent_Declare(
@@ -11,7 +23,7 @@ FetchContent_Declare(
 FetchContent_Declare(
         fmt
         GIT_REPOSITORY https://github.com/fmtlib/fmt
-        GIT_TAG 7.0.3
+        GIT_TAG 7.1.3
 )
 
 FetchContent_Declare(

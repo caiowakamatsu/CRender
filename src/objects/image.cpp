@@ -9,8 +9,14 @@ cr::image::image(const std::vector<uint32_t> &data, uint64_t width, uint64_t hei
 cr::image::image(uint64_t width, uint64_t height) : _width(width), _height(height)
 {
     auto data = std::vector<uint32_t>();
-    data.resize(width * height);
+    data.resize(width * height, 0xFFFFFFFF);
     _image_data = std::move(data);
+}
+
+void cr::image::clear()
+{
+    for (auto& val : _image_data)
+        val = 0xFFFFFFFF;
 }
 
 bool cr::image::valid() const noexcept

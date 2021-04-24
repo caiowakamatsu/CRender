@@ -2,7 +2,7 @@
 
 cr::material::material(const material::information& information)
     : _material_type(information.type), _ior(information.ior), _roughness(information.roughness),
-      _base_colour(information.colour), _name(information.name), _emission(information.emission)
+      _base_colour(information.colour), _name(information.name)
 {
 }
 

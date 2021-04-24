@@ -6,16 +6,15 @@
 
 namespace cr
 {
-
     class ray
     {
     public:
         struct intersection_record
         {
-            float         distance = std::numeric_limits<float>::infinity();
-            cr::material *material = nullptr;
-            glm::vec3     normal;
-            glm::vec3     intersection_point;
+            float               distance = std::numeric_limits<float>::infinity();
+            const cr::material *material = nullptr;
+            glm::vec3           normal;
+            glm::vec3           intersection_point;
         };
 
         glm::vec3 origin;

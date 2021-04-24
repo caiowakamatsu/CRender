@@ -15,22 +15,21 @@ namespace cr
             smooth,
         };
 
-        [[nodiscard]] static std::string get_type_name(type type) {
+        [[nodiscard]] static std::string get_type_name(type type)
+        {
             switch (type)
             {
-            case metal:
-                return "Metal";
-            case smooth:
-                return "Smooth";
+            case metal: return "Metal";
+            case smooth: return "Smooth";
             }
         }
 
         struct information
         {
             type        type;
-            float       emission  = 0;
-            float       ior       = 0;
-            float       roughness = 0;
+            float       ior            = 0;
+            float       roughness      = 0;
+            float       reflectiveness = 0;
             glm::vec3   colour;
             std::string name;
         };
@@ -46,7 +45,6 @@ namespace cr
         [[nodiscard]] cr::material::type mat_type() const noexcept;
 
         type      _material_type;
-        float     _emission;
         float     _ior;
         float     _roughness;
         glm::vec3 _base_colour;

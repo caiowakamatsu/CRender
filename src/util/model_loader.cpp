@@ -3,9 +3,9 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tinyobj/tinobj.h>
 
-cr::model::model_data cr::model::load_model(const std::string &file)
+cr::model_loader::model_data cr::model_loader::load(const std::string &file)
 {
-    auto model_data = cr::model::model_data();
+    auto model_data = cr::model_loader::model_data();
 
     tinyobj::ObjReaderConfig readerConfig;
     readerConfig.mtl_search_path = "./";
@@ -40,9 +40,9 @@ cr::model::model_data cr::model::load_model(const std::string &file)
         material_info.name =
           shape.name.empty() ? "Fallback Name - " + std::to_string(++current_material) : shape.name;
         material_info.type      = cr::material::type::smooth;
-        material_info.emission  = 0;
         material_info.ior       = 0;
         material_info.roughness = 0;
+        material_info.reflectiveness = 0;
         material_info.colour    = glm::vec3(0.2, 0.2, 0.2);
 
         auto material = cr::material(material_info);
