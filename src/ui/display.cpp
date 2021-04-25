@@ -645,8 +645,8 @@ void cr::display::start(
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(_glfw_window);
 
-        glDeleteTextures(1, &_scene_texture_handle);
     }
+    glDeleteTextures(1, &_scene_texture_handle);
     stop();
 }
 
