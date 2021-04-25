@@ -180,7 +180,7 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y)
             const auto blue  = glm::vec3(0.4, 0.4, 1.0);
             const auto white = glm::vec3(1.0, 1.0, 1.0);
             const auto out   = glm::mix(white, blue, miss_uv.y);
-//            final += throughput * out;
+            final += throughput * out;
             break;
         }
         else

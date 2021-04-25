@@ -346,8 +346,7 @@ void cr::display::start(
                 static auto current_zoom        = float(1);
                 if (ImGui::IsWindowHovered())
                 {
-                    current_zoom += io.MouseWheel;
-                    current_zoom = fmaxf(current_zoom, 1);
+                    current_zoom += io.MouseWheel * -.05;
 
                     if (ImGui::IsMouseDown(0))
                     {
@@ -358,12 +357,12 @@ void cr::display::start(
                     }
                 }
 
-//                glUniform2fv(
-//                  glGetUniformLocation(_compute_shader_program, "translation"),
-//                  1,
-//                  glm::value_ptr(current_translation));
-//
-//                glUniform1f(glGetUniformLocation(_compute_shader_program, "zoom"), current_zoom);
+                glUniform2fv(
+                  glGetUniformLocation(_compute_shader_program, "translation"),
+                  1,
+                  glm::value_ptr(current_translation));
+
+                glUniform1f(glGetUniformLocation(_compute_shader_program, "zoom"), current_zoom);
             }
 
             {
