@@ -185,8 +185,8 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y)
         }
         else
         {
+            const auto light = _scene->get()->sample_lights(intersection.intersection_point, ray, intersection);
             const auto processed = ::process_hit(intersection, ray);
-            const auto light = _scene->get()->sample_lights(intersection.intersection_point, intersection.normal);
 
             final += throughput * light * processed.albedo;
             throughput *= processed.albedo * processed.reflectiveness;

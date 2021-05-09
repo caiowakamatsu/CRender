@@ -27,5 +27,7 @@ namespace cr
         [[nodiscard]] glm::vec3 inv_dir() const noexcept;
 
         [[nodiscard]] glm::vec3 at(float t) const noexcept;
+
+        [[nodiscard]] cr::ray transform(const glm::mat4 &matrix) const noexcept;
     };
 }    // namespace cr
