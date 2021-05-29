@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <filesystem>
 
 #include <glm/glm.hpp>
 #include <render/material/material.h>
@@ -19,4 +20,6 @@ namespace cr::model_loader
         std::vector<uint32_t> material_indices;
     };
     [[nodiscard]] model_data load(const std::string &file);
+
+    [[nodiscard]] bool valid_directory(const std::filesystem::directory_entry& directory);
 }

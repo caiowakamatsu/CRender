@@ -21,10 +21,10 @@ namespace
     {
         auto out = processed_hit();
 
-        out.emission = 0;
-        out.albedo   = record.material->colour();
+        out.emission = record.material->info.emission;
+        out.albedo   = record.material->info.colour;
 
-        switch (record.material->mat_type())
+        switch (record.material->info.type)
         {
         case cr::material::metal:
             out.ray.origin    = record.intersection_point + record.normal * 0.0001f;
@@ -185,10 +185,9 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y)
         }
         else
         {
-            const auto light = _scene->get()->sample_lights(intersection.intersection_point, ray, intersection);
             const auto processed = ::process_hit(intersection, ray);
 
-            final += throughput * light * processed.albedo;
+            final += throughput * processed.emission * processed.albedo;
             throughput *= processed.albedo * processed.reflectiveness;
 
             ray = processed.ray;

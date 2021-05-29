@@ -127,7 +127,6 @@ void cr::display::start(
             cr::ui::init_dock(
               ui_ctx,
               "Scene Objects",
-              "Create Light",
               "Model Loader",
               "Scene Preview",
               "Export",
@@ -187,64 +186,6 @@ void cr::display::start(
         }
 
         {
-            // Render light creator
-            ImGui::Begin("Create Light");
-            ImGui::Indent(16.f);
-
-            // Light name
-            static auto light_name = std::array<char, 32>({ 'L', 'i', 'g', 'h', 't' });
-            ImGui::InputTextWithHint("Name", "Max 32 chars", light_name.data(), 32);
-
-            // Light type
-            const char *       items[]      = { "Directional", "Point", "Area" };
-            static const char *current_item = items[2];
-
-            if (ImGui::BeginCombo(
-                  "Light Type",
-                  current_item))    // The second parameter is the label previewed before opening
-                                    // the combo.
-            {
-                for (auto &item : items)
-                {
-                    bool is_selected =
-                      (current_item == item);    // You can store your selection however you want,
-                                                 // outside or inside your objects
-                    if (ImGui::Selectable(item, is_selected)) current_item = item;
-                    if (is_selected)
-                        ImGui::SetItemDefaultFocus();    // You may set the initial focus when
-                                                         // opening the combo (scrolling + for
-                                                         // keyboard navigation support)
-                }
-                ImGui::EndCombo();
-            }
-
-            static auto light_colour = glm::vec3(1, 1, 1);
-            ImGui::ColorEdit3("Light Colour", glm::value_ptr(light_colour));
-
-            if (ImGui::Button("Create Light"))
-            {
-                // Get the enum
-                auto light_type = cr::entity::type();
-                if (current_item == items[0])
-                    light_type = cr::entity::type::DIRECTIONAL_LIGHT;
-                else if (current_item == items[1])
-                    light_type = cr::entity::type::POINT_LIGHT;
-                else if (current_item == items[2])
-                    light_type = cr::entity::type::AREA_LIGHT;
-
-                renderer->get()->update([&scene, &light_type]() {
-                    scene->get()->registry()->register_light(
-                      light_type,
-                      light_colour,
-                      std::string(light_name.data()));
-                });
-            }
-
-            ImGui::Unindent(16.f);
-            ImGui::End();
-        }
-
-        {
             // Render model loader
             ImGui::Begin("Model Loader");
 
@@ -255,10 +196,12 @@ void cr::display::start(
             {
                 for (const auto &entry : std::filesystem::directory_iterator("./assets/models"))
                 {
-                    if (
-                      entry.is_regular_file() &&
-                      ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
+                    // Go through each file in the directory
+                    if (entry.is_directory() &&
+                        cr::model_loader::valid_directory(entry) &&
+                        ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
                     {
+                        // We only want to be able to load directories that have both an MTL and OBJ file in them
                         current_model = entry;
                         break;
                     }
@@ -439,84 +382,6 @@ void cr::display::start(
                         fov.reset();
                     }
                 }
-                else if (current_type == cr::entity::type::POINT_LIGHT)
-                {
-                    static auto point = std::optional<cr::entity::light::point>();
-                    if (!point.has_value() || should_reset)
-                        point = registry.get<cr::entity::light::point>(_current_entity.value());
-
-                    ImGui::ColorEdit3("Colour", glm::value_ptr(point.value().colour));
-                    ImGui::InputFloat("Intensity", &point.value().intensity);
-                    ImGui::InputFloat3("Position", glm::value_ptr(point.value().position));
-
-                    if (should_update)
-                    {
-                        registry.get<cr::entity::light::point>(_current_entity.value()) =
-                          point.value();
-
-                        point.reset();
-                    }
-                }
-                else if (current_type == cr::entity::type::DIRECTIONAL_LIGHT)
-                {
-                    static auto directional = std::optional<cr::entity::light::directional>();
-                    if (!directional.has_value() || should_reset)
-                        directional =
-                          registry.get<cr::entity::light::directional>(_current_entity.value());
-
-                    ImGui::ColorEdit3("Colour", glm::value_ptr(directional.value().colour));
-                    ImGui::InputFloat("Intensity", &directional.value().intensity);
-                    ImGui::InputFloat3("Direction", glm::value_ptr(directional.value().direction));
-
-                    if (should_update)
-                    {
-                        registry.get<cr::entity::light::directional>(_current_entity.value()) =
-                          directional.value();
-
-                        directional.reset();
-                    }
-                }
-                else if (current_type == cr::entity::type::AREA_LIGHT)
-                {
-                    auto &area = registry.get<cr::entity::light::area>(_current_entity.value());
-
-                    static auto position = std::optional<glm::vec3>();
-                    if (!position.has_value() || should_reset)
-                        position = area.position;
-
-                    static auto size = std::optional<glm::vec2>();
-                    if (!size.has_value() || should_reset)
-                        size = area.size;
-
-                    static auto colour = std::optional<glm::vec3>();
-                    if (!colour.has_value() || should_reset)
-                        colour = area.colour;
-
-                    static auto intensity = std::optional<float>();
-                    if (!intensity.has_value() || should_reset)
-                        intensity = area.intensity;
-
-                    ImGui::ColorEdit3("Colour", glm::value_ptr(colour.value()));
-                    ImGui::InputFloat("Intensity", &intensity.value());
-                    ImGui::InputFloat3("Position", glm::value_ptr(position.value()));
-                    ImGui::InputFloat2("Size", glm::value_ptr(size.value()));
-
-                    if (should_update)
-                    {
-                        area.position = position.value();
-                        area.size = size.value();
-                        area.colour = colour.value();
-                        area.intensity = intensity.value();
-
-                        area.recalc_mat();
-
-                        position.reset();
-                        size.reset();
-                        colour.reset();
-                        intensity.reset();
-                    }
-
-                }
                 else if (current_type == cr::entity::type::MODEL)
                 {
                     // This code initializes the value only once with the current model
@@ -558,14 +423,14 @@ void cr::display::start(
                         ImGui::Indent(16.f);
                         for (auto &material : materials.value().materials)
                         {
-                            ImGui::Text("%s", material.name().c_str());
+                            ImGui::Text("%s", material.info.name.c_str());
                             ImGui::Indent(16.f);
 
                             // Light type
                             const char *       items[]      = { "Metal", "Smooth" };
                             static const char *current_item = nullptr;
 
-                            switch (material._material_type)
+                            switch (material.info.type)
                             {
                             case cr::material::type::metal: current_item = items[0]; break;
 
@@ -573,7 +438,7 @@ void cr::display::start(
                             }
 
                             if (ImGui::BeginCombo(
-                                  (std::string("Type") + "##" + material.name()).c_str(),
+                                  (std::string("Type") + "##" + material.info.name).c_str(),
                                   current_item))    // The second parameter is the label
                                                     // previewed before opening the combo.
                             {
@@ -596,23 +461,28 @@ void cr::display::start(
                             }
 
                             if (current_item == items[0])
-                                material._material_type = cr::material::type::metal;
+                                material.info.type = cr::material::type::metal;
                             else if (current_item == items[1])
-                                material._material_type = cr::material::type::smooth;
+                                material.info.type = cr::material::type::smooth;
 
                             ImGui::SliderFloat(
-                              (std::string("IOR") + "##" + material.name()).c_str(),
-                              &material._ior,
+                              (std::string("IOR") + "##" + material.info.name).c_str(),
+                              &material.info.ior,
                               0,
                               1);
                             ImGui::SliderFloat(
-                              (std::string("Roughness") + "##" + material.name()).c_str(),
-                              &material._roughness,
+                              (std::string("Roughness") + "##" + material.info.name).c_str(),
+                              &material.info.roughness,
                               0,
                               1);
+                            ImGui::SliderFloat(
+                              (std::string("Emission") + "##" + material.info.name).c_str(),
+                              &material.info.emission,
+                              0,
+                              50);
                             ImGui::ColorEdit3(
-                              (std::string("Colour") + "##" + material.name()).c_str(),
-                              glm::value_ptr(material._base_colour));
+                              (std::string("Colour") + "##" + material.info.name).c_str(),
+                              glm::value_ptr(material.info.colour));
                             ImGui::Unindent(16.f);
                         }
                         ImGui::Unindent(16.f);

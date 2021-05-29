@@ -22,7 +22,7 @@ namespace cr
 
         [[nodiscard]] cr::camera *camera();
 
-        entt::basic_registry<uint64_t> entities;
+        entt::basic_registry<uint32_t> entities;
 
     private:
         uint64_t _camera_entity;

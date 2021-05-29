@@ -3,6 +3,15 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tinyobj/tinobj.h>
 
+namespace
+{
+    // Thanks https://stackoverflow.com/a/42844629
+    [[nodiscard]] bool ends_with(std::string_view str, std::string_view suffix)
+    {
+        return str.size() >= suffix.size() && 0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix);
+    }
+}
+
 cr::model_loader::model_data cr::model_loader::load(const std::string &file)
 {
     auto model_data = cr::model_loader::model_data();
@@ -35,6 +44,10 @@ cr::model_loader::model_data cr::model_loader::load(const std::string &file)
         for (const auto idx : shape.mesh.indices)
             model_data.vertex_indices.push_back(idx.vertex_index);
 
+        model_data.material_indices.reserve(shape.mesh.material_ids.size());
+        for (auto i = 0; i < shape.mesh.material_ids.size(); i++)
+            model_data.material_indices[i] = shape.mesh.material_ids[i];
+
         auto       material_info    = cr::material::information();
         static int current_material = 0;
         material_info.name =
@@ -45,6 +58,8 @@ cr::model_loader::model_data cr::model_loader::load(const std::string &file)
         material_info.reflectiveness = 0;
         material_info.colour    = glm::vec3(0.2, 0.2, 0.2);
 
+        shape.mesh.material_ids;
+
         auto material = cr::material(material_info);
         model_data.materials.push_back(std::move(material));
 
@@ -54,4 +69,27 @@ cr::model_loader::model_data cr::model_loader::load(const std::string &file)
     }
 
     return std::move(model_data);
+}
+bool cr::model_loader::valid_directory(const std::filesystem::directory_entry &directory)
+{
+    // Model types accepted in a directory are
+    // .obj
+    // .schematic (still needs to be parsed properly)
+    // none other lol
+    auto obj_found = false;
+    auto schem_found = false;
+
+    for (const auto &entry : std::filesystem::directory_iterator(directory))
+    {
+        if (entry.is_regular_file())
+        {
+            const auto &entry_name = entry.path().string();
+            if (ends_with(entry_name, ".obj"))
+                obj_found |= true;
+            else if (ends_with(entry_name, ".schematic"))
+                schem_found |= true;
+        }
+    }
+
+    return obj_found || schem_found;
 }

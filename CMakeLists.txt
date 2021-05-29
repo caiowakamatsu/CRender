@@ -32,11 +32,7 @@ add_executable(CRender src/main.cpp
         src/render/renderer.h
         src/objects/image.cpp
         src/objects/image.h
-        src/codecs/video_reader.cpp
-        src/codecs/video_reader.h
         src/util/colour.h
-        src/codecs/video_writer.cpp
-        src/codecs/video_writer.h
         src/render/ray.cpp
         src/render/ray.h
         src/render/camera.cpp
@@ -44,7 +40,23 @@ add_executable(CRender src/main.cpp
         src/objects/bit.h
         src/render/scene.cpp
         src/render/scene.h
-        src/util/algorithm.h src/render/material/material.cpp src/render/material/material.h src/util/model_loader.cpp src/util/model_loader.h src/objects/thread_pool.cpp src/objects/thread_pool.h src/ui/nodes/node_editor.cpp src/ui/nodes/node_editor.h src/util/sampling.h src/render/light.cpp src/render/light.h src/objects/model.cpp src/objects/model.h src/ui/ui.h src/render/entities/entity_type.h src/render/entities/components.h src/render/entities/registry.cpp src/render/entities/registry.h)
+        src/util/algorithm.h
+        src/render/material/material.cpp
+        src/render/material/material.h
+        src/util/model_loader.cpp
+        src/util/model_loader.h
+        src/objects/thread_pool.cpp
+        src/objects/thread_pool.h
+        src/ui/nodes/node_editor.cpp
+        src/ui/nodes/node_editor.h
+        src/util/sampling.h
+        src/objects/model.cpp
+        src/objects/model.h
+        src/ui/ui.h
+        src/render/entities/entity_type.h
+        src/render/entities/components.h
+        src/render/entities/registry.cpp
+        src/render/entities/registry.h)
 
 target_include_directories(CRender PRIVATE src)
 target_include_directories(CRender PRIVATE external)
@@ -58,16 +70,8 @@ if (WIN32)
             glfw
             fmt
             glm
-            avdevice
-            avfilter
-            avformat
-            avcodec
-            swresample
-            swscale
-            avutil
             embree
             )
-    target_link_directories(CRender PUBLIC ${CMAKE_SOURCE_DIR}/win-lib/bin)
 endif ()
 
 if (UNIX)

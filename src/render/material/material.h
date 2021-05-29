@@ -30,26 +30,15 @@ namespace cr
             float       ior            = 0;
             float       roughness      = 0;
             float       reflectiveness = 0;
+            float       emission       = 0;
             glm::vec3   colour;
             std::string name;
         };
 
-        explicit material(const information &information);
-
-        [[nodiscard]] glm::vec3 colour() const noexcept;
+        explicit material(information information);
 
         [[nodiscard]] bool operator==(const cr::material &rhs) const noexcept;
 
-        [[nodiscard]] std::string name() const noexcept;
-
-        [[nodiscard]] cr::material::type mat_type() const noexcept;
-
-        type      _material_type;
-        float     _ior;
-        float     _roughness;
-        glm::vec3 _base_colour;
-
-    private:
-        std::string _name;
+        information info;
     };
 }    // namespace cr
