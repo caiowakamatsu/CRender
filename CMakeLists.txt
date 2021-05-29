@@ -7,8 +7,6 @@ project(CRender)
 set(EMBREE_ISA_AVX512 OFF)
 set(EMBREE_ISA_AVX2 NONE)
 
-set(embree_DIR "C:\\Program Files\\Intel\\Embree3\\lib\\cmake\\embree-3.12.2")
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR- /arch:AVX /MT /W4 /EHa /EHs")
 
 find_package(embree 3.0 REQUIRED)
