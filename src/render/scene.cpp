@@ -33,6 +33,23 @@ void cr::scene::add_model(const cr::model_loader::model_data &model)
     _entities.register_model(model);
 }
 
+void cr::scene::set_skybox(cr::image &&skybox)
+{
+    _skybox = skybox;
+}
+
+glm::vec3 cr::scene::sample_skybox(float x, float y) const noexcept
+{
+    if (_skybox.has_value())
+    {
+        return _skybox->get_uv(x, y);
+    }
+    else
+    {
+        return glm::vec3();
+    }
+}
+
 cr::ray::intersection_record cr::scene::cast_ray(const cr::ray ray)
 {
     auto intersection = cr::ray::intersection_record();

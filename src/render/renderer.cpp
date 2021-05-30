@@ -177,10 +177,9 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y)
               0.5f + atan2f(ray.direction.z, ray.direction.x) / (2 * 3.1415f),
               0.5f - asinf(ray.direction.y) / 3.1415f);
 
-            const auto blue  = glm::vec3(0.4, 0.4, 1.0);
-            const auto white = glm::vec3(1.0, 1.0, 1.0);
-            const auto out   = glm::mix(white, blue, miss_uv.y);
-            final += throughput * out;
+            const auto miss_sample = _scene->get()->sample_skybox(miss_uv.x, miss_uv.y);
+            final += throughput * miss_sample;
+
             break;
         }
         else
@@ -197,9 +196,9 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y)
     y = _res_y - 1 - y;
 
     const auto temporal = _buffer.get(x, y);
-    final = glm::max(glm::vec3(0, 0, 0), glm::min(glm::vec3(1, 1, 1), final));
-    const auto sample   = temporal * float(_current_sample) / float(_current_sample + 1) +
+    auto sample   = temporal * float(_current_sample) / float(_current_sample + 1) +
       final / float(_current_sample + 1);
+    sample = glm::max(glm::vec3(0, 0, 0), glm::min(glm::vec3(1, 1, 1), sample));
 
     _buffer.set(x, y, sample);
 }

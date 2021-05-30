@@ -3,6 +3,9 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb/stbi_image_write.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
+
 cr::display::display()
 {
     glfwSetErrorCallback([](int error, const char *description) {
@@ -127,6 +130,7 @@ void cr::display::start(
             cr::ui::init_dock(
               ui_ctx,
               "Scene Objects",
+              "Skybox Loader",
               "Model Loader",
               "Scene Preview",
               "Export",
@@ -186,11 +190,54 @@ void cr::display::start(
         }
 
         {
+            ImGui::Begin("Skybox Loader");
+
+            static std::string current_skybox;
+            bool               throw_away = false;
+
+            if (ImGui::BeginCombo("Select Skybox", current_skybox.c_str()))
+            {
+                for (const auto &entry : std::filesystem::directory_iterator("./assets/skybox"))
+                {
+                    if (entry.is_directory()) continue;
+
+                    if (ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
+                    {
+                        current_skybox = entry.path().string();
+                        break;
+                    }
+                }
+            }
+
+            if (!current_skybox.empty() && ImGui::Button("Load Skybox"))
+            {
+                // Load skybox in
+                renderer->get()->update([&scene, current_skybox = current_skybox] {
+                    auto image_dimensions = glm::ivec3();
+                    auto data             = stbi_load(
+                      current_skybox.c_str(),
+                      &image_dimensions.x,
+                      &image_dimensions.y,
+                      &image_dimensions.z,
+                      4);
+
+                    auto skybox_image = cr::image(image_dimensions.x, image_dimensions.y);
+                    std::memcpy(skybox_image.data(), data, image_dimensions.x * image_dimensions.y * 4);
+                    stbi_image_free(data);
+
+                    scene->get()->set_skybox(std::move(skybox_image));
+                });
+            }
+
+            ImGui::End();
+        }
+
+        {
             // Render model loader
             ImGui::Begin("Model Loader");
 
             static std::string current_model;
-            bool                         throw_away = false;
+            bool               throw_away = false;
 
             if (ImGui::BeginCombo("Select Model", current_model.c_str()))
             {
@@ -272,7 +319,8 @@ void cr::display::start(
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-//            fmt::print("Updating image texture with [X: {}, Y: {}]\n", static_cast<int>(window_size.x), static_cast<int>(window_size.y));
+            //            fmt::print("Updating image texture with [X: {}, Y: {}]\n",
+            //            static_cast<int>(window_size.x), static_cast<int>(window_size.y));
             glTexImage2D(
               GL_TEXTURE_2D,
               0,
@@ -515,7 +563,6 @@ void cr::display::start(
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(_glfw_window);
-
     }
     glDeleteTextures(1, &_scene_texture_handle);
     stop();

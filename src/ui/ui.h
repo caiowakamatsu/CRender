@@ -43,6 +43,7 @@ namespace cr::ui
     inline void init_dock(
       const init_ctx &   ctx,
       const std::string &left_bottom,
+      const std::string &left_middle,
       const std::string &left_top,
       const std::string &middle,
       const std::string &right_bottom,
@@ -92,10 +93,17 @@ namespace cr::ui
               0.12f,
               nullptr,
               &dock_id_left_bottom);
+            auto dock_id_left_middle = ImGui::DockBuilderSplitNode(
+              dock_id_left_bottom,
+              ImGuiDir_Up,
+              0.12f,
+              nullptr,
+              &dock_id_left_bottom);
 
             auto dock_id_middle = dockspace_id;
 
             ImGui::DockBuilderDockWindow(left_bottom.c_str(), dock_id_left_bottom);
+            ImGui::DockBuilderDockWindow(left_middle.c_str(), dock_id_left_middle);
             ImGui::DockBuilderDockWindow(left_top.c_str(), dock_id_left_top);
 
             ImGui::DockBuilderDockWindow(right_bottom.c_str(), dock_id_right_bottom);
