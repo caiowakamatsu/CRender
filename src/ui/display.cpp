@@ -189,20 +189,22 @@ void cr::display::start(
             // Render model loader
             ImGui::Begin("Model Loader");
 
-            static std::filesystem::path current_model;
+            static std::string current_model;
             bool                         throw_away = false;
 
-            if (ImGui::BeginCombo("Select Model", current_model.filename().string().c_str()))
+            if (ImGui::BeginCombo("Select Model", current_model.c_str()))
             {
                 for (const auto &entry : std::filesystem::directory_iterator("./assets/models"))
                 {
+                    if (!entry.is_directory()) continue;
+
+                    const auto model_path = cr::model_loader::valid_directory(entry);
+                    if (!model_path.has_value()) continue;
+
                     // Go through each file in the directory
-                    if (entry.is_directory() &&
-                        cr::model_loader::valid_directory(entry) &&
-                        ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
+                    if (ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
                     {
-                        // We only want to be able to load directories that have both an MTL and OBJ file in them
-                        current_model = entry;
+                        current_model = model_path.value();
                         break;
                     }
                 }
@@ -213,7 +215,7 @@ void cr::display::start(
             {
                 // Load model in
                 renderer->get()->update([&scene, current_model = current_model] {
-                    const auto model_data = cr::model_loader::load(current_model.string());
+                    const auto model_data = cr::model_loader::load(current_model);
                     scene->get()->add_model(model_data);
                 });
             }

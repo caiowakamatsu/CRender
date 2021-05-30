@@ -59,32 +59,6 @@ add_executable(CRender src/main.cpp
 target_include_directories(CRender PRIVATE src)
 target_include_directories(CRender PRIVATE external)
 
-if (WIN32)
-    target_include_directories(CRender PRIVATE win-lib/include)
-
-    file(GLOB ffmpeg_sources win-lib/bin)
-
-    target_link_libraries(CRender
-            glfw
-            fmt
-            glm
-            embree
-            )
-endif ()
-
-if (UNIX)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
-            libavdevice
-            libavfilter
-            libavformat
-            libavcodec
-            libswresample
-            libswscale
-            libavutil
-            )
-
-    target_link_libraries(CRender glfw fmt glm PkgConfig::LIBAV embree)
-endif ()
+target_link_libraries(CRender glfw fmt glm embree)
 
 target_compile_definitions(CRender PUBLIC -DGLFW_INCLUDE_NONE -D__STDC_CONSTANT_MACROS)

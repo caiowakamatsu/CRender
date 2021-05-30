@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include <filesystem>
+#include <optional>
 
 #include <glm/glm.hpp>
 #include <render/material/material.h>
@@ -21,5 +22,5 @@ namespace cr::model_loader
     };
     [[nodiscard]] model_data load(const std::string &file);
 
-    [[nodiscard]] bool valid_directory(const std::filesystem::directory_entry& directory);
+    [[nodiscard]] std::optional<std::string> valid_directory(const std::filesystem::directory_entry& directory);
 }
