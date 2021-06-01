@@ -2,6 +2,11 @@
 
 #include <glm/glm.hpp>
 
+namespace
+{
+    [[nodiscard]] float randf() noexcept;
+}
+
 namespace cr::sampling
 {
     namespace cook_torrence
@@ -55,6 +60,21 @@ namespace cr::sampling
         }
 
     }    // namespace cook_torrence
+
+    [[nodiscard]] inline glm::vec3 hemp_rand()
+    {
+        while (true)
+        {
+            auto point = glm::vec3(
+              ::randf() * 2 - 1,
+              ::randf() * 2 - 1,
+              ::randf() * 2 - 1);
+
+            if (glm::length2(point) >= 1) continue;
+
+            return glm::normalize(point);
+        }
+    }
 
     [[nodiscard]] inline glm::vec3 cos_hemp(const float x, const float y)
     {

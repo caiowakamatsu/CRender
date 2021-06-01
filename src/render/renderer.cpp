@@ -36,12 +36,11 @@ namespace
             const auto x = ::randf();
             const auto y = ::randf();
 
-            auto cos_hemp_dir = cr::sampling::cos_hemp(x, y);
-
+            auto cos_hemp_dir = cr::sampling::hemp_rand();
             if (glm::dot(cos_hemp_dir, record.normal) < 0.0f) cos_hemp_dir *= -1.f;
 
             out.ray.origin    = record.intersection_point + record.normal * 0.0001f;
-            out.ray.direction = glm::normalize(record.normal + cos_hemp_dir);
+            out.ray.direction = glm::normalize(cos_hemp_dir);
 
             out.reflectiveness = std::fmaxf(0.f, glm::dot(record.normal, out.ray.direction));
             break;
@@ -59,7 +58,8 @@ cr::renderer::renderer(
   std::unique_ptr<cr::thread_pool> *pool,
   std::unique_ptr<cr::scene> *      scene)
     : _camera(scene->get()->registry()->camera()), _buffer(res_x, res_y), _res_x(res_x),
-      _res_y(res_y), _max_bounces(bounces), _thread_pool(pool), _scene(scene)
+      _res_y(res_y), _max_bounces(bounces), _thread_pool(pool), _scene(scene),
+      _raw_buffer(res_x * res_y * 3)
 {
     _management_thread = std::thread([this]() {
         while (_run_management)
@@ -113,6 +113,9 @@ void cr::renderer::update(const std::function<void()> &update)
     update();
 
     _buffer.clear();
+    for (auto i = 0; i < _res_x * _res_y * 3; i++)
+        _raw_buffer[i] = 0.0f;
+    _current_sample = 0;
 
     start();
 }
@@ -125,6 +128,8 @@ void cr::renderer::set_resolution(int x, int y)
     _aspect_correction = static_cast<float>(_res_x) / static_cast<float>(_res_y);
 
     _buffer = cr::image(x, y);
+    _raw_buffer = std::vector<float>(x * y * 3);
+    _current_sample = 0;
 }
 
 void cr::renderer::set_max_bounces(int bounces)
@@ -134,6 +139,7 @@ void cr::renderer::set_max_bounces(int bounces)
 
 cr::image *cr::renderer::current_progress() noexcept
 {
+
     return &_buffer;
 }
 
@@ -195,10 +201,13 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y)
     // flip Y
     y = _res_y - 1 - y;
 
-    const auto temporal = _buffer.get(x, y);
-    auto sample   = temporal * float(_current_sample) / float(_current_sample + 1) +
-      final / float(_current_sample + 1);
-    sample = glm::max(glm::vec3(0, 0, 0), glm::min(glm::vec3(1, 1, 1), sample));
+    const auto base_index = (x + y * _res_x) * 3;
+    _raw_buffer[base_index + 0] += final.x;
+    _raw_buffer[base_index + 1] += final.y;
+    _raw_buffer[base_index + 2] += final.z;
 
-    _buffer.set(x, y, sample);
+    _buffer.set(x, y, glm::vec3(
+      glm::pow(glm::clamp(_raw_buffer[base_index + 0] / float(_current_sample + 1), 0.0f, 1.0f), 1.f / 2.2f),
+      glm::pow(glm::clamp(_raw_buffer[base_index + 1] / float(_current_sample + 1), 0.0f, 1.0f), 1.f / 2.2f),
+      glm::pow(glm::clamp(_raw_buffer[base_index + 2] / float(_current_sample + 1), 0.0f, 1.0f), 1.f / 2.2f)));
 }

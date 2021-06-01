@@ -57,6 +57,8 @@ namespace cr
         std::unique_ptr<cr::thread_pool> *_thread_pool;
         std::unique_ptr<cr::scene> *      _scene;
 
+        std::vector<float> _raw_buffer;
+
         cr::image _buffer;
 
         std::atomic<bool>     _run_management = true;

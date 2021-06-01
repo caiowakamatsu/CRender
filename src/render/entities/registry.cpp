@@ -17,29 +17,6 @@ cr::registry::registry()
     entities.emplace<std::string>(_camera_entity, "Camera");
 }
 
-void cr::registry::register_light(cr::entity::type light_type, const glm::vec3 &colour, const std::string &name)
-{
-    const auto light = entities.create();
-
-    entities.emplace<cr::entity::type>(light, light_type);
-    entities.emplace<std::string>(light, name);
-
-    switch (light_type)
-    {
-    case entity::type::POINT_LIGHT:
-        entities.emplace<cr::entity::light::point>(light, 1.0f, colour, glm::vec3(0, 0, 0));
-        break;
-    case entity::type::DIRECTIONAL_LIGHT:
-        entities.emplace<cr::entity::light::directional>(light, colour, glm::vec3(0, -1, 0), 1.0f);
-        break;
-    case entity::type::AREA_LIGHT:
-        entities.emplace<cr::entity::light::area>(light, colour, glm::vec3(0, 0, 0), glm::vec2(1, 1), 1.0f);
-        break;
-    default:
-        cr::exit("Light enum is not valid!");
-    }
-}
-
 void cr::registry::register_model(const cr::model_loader::model_data &data)
 {
     // Create the model embree instance
