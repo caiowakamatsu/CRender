@@ -207,6 +207,7 @@ void cr::display::start(
                         break;
                     }
                 }
+                ImGui::EndCombo();
             }
 
             if (!current_skybox.empty() && ImGui::Button("Load Skybox"))
@@ -236,10 +237,11 @@ void cr::display::start(
             // Render model loader
             ImGui::Begin("Model Loader");
 
+            static std::string current_directory;
             static std::string current_model;
             bool               throw_away = false;
 
-            if (ImGui::BeginCombo("Select Model", current_model.c_str()))
+            if (ImGui::BeginCombo("Select Model", current_directory.c_str()))
             {
                 for (const auto &entry : std::filesystem::directory_iterator("./assets/models"))
                 {
@@ -251,6 +253,7 @@ void cr::display::start(
                     // Go through each file in the directory
                     if (ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
                     {
+                        current_directory = entry.path().string();
                         current_model = model_path.value();
                         break;
                     }
@@ -261,8 +264,8 @@ void cr::display::start(
             if (current_model != std::filesystem::path() && ImGui::Button("Load Model"))
             {
                 // Load model in
-                renderer->get()->update([&scene, current_model = current_model] {
-                    const auto model_data = cr::model_loader::load(current_model);
+                renderer->get()->update([&scene, current_model = current_model, current_directory = current_directory] {
+                    const auto model_data = cr::model_loader::load(current_model, current_directory);
                     scene->get()->add_model(model_data);
                 });
             }

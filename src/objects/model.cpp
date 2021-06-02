@@ -35,13 +35,24 @@ namespace
         record.normal = glm::normalize(glm::vec3(ray_hit.hit.Ng_x, ray_hit.hit.Ng_y, ray_hit.hit.Ng_z));
         record.material = &materials.materials[materials.indices[ray_hit.hit.primID]];
 
+        rtcInterpolate0(
+          geometry.geometry,
+          ray_hit.hit.primID,
+          ray_hit.hit.u,
+          ray_hit.hit.v,
+          RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
+          0,
+          glm::value_ptr(record.uv),
+          1);
+
         return record;
     }
 }
 
 cr::entity::model_geometry cr::model::instance_geometry(
   const std::vector<glm::vec3> &vertices,
-  const std::vector<uint32_t> & indices)
+  const std::vector<uint32_t> & indices,
+  const std::vector<glm::vec2> &texture_coords)
 {
     auto instance = cr::entity::model_geometry();
     fmt::print("Building model\n\tVertex Count: {}\n", vertices.size());
@@ -61,6 +72,18 @@ cr::entity::model_geometry cr::model::instance_geometry(
       RTC_FORMAT_UINT3,
       3 * sizeof(uint32_t),
       indices.size()));
+
+    rtcSetGeometryVertexAttributeCount(instance.geometry, 1);
+
+    rtcSetSharedGeometryBuffer(
+      instance.geometry,
+      RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
+      0,
+      RTC_FORMAT_FLOAT2,
+      texture_coords.data(),
+      0,
+      sizeof(glm::vec2),
+      texture_coords.size());
 
     if (vertex_buffer == nullptr) cr::exit("Couldn't create vertex buffer", 30);
 

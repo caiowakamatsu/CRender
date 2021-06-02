@@ -43,6 +43,10 @@ namespace cr
 
         [[nodiscard]] cr::image *current_progress() noexcept;
 
+        [[nodiscard]] cr::image *current_normals() noexcept;
+
+        [[nodiscard]] cr::image *current_albedos() noexcept;
+
     private:
         [[nodiscard]] std::vector<std::function<void()>> _get_tasks();
 
@@ -60,6 +64,8 @@ namespace cr
         std::vector<float> _raw_buffer;
 
         cr::image _buffer;
+        cr::image _normals;
+        cr::image _albedo;
 
         std::atomic<bool>     _run_management = true;
         std::atomic<bool>     _pause          = false;

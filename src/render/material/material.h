@@ -1,8 +1,10 @@
 #pragma once
 
 #include <string>
+#include <optional>
 
 #include <glm/glm.hpp>
+#include <objects/image.h>
 
 namespace cr
 {
@@ -26,13 +28,14 @@ namespace cr
 
         struct information
         {
-            type        type;
-            float       ior            = 0;
-            float       roughness      = 0;
-            float       reflectiveness = 0;
-            float       emission       = 0;
-            glm::vec3   colour;
-            std::string name;
+            type                     type;
+            float                    ior            = 0;
+            float                    roughness      = 0;
+            float                    reflectiveness = 0;
+            float                    emission       = 0;
+            glm::vec3                colour;
+            std::string              name;
+            std::optional<cr::image> tex;
         };
 
         explicit material(information information);

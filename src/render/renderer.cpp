@@ -22,7 +22,10 @@ namespace
         auto out = processed_hit();
 
         out.emission = record.material->info.emission;
-        out.albedo   = record.material->info.colour;
+        if (record.material->info.tex.has_value())
+            out.albedo = record.material->info.tex->get_uv(record.uv.x, record.uv.y);
+        else
+            out.albedo   = record.material->info.colour;
 
         switch (record.material->info.type)
         {
@@ -33,9 +36,6 @@ namespace
             out.reflectiveness = 0.5;
             break;
         case cr::material::smooth:
-            const auto x = ::randf();
-            const auto y = ::randf();
-
             auto cos_hemp_dir = cr::sampling::hemp_rand();
             if (glm::dot(cos_hemp_dir, record.normal) < 0.0f) cos_hemp_dir *= -1.f;
 
@@ -57,7 +57,7 @@ cr::renderer::renderer(
   const uint64_t                    bounces,
   std::unique_ptr<cr::thread_pool> *pool,
   std::unique_ptr<cr::scene> *      scene)
-    : _camera(scene->get()->registry()->camera()), _buffer(res_x, res_y), _res_x(res_x),
+    : _camera(scene->get()->registry()->camera()), _buffer(res_x, res_y), _normals(res_x, res_y), _albedo(res_x, res_y), _res_x(res_x),
       _res_y(res_y), _max_bounces(bounces), _thread_pool(pool), _scene(scene),
       _raw_buffer(res_x * res_y * 3)
 {
@@ -93,7 +93,11 @@ cr::renderer::~renderer()
 
 void cr::renderer::start()
 {
+    _buffer.clear();
+    for (auto i = 0; i < _res_x * _res_y * 3; i++)
+        _raw_buffer[i] = 0.0f;
     _current_sample = 0;
+
     auto guard      = std::unique_lock(_start_mutex);
     _start_cond_var.notify_all();
 }
@@ -111,11 +115,6 @@ void cr::renderer::update(const std::function<void()> &update)
     pause();
 
     update();
-
-    _buffer.clear();
-    for (auto i = 0; i < _res_x * _res_y * 3; i++)
-        _raw_buffer[i] = 0.0f;
-    _current_sample = 0;
 
     start();
 }
@@ -139,8 +138,17 @@ void cr::renderer::set_max_bounces(int bounces)
 
 cr::image *cr::renderer::current_progress() noexcept
 {
-
     return &_buffer;
+}
+
+cr::image *cr::renderer::current_normals() noexcept
+{
+    return &_normals;
+}
+
+cr::image *cr::renderer::current_albedos() noexcept
+{
+    return &_albedo;
 }
 
 std::vector<std::function<void()>> cr::renderer::_get_tasks()

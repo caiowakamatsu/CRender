@@ -19,8 +19,10 @@ namespace cr::model_loader
 
         std::vector<uint32_t> vertex_indices;
         std::vector<uint32_t> material_indices;
+
+        std::vector<glm::vec2> texture_coords;
     };
-    [[nodiscard]] model_data load(const std::string &file);
+    [[nodiscard]] model_data load(const std::string &file, const std::string &folder);
 
     [[nodiscard]] std::optional<std::string> valid_directory(const std::filesystem::directory_entry& directory);
 }

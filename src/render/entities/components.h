@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -19,14 +21,25 @@ namespace cr::entity
     {
         model_materials() = default;
         model_materials(
-          const std::vector<cr::material> &materials,
-          const std::vector<uint32_t> &    indices)
+          const std::vector<cr::material> &       materials,
+          const std::vector<uint32_t> &           indices)
             : materials(materials), indices(indices)
         {
         }
 
         std::vector<cr::material> materials = {};
         std::vector<uint32_t>     indices   = {};
+    };
+
+    struct model_texcoords
+    {
+        model_texcoords() = default;
+        explicit  model_texcoords(std::unique_ptr<std::vector<glm::vec2>> coords)
+        {
+            this->coords = std::move(coords);
+        }
+
+        std::unique_ptr<std::vector<glm::vec2>> coords;
     };
 
     struct model_geometry
@@ -36,10 +49,6 @@ namespace cr::entity
             device   = rtcNewDevice(nullptr);
             scene    = rtcNewScene(device);
             geometry = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
-
-            rtcCommitGeometry(geometry);
-            rtcAttachGeometry(scene, geometry);
-            rtcCommitScene(scene);
         }
 
         model_geometry(RTCDevice device, RTCScene scene, RTCGeometry geometry)

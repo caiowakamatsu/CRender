@@ -3,6 +3,8 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tinyobj/tinobj.h>
 
+#include <stb/stb_image.h>
+
 namespace
 {
     // Thanks https://stackoverflow.com/a/42844629
@@ -12,7 +14,7 @@ namespace
     }
 }
 
-cr::model_loader::model_data cr::model_loader::load(const std::string &file)
+cr::model_loader::model_data cr::model_loader::load(const std::string &file, const std::string &folder)
 {
     auto model_data = cr::model_loader::model_data();
 
@@ -48,13 +50,37 @@ cr::model_loader::model_data cr::model_loader::load(const std::string &file)
         material_data.type = cr::material::type::smooth;
         material_data.emission = 0.0f;
 
+        // Texture stuff!
+        if (!material.diffuse_texname.empty())
+        {
+            const auto texture_name = folder + '\\' + material.diffuse_texname;
+
+            auto image_dimensions = glm::ivec3();
+            auto data = stbi_load(
+              texture_name.c_str(),
+              &image_dimensions.x,
+              &image_dimensions.y,
+              &image_dimensions.z,
+              4);
+
+            auto texture_image = cr::image(image_dimensions.x, image_dimensions.y);
+            std::memcpy(texture_image.data(), data, image_dimensions.x * image_dimensions.y * 4);
+            stbi_image_free(data);
+            material_data.tex = std::move(texture_image);
+        }
+
         model_data.materials.emplace_back(material_data);
     }
 
     for (const auto &shape : shapes)
     {
         for (const auto idx : shape.mesh.indices)
+        {
+            model_data.texture_coords.emplace_back(
+              attrib.texcoords[idx.texcoord_index * 2],
+              attrib.texcoords[idx.texcoord_index * 2 + 1]);
             model_data.vertex_indices.push_back(idx.vertex_index);
+        }
 
         for (int material_id : shape.mesh.material_ids)
             model_data.material_indices.push_back(material_id);

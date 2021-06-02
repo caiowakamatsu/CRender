@@ -45,7 +45,7 @@ glm::vec3 cr::image::get_uv(float u, float v) const noexcept
     const auto x = static_cast<uint64_t>(u * _width);
     const auto y = static_cast<uint64_t>(v * _height);
 
-    return get(x, y);
+    return get(x %_width, y % _height);
 }
 
 glm::vec3 cr::image::get(uint64_t x, uint64_t y) const noexcept
