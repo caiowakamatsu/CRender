@@ -265,7 +265,7 @@ void cr::display::start(
             {
                 // Load model in
                 renderer->get()->update([&scene, current_model = current_model, current_directory = current_directory] {
-                    const auto model_data_ = cr::model_loader::load_obj(current_model, current_directory);
+//                    const auto model_data_ = cr::model_loader::load_obj(current_model, current_directory);
                     const auto model_data = cr::model_loader::load(current_model, current_directory);
                     scene->get()->add_model(model_data);
                 });

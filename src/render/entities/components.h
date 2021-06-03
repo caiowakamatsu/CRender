@@ -29,19 +29,29 @@ namespace cr::entity
 
         std::vector<cr::material> materials = {};
         std::vector<uint32_t>     indices   = {};
+
+        std::vector<glm::vec2> tex_coords;
+        std::vector<uint32_t> tex_indices;
     };
 
-    struct model_texcoords
+    struct model_data
     {
-        model_texcoords() = default;
-        explicit  model_texcoords(std::unique_ptr<std::vector<glm::vec2>> coords, std::unique_ptr<std::vector<uint32_t>> indices)
+        model_data() = default;
+        explicit model_data(
+          std::unique_ptr<std::vector<glm::vec3>> vert_coords,
+          std::unique_ptr<std::vector<uint32_t>> vert_indices,
+          std::unique_ptr<std::vector<glm::vec2>> tex_coords,
+          std::unique_ptr<std::vector<uint32_t>> tex_indices)
+        :
+        vert_coords(std::move(vert_coords)), vert_indices(std::move(vert_indices)),
+            tex_coords(std::move(tex_coords)), tex_indices(std::move(tex_indices))
         {
-            this->coords = std::move(coords);
-            this->indices = std::move(indices);
         }
 
-        std::unique_ptr<std::vector<glm::vec2>> coords;
-        std::unique_ptr<std::vector<uint32_t>> indices;
+        std::unique_ptr<std::vector<glm::vec3>> vert_coords;
+        std::unique_ptr<std::vector<uint32_t>> vert_indices;
+        std::unique_ptr<std::vector<glm::vec2>> tex_coords;
+        std::unique_ptr<std::vector<uint32_t>> tex_indices;
     };
 
     struct model_geometry

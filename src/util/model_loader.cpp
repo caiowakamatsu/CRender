@@ -16,17 +16,20 @@ namespace
           0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
     }
 
+    /*
+     * Courtesy of criver#8473
+     */
     [[nodiscard]] std::vector<glm::vec2> fix(
       const std::vector<glm::vec2> &vtc,    // texture coordinates buffer
-      const std::vector<uint32_t> &      vc,     // vertex coordinates index buffer
-      const std::vector<uint32_t> &      vt      // vertex textures coordinates index buffer
+      const std::vector<uint32_t> & vc,     // vertex coordinates index buffer
+      const std::vector<uint32_t> & vt      // vertex textures coordinates index buffer
     )
     {
         // read vtc, vc, and vt from file...
 
         // the code below reorders the texture coordinates in vtc_new so that the coordinates index
         // buffer may be used and you don't have to keep 2 index buffers
-        std::vector<uint32_t>       vtci(vtc.size());       // map from vt to vc indexing
+        std::vector<uint32_t>  vtci(vtc.size());       // map from vt to vc indexing
         std::vector<glm::vec2> vtc_new(vtc.size());    // reordered texture coordinates
 
         // construct mapping
@@ -44,40 +47,6 @@ namespace
         for (size_t i = 0; i < vtc.size(); ++i) vtc_new[i] = vtc[vtci[i]];
 
         return vtc_new;
-    }
-
-    [[nodiscard]] std::vector<glm::vec2> reorder(
-      std::vector<glm::vec2> tex_coords,
-      std::vector<uint32_t>  vertex_coords_index,
-      std::vector<uint32_t>  tex_coords_index)
-    {
-        auto vt_ci      = std::vector<uint32_t>(tex_coords.size());
-        auto re_ordered = std::vector<glm::vec2>(tex_coords.size());
-
-        for (auto &i : vt_ci) i = -1;
-
-        for (auto i = 0; i < tex_coords.size(); ++i)
-            if (
-              vt_ci[tex_coords_index[i] - 1] != -1 &&
-              vt_ci[tex_coords_index[i] - 1] != vertex_coords_index[i] - 1)
-            {
-                printf("No reordering possible.\n");
-                printf(
-                  "rel1: vt: %d, vc: %d\n",
-                  tex_coords_index[i] - 1,
-                  vt_ci[tex_coords_index[i] - 1]);
-                printf(
-                  "rel2: vt: %d, vc: %d\n",
-                  tex_coords_index[i] - 1,
-                  vertex_coords_index[i] - 1);
-                return tex_coords;
-            }
-            else
-                vt_ci[tex_coords_index[i] - 1] = vertex_coords_index[i] - 1;
-
-        for (auto i = 0; i < tex_coords.size(); ++i) re_ordered[i] = tex_coords[vt_ci[i]];
-
-        return re_ordered;
     }
 
 }    // namespace
@@ -208,13 +177,14 @@ cr::model_loader::model_data
             const auto texture_name = folder + '\\' + material.diffuse_texname;
 
             auto image_dimensions = glm::ivec3();
-            auto data             = stbi_load(
+            stbi_set_flip_vertically_on_load(true);
+            auto data = stbi_load(
               texture_name.c_str(),
               &image_dimensions.x,
               &image_dimensions.y,
               &image_dimensions.z,
               4);
-            //            stbi_set_flip_vertically_on_load(false);
+            stbi_set_flip_vertically_on_load(false);
 
             auto texture_image = cr::image(image_dimensions.x, image_dimensions.y);
             std::memcpy(texture_image.data(), data, image_dimensions.x * image_dimensions.y * 4);
@@ -231,8 +201,7 @@ cr::model_loader::model_data
         {
             if (idx.vertex_index != -1) model_data.vertex_indices.push_back(idx.vertex_index);
 
-            if (idx.texcoord_index != -1)
-                model_data.texture_indices.push_back(idx.texcoord_index);
+            if (idx.texcoord_index != -1) model_data.texture_indices.push_back(idx.texcoord_index);
         }
 
         for (int material_id : shape.mesh.material_ids)
@@ -241,8 +210,8 @@ cr::model_loader::model_data
         }
     }
 
-    model_data.texture_coords =
-      ::fix(model_data.texture_coords, model_data.vertex_indices, model_data.texture_indices);
+    //    model_data.texture_coords =
+    //      ::fix(model_data.texture_coords, model_data.vertex_indices, model_data.texture_indices);
 
     return model_data;
 }

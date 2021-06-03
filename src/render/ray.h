@@ -11,9 +11,10 @@ namespace cr
     public:
         struct intersection_record
         {
-            glm::vec2           uv;
+            uint32_t            prim_id;
             float               distance = std::numeric_limits<float>::infinity();
             const cr::material *material = nullptr;
+            glm::vec2           uv;
             glm::vec3           normal;
             glm::vec3           intersection_point;
         };

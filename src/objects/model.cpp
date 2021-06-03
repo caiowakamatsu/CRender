@@ -44,7 +44,7 @@ namespace
           0,
           &record.uv.x,
           2);
-
+// -50 40 50
         return record;
     }
 }
@@ -58,21 +58,25 @@ cr::entity::model_geometry cr::model::instance_geometry(
     auto instance = cr::entity::model_geometry();
     fmt::print("Building model\n\tVertex Count: {}\n", vertices.size());
 
-    auto *vertex_buffer = static_cast<float *>(rtcSetNewGeometryBuffer(
+    rtcSetSharedGeometryBuffer(
       instance.geometry,
       RTC_BUFFER_TYPE_VERTEX,
       0,
       RTC_FORMAT_FLOAT3,
-      3 * sizeof(float),
-      vertices.size()));
+      vertices.data(),
+      0,
+      sizeof(glm::vec3),
+      vertices.size());
 
-    auto *index_buffer = static_cast<float *>(rtcSetNewGeometryBuffer(
+    rtcSetSharedGeometryBuffer(
       instance.geometry,
       RTC_BUFFER_TYPE_INDEX,
       0,
       RTC_FORMAT_UINT3,
+      indices.data(),
+      0,
       3 * sizeof(uint32_t),
-      indices.size()));
+      indices.size() / 3);
 
     rtcSetGeometryVertexAttributeCount(instance.geometry, 1);
 
@@ -83,15 +87,8 @@ cr::entity::model_geometry cr::model::instance_geometry(
       RTC_FORMAT_FLOAT2,
       tex_coords.data(),
       0,
-      sizeof(float) * 2,
+      sizeof(glm::vec2),
       tex_coords.size());
-
-    if (vertex_buffer == nullptr) cr::exit("Couldn't create vertex buffer", 30);
-
-    if (index_buffer == nullptr) cr::exit("Couldn't create index buffer", 31);
-
-    std::memcpy(vertex_buffer, vertices.data(), sizeof(glm::vec3) * vertices.size());
-    std::memcpy(index_buffer, indices.data(), sizeof(uint32_t) * indices.size());
 
     rtcCommitGeometry(instance.geometry);
     rtcAttachGeometry(instance.scene, instance.geometry);
