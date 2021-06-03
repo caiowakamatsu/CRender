@@ -45,7 +45,7 @@ glm::vec3 cr::image::get_uv(float u, float v) const noexcept
     const auto x = static_cast<uint64_t>(u * _width);
     const auto y = static_cast<uint64_t>(v * _height);
 
-    return get(x %_width, y % _height);
+    return get(x % _width, y % _height);
 }
 
 glm::vec3 cr::image::get(uint64_t x, uint64_t y) const noexcept
@@ -59,6 +59,7 @@ glm::vec3 cr::image::get(uint64_t x, uint64_t y) const noexcept
 
     return glm::vec3(red, green, blue);
 }
+
 void cr::image::set(uint64_t x, uint64_t y, const glm::vec3 &colour) noexcept
 {
     // No logical OR here, so we can reset the pixel data

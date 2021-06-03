@@ -34,12 +34,14 @@ namespace cr::entity
     struct model_texcoords
     {
         model_texcoords() = default;
-        explicit  model_texcoords(std::unique_ptr<std::vector<glm::vec2>> coords)
+        explicit  model_texcoords(std::unique_ptr<std::vector<glm::vec2>> coords, std::unique_ptr<std::vector<uint32_t>> indices)
         {
             this->coords = std::move(coords);
+            this->indices = std::move(indices);
         }
 
         std::unique_ptr<std::vector<glm::vec2>> coords;
+        std::unique_ptr<std::vector<uint32_t>> indices;
     };
 
     struct model_geometry

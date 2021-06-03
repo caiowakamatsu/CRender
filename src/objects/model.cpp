@@ -42,8 +42,8 @@ namespace
           ray_hit.hit.v,
           RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
           0,
-          glm::value_ptr(record.uv),
-          1);
+          &record.uv.x,
+          2);
 
         return record;
     }
@@ -52,7 +52,8 @@ namespace
 cr::entity::model_geometry cr::model::instance_geometry(
   const std::vector<glm::vec3> &vertices,
   const std::vector<uint32_t> & indices,
-  const std::vector<glm::vec2> &texture_coords)
+  const std::vector<glm::vec2> &tex_coords,
+  const std::vector<uint32_t> &tex_indices)
 {
     auto instance = cr::entity::model_geometry();
     fmt::print("Building model\n\tVertex Count: {}\n", vertices.size());
@@ -80,10 +81,10 @@ cr::entity::model_geometry cr::model::instance_geometry(
       RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
       0,
       RTC_FORMAT_FLOAT2,
-      texture_coords.data(),
+      tex_coords.data(),
       0,
-      sizeof(glm::vec2),
-      texture_coords.size());
+      sizeof(float) * 2,
+      tex_coords.size());
 
     if (vertex_buffer == nullptr) cr::exit("Couldn't create vertex buffer", 30);
 

@@ -2,7 +2,7 @@
 
 int main()
 {
-    auto thread_pool = std::make_unique<cr::thread_pool>(10);
+    auto thread_pool = std::make_unique<cr::thread_pool>(8);
 
     auto scene = std::make_unique<cr::scene>();
 

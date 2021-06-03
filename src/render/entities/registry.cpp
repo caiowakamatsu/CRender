@@ -24,9 +24,14 @@ void cr::registry::register_model(const cr::model_loader::model_data &data)
     persistent_texture_coords->reserve(data.texture_coords.size());
     for (const auto &coord : data.texture_coords)
         persistent_texture_coords->push_back(coord);
-    
+
+    auto persistent_texture_indices = std::make_unique<std::vector<uint32_t>>();
+    persistent_texture_indices->reserve(data.texture_indices.size());
+    for (const auto index : data.texture_indices)
+        persistent_texture_indices->push_back(index);
+
     // Create the model embree instance
-    auto        model_instance = cr::model::instance_geometry(data.vertices, data.vertex_indices, *persistent_texture_coords);
+    auto        model_instance = cr::model::instance_geometry(data.vertices, data.vertex_indices, *persistent_texture_coords, *persistent_texture_indices);
     static auto current_model_count = uint32_t(0);
 
     auto entity = entities.create();
@@ -37,7 +42,7 @@ void cr::registry::register_model(const cr::model_loader::model_data &data)
     entities.get<cr::entity::transforms>(entity).data.emplace_back(glm::mat4(1));
 
     entities.emplace<cr::entity::model_materials>(entity, data.materials, data.material_indices);
-    entities.emplace<cr::entity::model_texcoords>(entity, std::move(persistent_texture_coords));
+    entities.emplace<cr::entity::model_texcoords>(entity, std::move(persistent_texture_coords), std::move(persistent_texture_indices));
     entities.emplace<cr::entity::model_geometry>(
       entity,
       model_instance.device,

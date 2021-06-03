@@ -9,7 +9,7 @@ namespace cr
     class camera
     {
     public:
-        explicit camera(glm::vec3 position = glm::vec3(0, 2.5, 5), glm::vec3 look_at = glm::vec3(0, 2, 0), float fov = 75);
+        explicit camera(glm::vec3 position = glm::vec3(5, 2.5, 5), glm::vec3 look_at = glm::vec3(0, 0, 0), float fov = 75);
 
         [[nodiscard]] static cr::ray get_ray(float x, float y, const camera &camera);
 
