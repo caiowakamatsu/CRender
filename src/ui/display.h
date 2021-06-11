@@ -25,6 +25,7 @@
 #include <ui/ui.h>
 #include <objects/image.h>
 #include <render/renderer.h>
+#include <render/draft/draft_renderer.h>
 #include <util/model_loader.h>
 
 namespace cr
@@ -37,6 +38,7 @@ namespace cr
         void start(
           std::unique_ptr<cr::scene> *      scene,
           std::unique_ptr<cr::renderer> *   renderer,
+          std::unique_ptr<cr::draft_renderer> *   draft_renderer,
           std::unique_ptr<cr::thread_pool> *thread_pool);
 
         void stop();

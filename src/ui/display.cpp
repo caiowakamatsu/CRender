@@ -90,8 +90,10 @@ void cr::display::_reload_compute()
 void cr::display::start(
   std::unique_ptr<cr::scene> *      scene,
   std::unique_ptr<cr::renderer> *   renderer,
+  std::unique_ptr<cr::draft_renderer> *   draft_renderer,
   std::unique_ptr<cr::thread_pool> *thread_pool)
 {
+    renderer->get()->pause();
     auto work_group_max = std::array<int, 3>();
 
     glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &work_group_max[0]);
@@ -113,7 +115,6 @@ void cr::display::start(
 
     while (!glfwWindowShouldClose(_glfw_window))
     {
-        glfwPollEvents();
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -323,8 +324,6 @@ void cr::display::start(
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-            //            fmt::print("Updating image texture with [X: {}, Y: {}]\n",
-            //            static_cast<int>(window_size.x), static_cast<int>(window_size.y));
             glTexImage2D(
               GL_TEXTURE_2D,
               0,
@@ -378,7 +377,11 @@ void cr::display::start(
 
             glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
-            ImGui::Image((void *) _target_texture, window_size);
+
+            draft_renderer->get()->render();
+//            ImGui::Image((void *) _target_texture, window_size);
+            ImGui::Image((void*) draft_renderer->get()->rendered_texture(), window_size);
+
             ImGui::End();
         }
 
@@ -562,11 +565,15 @@ void cr::display::start(
             ImGui::End();
         }
 
+
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         ImGui::Render();
         glClearColor(1, 1, 1, 1);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(_glfw_window);
+        glfwPollEvents();
     }
     glDeleteTextures(1, &_scene_texture_handle);
     stop();
