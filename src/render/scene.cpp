@@ -30,7 +30,9 @@ namespace
 
 void cr::scene::add_model(const cr::model_loader::model_data &model)
 {
-    _entities.register_model(model);
+    const auto mesh = _entities.register_model(model);
+
+    _meshes.push_back(mesh);
 }
 
 void cr::scene::set_skybox(cr::image &&skybox)
@@ -69,6 +71,11 @@ cr::ray::intersection_record cr::scene::cast_ray(const cr::ray ray)
     }
 
     return intersection;
+}
+
+const std::vector<cr::mesh> &cr::scene::meshes() const noexcept
+{
+    return _meshes;
 }
 
 cr::registry *cr::scene::registry()

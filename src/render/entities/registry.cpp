@@ -29,7 +29,7 @@ cr::registry::registry()
     entities.emplace<std::string>(_camera_entity, "Camera");
 }
 
-void cr::registry::register_model(const cr::model_loader::model_data &data)
+cr::mesh cr::registry::register_model(const cr::model_loader::model_data &data)
 {
     // Expand the data we have have from the indices. Why?
     // Good question - I'm waiting on Intels Embree team to reply to my github issue
@@ -90,6 +90,39 @@ void cr::registry::register_model(const cr::model_loader::model_data &data)
     entities.emplace<std::string>(
       entity,
       std::string("Model - " + std::to_string(++current_model_count)));
+
+    // Combine the vertex positions and uv coordinates such as
+    // [[x, y, z] [u, v]]
+    auto vertex_data = std::vector<float>(expanded_vertices.size() * 5);
+
+    for (auto i = 0; i < expanded_vertices.size(); i++)
+    {
+        vertex_data[i * 5 + 0] = expanded_vertices[i].x;
+        vertex_data[i * 5 + 1] = expanded_vertices[i].y;
+        vertex_data[i * 5 + 2] = expanded_vertices[i].z;
+        vertex_data[i * 5 + 3] = expanded_tex_coords[i].x;
+        vertex_data[i * 5 + 4] = expanded_tex_coords[i].y;
+    }
+
+    auto mesh = cr::mesh();
+    glGenVertexArrays(1, &mesh.vao);
+    glGenBuffers(1, &mesh.vbo);
+    mesh.indices = expanded_vertices.size();
+
+    glBindVertexArray(mesh.vao);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
+
+    glBufferData(GL_ARRAY_BUFFER, vertex_data.size() * sizeof(float), vertex_data.data(), GL_STATIC_DRAW);
+
+    // vertex positions
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
+    // vertex tex coords
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
+
+    glBindVertexArray(0);
+    return mesh;
 }
 
 cr::camera *cr::registry::camera()

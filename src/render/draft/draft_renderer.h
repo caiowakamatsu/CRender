@@ -34,8 +34,6 @@ namespace cr
 
         void render();
 
-        void update_keyboard_inputs(std::array<char, 300> keys);
-
     private:
         std::unique_ptr<cr::scene> *_scene = nullptr;
 
@@ -53,5 +51,8 @@ namespace cr
 
         uint64_t _res_x;
         uint64_t _res_y;
+
+        void _update_uniforms();
+
     };
 }

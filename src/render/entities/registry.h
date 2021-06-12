@@ -5,6 +5,7 @@
 #include <render/entities/entity_type.h>
 #include <render/entities/components.h>
 #include <render/camera.h>
+#include <render/mesh.h>
 #include <objects/model.h>
 #include <util/model_loader.h>
 
@@ -16,7 +17,7 @@ namespace cr
         registry();
 
         /* Load a model into the register after loading it in */
-        void register_model(const cr::model_loader::model_data &data);
+        [[nodiscard]] cr::mesh register_model(const cr::model_loader::model_data &data);
 
         [[nodiscard]] cr::camera *camera();
 

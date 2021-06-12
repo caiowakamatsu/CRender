@@ -173,10 +173,9 @@ std::vector<std::function<void()>> cr::renderer::_get_tasks()
 
 void cr::renderer::_sample_pixel(uint64_t x, uint64_t y)
 {
-    auto ray = cr::camera::get_ray(
+    auto ray = _camera->get_ray(
       ((static_cast<float>(x) + ::randf()) / _res_x) * _aspect_correction,
-      (static_cast<float>(y) + ::randf()) / _res_y,
-      *_camera);
+      (static_cast<float>(y) + ::randf()) / _res_y);
 
     auto throughput = glm::vec3(1.0f, 1.0f, 1.0f);
     auto final      = glm::vec3(0.0f, 0.0f, 0.0f);

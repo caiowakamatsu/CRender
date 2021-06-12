@@ -1,6 +1,8 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <glm/ext.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 #include <render/ray.h>
 
@@ -9,16 +11,22 @@ namespace cr
     class camera
     {
     public:
-        explicit camera(glm::vec3 position = glm::vec3(5, 2.5, 5), glm::vec3 look_at = glm::vec3(0, 0, 0), float fov = 75);
+        camera(glm::vec3 position = glm::vec3(0, 0, 0), float fov = 75);
 
-        [[nodiscard]] static cr::ray get_ray(float x, float y, const camera &camera);
+        void translate(const glm::vec3 &translation);
 
-        glm::vec3 position {};
-        glm::vec3 look_at;
+        void rotate(const glm::vec3 &rotation);
+
+        [[nodiscard]] glm::mat4 mat4() const noexcept;
+
+        [[nodiscard]] cr::ray get_ray(float x, float y);
+
         float fov;
+        glm::vec3 position {};
+        glm::vec3 rotation {};
     private:
-        glm::vec3 horizontal {};
-        glm::vec3 vertical {};
-        glm::vec3 center {};
+
+        void _update_cache();
+        glm::mat4 _cached_matrix;
     };
 }    // namespace cr
