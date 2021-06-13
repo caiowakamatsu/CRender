@@ -11,7 +11,7 @@ namespace cr
     class camera
     {
     public:
-        camera(glm::vec3 position = glm::vec3(0, 0, 0), float fov = 75);
+        camera(glm::vec3 position = glm::vec3(5, 5, 0), float fov = 75);
 
         void translate(const glm::vec3 &translation);
 

@@ -143,9 +143,9 @@ void cr::draft_renderer::_update_uniforms()
         glm::radians(_scene->get()->registry()->camera()->fov),
         static_cast<float>(_res_x) / _res_y,
         0.10f,
-        100.f
+        1000.f
         );
-    const auto view = _scene->get()->registry()->camera()->mat4();
+    const auto view = glm::inverse(_scene->get()->registry()->camera()->mat4());
 
     // No model matrix *yet*
     const auto mvp = projection * view;

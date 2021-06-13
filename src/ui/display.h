@@ -210,11 +210,11 @@ namespace cr
 
         cr::timer _timer;
 
-        bool _in_draft_mode = true;
+        bool _in_draft_mode = false;
 
-        glm::vec2 _mouse_pos;
-        glm::vec2 _mouse_pos_prev;
-        glm::vec2 _mouse_change_prev;
+        glm::vec2 _mouse_pos {};
+        glm::vec2 _mouse_pos_prev {};
+        glm::vec2 _mouse_change_prev {};
 
         std::optional<uint64_t> _current_entity;
 

@@ -1,7 +1,7 @@
 #include "camera.h"
 
 cr::camera::camera(glm::vec3 position, float fov) :
-position(position), fov(fov)
+position(position), fov(fov), _cached_matrix(1)
 {
 
 }
@@ -21,9 +21,10 @@ cr::ray cr::camera::get_ray(float x, float y)
 
     return cr::ray(position, direction);
 }
+
 void cr::camera::translate(const glm::vec3 &translation)
 {
-    position += glm::vec3(_cached_matrix * glm::vec4(translation, 0.0f));
+    position = glm::vec3(_cached_matrix * glm::vec4(translation, 1.0f));
     _update_cache();
 }
 
@@ -36,10 +37,16 @@ void cr::camera::rotate(const glm::vec3 &rotation)
 
 void cr::camera::_update_cache()
 {
+    constexpr glm::vec3 UP = glm::vec3(0, 1, 0);
+    constexpr glm::vec3 RIGHT = glm::vec3(1, 0, 0);
+    constexpr glm::vec3 FORWARD = glm::vec3(0, 0, 1);
+
     auto mat = glm::mat4(1.f);
 
     mat = glm::translate(mat, position);
-    const auto rot = glm::eulerAngleXYZ(rotation.y, rotation.z, rotation.x);
+    mat = glm::rotate(mat, glm::radians(rotation.x), UP);
+    mat = glm::rotate(mat, glm::radians(rotation.y), RIGHT);
+    mat = glm::rotate(mat, glm::radians(rotation.z), FORWARD);
 
-    _cached_matrix = rot * mat;
+    _cached_matrix = mat;
 }
