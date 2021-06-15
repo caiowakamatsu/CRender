@@ -13,13 +13,15 @@ glm::mat4 cr::camera::mat4() const noexcept
 
 cr::ray cr::camera::get_ray(float x, float y)
 {
+    x *= -1;
+    x += 1;
     const auto u = 2.0f * x - 1.0f;
     const auto v = 2.0f * y - 1.0f;
     const auto w = 1.0f / glm::tan(0.5f * fov);
 
     const auto direction = glm::vec3((_cached_matrix * glm::vec4(u, v, w, 0.0f)));
 
-    return cr::ray(position, direction);
+    return cr::ray(position, glm::normalize(direction));
 }
 
 void cr::camera::translate(const glm::vec3 &translation)

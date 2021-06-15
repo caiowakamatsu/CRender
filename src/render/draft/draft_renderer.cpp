@@ -31,6 +31,8 @@ cr::draft_renderer::draft_renderer(
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         fmt::print("[ERROR] Framebuffer is not complete");
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
     glBindRenderbuffer(GL_FRAMEBUFFER, 0);
 
     // Load shaders in
@@ -140,7 +142,7 @@ void cr::draft_renderer::_update_uniforms()
 
     const auto projection =
       glm::perspective(
-        glm::radians(_scene->get()->registry()->camera()->fov),
+        _scene->get()->registry()->camera()->fov,
         static_cast<float>(_res_x) / _res_y,
         0.10f,
         1000.f

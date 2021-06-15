@@ -88,7 +88,7 @@ void cr::display::start(
     ImGui_ImplGlfw_InitForOpenGL((GLFWwindow *) _glfw_window, true);
     ImGui_ImplOpenGL3_Init("#version 450");
 
-    bool draft_mode_changed = true;
+    bool draft_mode_changed = false;
     while (!glfwWindowShouldClose(_glfw_window))
     {
         _timer.frame_start();
@@ -291,82 +291,87 @@ void cr::display::start(
 
             auto window_size = ImGui::GetContentRegionAvail();
 
-            glBindTexture(GL_TEXTURE_2D, _target_texture);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexImage2D(
-              GL_TEXTURE_2D,
-              0,
-              GL_RGBA8,
-              static_cast<int>(window_size.x),
-              static_cast<int>(window_size.y),
-              0,
-              GL_RGBA,
-              GL_UNSIGNED_BYTE,
-              nullptr);
-            glBindImageTexture(0, _target_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
-
-            const auto current_progress = renderer->get()->current_progress();
-            // Upload rendered scene to GPU
-            glBindTexture(GL_TEXTURE_2D, _scene_texture_handle);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-            glTexImage2D(
-              GL_TEXTURE_2D,
-              0,
-              GL_RGBA8,
-              current_progress->width(),
-              current_progress->height(),
-              0,
-              GL_RGBA,
-              GL_UNSIGNED_BYTE,
-              current_progress->data());
-            glActiveTexture(GL_TEXTURE1);
-
-            // Set uniforms
+            if (_in_draft_mode)
             {
-                static auto current_translation = glm::vec2(0.0f, 0.0f);
-                static auto current_zoom        = float(1);
-                if (ImGui::IsWindowHovered())
-                {
-                    current_zoom += io.MouseWheel * -.05;
-
-                    if (ImGui::IsMouseDown(0))
-                    {
-                        const auto delta =
-                          glm::vec2(io.MouseDelta.x, io.MouseDelta.y) * glm::vec2(-1, -1);
-                        current_translation.x += delta.x;
-                        current_translation.y += delta.y;
-                    }
-                }
-
-                glUniform2fv(
-                  glGetUniformLocation(_compute_shader_program, "translation"),
-                  1,
-                  glm::value_ptr(current_translation));
-
-                glUniform1f(glGetUniformLocation(_compute_shader_program, "zoom"), current_zoom);
+                draft_renderer->get()->render();
+                ImGui::Image((void *) draft_renderer->get()->rendered_texture(), window_size);
             }
-
+            else
             {
-                glUseProgram(_compute_shader_program);
-
-                glDispatchCompute(
+                glBindTexture(GL_TEXTURE_2D, _target_texture);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexImage2D(
+                  GL_TEXTURE_2D,
+                  0,
+                  GL_RGBA8,
                   static_cast<int>(window_size.x),
                   static_cast<int>(window_size.y),
-                  1);
+                  0,
+                  GL_RGBA,
+                  GL_UNSIGNED_BYTE,
+                  nullptr);
+                glBindImageTexture(0, _target_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+
+                const auto current_progress = renderer->get()->current_progress();
+                // Upload rendered scene to GPU
+                glBindTexture(GL_TEXTURE_2D, _scene_texture_handle);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+                glTexImage2D(
+                  GL_TEXTURE_2D,
+                  0,
+                  GL_RGBA8,
+                  current_progress->width(),
+                  current_progress->height(),
+                  0,
+                  GL_RGBA,
+                  GL_UNSIGNED_BYTE,
+                  current_progress->data());
+                glActiveTexture(GL_TEXTURE1);
+
+                // Set uniforms
+                {
+                    static auto current_translation = glm::vec2(0.0f, 0.0f);
+                    static auto current_zoom        = float(1);
+                    if (ImGui::IsWindowHovered())
+                    {
+                        current_zoom += io.MouseWheel * -.05;
+
+                        if (ImGui::IsMouseDown(0))
+                        {
+                            const auto delta =
+                              glm::vec2(io.MouseDelta.x, io.MouseDelta.y) * glm::vec2(-1, -1);
+                            current_translation.x += delta.x;
+                            current_translation.y += delta.y;
+                        }
+                    }
+
+                    glUniform2fv(
+                      glGetUniformLocation(_compute_shader_program, "translation"),
+                      1,
+                      glm::value_ptr(current_translation));
+
+                    glUniform1f(glGetUniformLocation(_compute_shader_program, "zoom"), current_zoom);
+                }
+
+                {
+                    glUseProgram(_compute_shader_program);
+
+                    glDispatchCompute(
+                      static_cast<int>(window_size.x),
+                      static_cast<int>(window_size.y),
+                      1);
+
+                    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+                }
+                ImGui::Image((void *) _scene_texture_handle, window_size);
             }
-
-            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
-            draft_renderer->get()->render();
-            //            ImGui::Image((void *) _target_texture, window_size);
-            ImGui::Image((void *) draft_renderer->get()->rendered_texture(), window_size);
 
             ImGui::End();
         }
@@ -568,9 +573,6 @@ void cr::display::start(
             draft_mode_changed = true;
         }
 
-        if (_in_draft_mode && draft_mode_changed)
-            glfwSetCursorPos(_glfw_window, 0, 0);
-
         glfwSetInputMode(
           _glfw_window,
           GLFW_CURSOR,
@@ -614,12 +616,12 @@ void cr::display::_update_camera(cr::camera *camera)
     if (
       _key_states[static_cast<int>(key_code::SPACE)] == key_state::held ||
       _key_states[static_cast<int>(key_code::SPACE)] == key_state::repeat)
-        translation.y -= 3.0f;
+        translation.y += 3.0f;
 
     if (
       _key_states[static_cast<int>(key_code::KEY_LEFT_CONTROL)] == key_state::held ||
       _key_states[static_cast<int>(key_code::KEY_LEFT_CONTROL)] == key_state::repeat)
-        translation.y += 3.0f;
+        translation.y -= 3.0f;
 
     if (
       _key_states[static_cast<int>(key_code::KEY_W)] == key_state::held ||
@@ -634,39 +636,19 @@ void cr::display::_update_camera(cr::camera *camera)
     if (
       _key_states[static_cast<int>(key_code::KEY_D)] == key_state::held ||
       _key_states[static_cast<int>(key_code::KEY_D)] == key_state::repeat)
-        translation.x += 3.0f;
+        translation.x -= 3.0f;
 
     if (
       _key_states[static_cast<int>(key_code::KEY_A)] == key_state::held ||
       _key_states[static_cast<int>(key_code::KEY_A)] == key_state::repeat)
-        translation.x -= 3.0f;
-
-    if (
-      _key_states[static_cast<int>(key_code::KEY_LEFT)] == key_state::held ||
-      _key_states[static_cast<int>(key_code::KEY_LEFT)] == key_state::repeat)
-        rotation.x += 0.3f;
-
-    if (
-      _key_states[static_cast<int>(key_code::KEY_RIGHT)] == key_state::held ||
-      _key_states[static_cast<int>(key_code::KEY_RIGHT)] == key_state::repeat)
-        rotation.x -= 0.3f;
-
-    if (
-      _key_states[static_cast<int>(key_code::KEY_UP)] == key_state::held ||
-      _key_states[static_cast<int>(key_code::KEY_UP)] == key_state::repeat)
-        rotation.y += 0.005f;
-
-    if (
-      _key_states[static_cast<int>(key_code::KEY_DOWN)] == key_state::held ||
-      _key_states[static_cast<int>(key_code::KEY_DOWN)] == key_state::repeat)
-        rotation.y -= 0.005f;
+        translation.x += 3.0f;
 
     translation *= static_cast<float>(_timer.since_last_frame()) * 5.75f;
 
     camera->translate(translation);
 
-    rotation.x += _mouse_change_prev.x * -2.0 * _timer.since_last_frame();
-    rotation.y += _mouse_change_prev.y * -2.0 * _timer.since_last_frame();
+    rotation.x += _mouse_change_prev.x * 2.0 * _timer.since_last_frame();
+    rotation.y += _mouse_change_prev.y * 2.0 * _timer.since_last_frame();
 
     _mouse_change_prev = {};
 
