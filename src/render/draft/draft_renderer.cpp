@@ -140,6 +140,8 @@ void cr::draft_renderer::_update_uniforms()
 {
     const auto translation_location = glGetUniformLocation(_program_handle, "mvp");
 
+    const auto camera_location = glGetUniformLocation(_program_handle, "camera_pos");
+
     const auto projection =
       glm::perspective(
         _scene->get()->registry()->camera()->fov,
@@ -153,4 +155,6 @@ void cr::draft_renderer::_update_uniforms()
     const auto mvp = projection * view;
 
     glUniformMatrix4fv(translation_location, 1, GL_FALSE, glm::value_ptr(mvp));
+
+    glUniform3fv(translation_location, 1, glm::value_ptr(_scene->get()->registry()->camera()->position));
 }

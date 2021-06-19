@@ -109,44 +109,10 @@ void cr::display::start(
             renderer->get()->pause();
         }
 
-        {
-            // Root imgui node (Not visible)
-            ImGui::Begin("DockSpace", nullptr, ui_ctx.window_flags);
-            ImGui::PopStyleVar(3);
+        // Root imgui node (Not visible)
+        ui::root_node(ui_ctx);
 
-            // Setup the dock
-            cr::ui::init_dock(
-              ui_ctx,
-              "Scene Objects",
-              "Skybox Loader",
-              "Model Loader",
-              "Scene Preview",
-              "Export",
-              "Property Editor",
-              "Render Quality");
-
-            ImGui::End();
-        }
-
-        {
-            ImGui::Begin("Render Quality");
-
-            static auto resolution = glm::ivec2();
-            static auto bounces    = int(5);
-
-            ImGui::InputInt2("Resolution", glm::value_ptr(resolution));
-            ImGui::InputInt("Max Bounces", &bounces);
-
-            if (ImGui::Button("Update"))
-            {
-                renderer->get()->update([renderer]() {
-                    renderer->get()->set_max_bounces(bounces);
-                    renderer->get()->set_resolution(resolution.x, resolution.y);
-                });
-            }
-
-            ImGui::End();
-        }
+        ui::render_quality(renderer->get());
 
         {
             // Render export frame

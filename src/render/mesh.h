@@ -9,6 +9,7 @@ namespace cr
     public:
         GLuint vbo;
         GLuint vao;
+        GLuint texture;
         std::uint32_t indices;
         // Used to grab the material data when uploading the mesh to the GPU
         std::uint32_t model_handle;

@@ -162,6 +162,15 @@ cr::model_loader::model_data
           glm::vec2(attrib.texcoords[i * 2 + 0], attrib.texcoords[i * 2 + 1]);
     }
 
+    model_data.normals.resize(attrib.normals.size() / 3);
+    for (auto i = 0; i < model_data.normals.size(); i++)
+    {
+        model_data.normals[i] = glm::vec3(
+          attrib.normals[i * 3 + 0],
+          attrib.normals[i * 3 + 1],
+          attrib.normals[i * 3 + 2]);
+    }
+
     for (const auto &material : materials)
     {
         auto material_data = cr::material::information();
@@ -202,6 +211,8 @@ cr::model_loader::model_data
             if (idx.vertex_index != -1) model_data.vertex_indices.push_back(idx.vertex_index);
 
             if (idx.texcoord_index != -1) model_data.texture_indices.push_back(idx.texcoord_index);
+
+            if (idx.normal_index != -1) model_data.normal_indices.push_back(idx.normal_index);
         }
 
         for (int material_id : shape.mesh.material_ids)

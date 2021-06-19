@@ -44,6 +44,11 @@ cr::mesh cr::registry::register_model(const cr::model_loader::model_data &data)
     for (const auto index : data.texture_indices)
         expanded_tex_coords.push_back(data.texture_coords[index]);
 
+    auto expanded_normals = std::vector<glm::vec3>();
+    expanded_normals.reserve(data.normals.size());
+    for (const auto index : data.normal_indices)
+        expanded_normals.push_back(data.normals[index]);
+
     assert(
       expanded_vertices.size() == expanded_tex_coords.size() &&
       "Expanded Vertex Size and Expanded Tex Coord size mismatch");
@@ -92,19 +97,34 @@ cr::mesh cr::registry::register_model(const cr::model_loader::model_data &data)
       std::string("Model - " + std::to_string(++current_model_count)));
 
     // Combine the vertex positions and uv coordinates such as
-    // [[x, y, z] [u, v]]
-    auto vertex_data = std::vector<float>(expanded_vertices.size() * 5);
+    // [[x, y, z] [u, v], [nx, ny, nz]
+    auto vertex_data = std::vector<float>(expanded_vertices.size() * 8);
 
     for (auto i = 0; i < expanded_vertices.size(); i++)
     {
-        vertex_data[i * 5 + 0] = expanded_vertices[i].x;
-        vertex_data[i * 5 + 1] = expanded_vertices[i].y;
-        vertex_data[i * 5 + 2] = expanded_vertices[i].z;
-        vertex_data[i * 5 + 3] = expanded_tex_coords[i].x;
-        vertex_data[i * 5 + 4] = expanded_tex_coords[i].y;
+        vertex_data[i * 8 + 0] = expanded_vertices[i].x;
+        vertex_data[i * 8 + 1] = expanded_vertices[i].y;
+        vertex_data[i * 8 + 2] = expanded_vertices[i].z;
+        vertex_data[i * 8 + 3] = expanded_tex_coords[i].x;
+        vertex_data[i * 8 + 4] = expanded_tex_coords[i].y;
+
+        vertex_data[i * 8 + 5] = expanded_normals[i].x;
+        vertex_data[i * 8 + 6] = expanded_normals[i].y;
+        vertex_data[i * 8 + 7] = expanded_normals[i].z;
     }
 
     auto mesh = cr::mesh();
+
+    // do texture stuff!
+    glGenTextures(1, &mesh.texture);
+    glBindTexture(GL_TEXTURE_2D, mesh.texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    data.
+
     glGenVertexArrays(1, &mesh.vao);
     glGenBuffers(1, &mesh.vbo);
     mesh.indices = expanded_vertices.size();
@@ -116,10 +136,13 @@ cr::mesh cr::registry::register_model(const cr::model_loader::model_data &data)
 
     // vertex positions
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0);
     // vertex tex coords
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
+    // vertex normals
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (5 * sizeof(float)));
 
     glBindVertexArray(0);
     return mesh;

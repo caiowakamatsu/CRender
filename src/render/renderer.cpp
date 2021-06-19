@@ -218,3 +218,8 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y)
       glm::pow(glm::clamp(_raw_buffer[base_index + 1] / float(_current_sample + 1), 0.0f, 1.0f), 1.f / 2.2f),
       glm::pow(glm::clamp(_raw_buffer[base_index + 2] / float(_current_sample + 1), 0.0f, 1.0f), 1.f / 2.2f)));
 }
+
+glm::ivec2 cr::renderer::current_resolution() const noexcept
+{
+    return { _res_x, _res_y };
+}
