@@ -1,6 +1,7 @@
 # CRender
 
-An offline Rendering Engine, made for learning purposes.
+An offline Rendering Engine, made for learning purposes. And taken further than it was ever intended to but. I find this fun
+[Discord server!](https://discord.gg/ZjrRyKXpWg)
 
 ***
 ## Getting Started
