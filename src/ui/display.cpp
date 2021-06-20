@@ -168,31 +168,11 @@ void cr::display::start(
             {
                 // Load skybox in
                 renderer->get()->update([&scene, current_skybox = current_skybox] {
-                    auto image_dimensions = glm::ivec3();
-                    auto data             = stbi_load(
-                      current_skybox.c_str(),
-                      &image_dimensions.x,
-                      &image_dimensions.y,
-                      &image_dimensions.z,
-                      4);
+                    auto image = cr::asset_loader::load_picture(current_skybox);
 
-                    auto skybox_image =
-                      cr::image(image_dimensions.x, image_dimensions.y);
+                    auto skybox = cr::image(image.colour, image.res.x, image.res.y);
 
-                    for (auto x = 0; x < image_dimensions.x; x++)
-                        for (auto y = 0; y < image_dimensions.y; y++)
-                        {
-                            const auto base_index = (x + y * image_dimensions.x) * 4;
-
-                            const auto r = data[base_index + 0] / 255.f;
-                            const auto g = data[base_index + 1] / 255.f;
-                            const auto b = data[base_index + 2] / 255.f;
-                            const auto a = data[base_index + 3] / 255.f;
-
-                            skybox_image.set(x, y, glm::vec4(r, g, b, a));
-                        }
-
-                    scene->get()->set_skybox(std::move(skybox_image));
+                    scene->get()->set_skybox(std::move(skybox));
                 });
             }
 
@@ -213,7 +193,7 @@ void cr::display::start(
                 {
                     if (!entry.is_directory()) continue;
 
-                    const auto model_path = cr::model_loader::valid_directory(entry);
+                    const auto model_path = cr::asset_loader::valid_directory(entry);
                     if (!model_path.has_value()) continue;
 
                     // Go through each file in the directory
@@ -230,7 +210,7 @@ void cr::display::start(
             if (current_model != std::filesystem::path() && ImGui::Button("Load Model"))
             {
                 // Load model in
-                const auto model_data = cr::model_loader::load(current_model, current_directory);
+                const auto model_data = cr::asset_loader::load_model(current_model, current_directory);
 
                 if (!_in_draft_mode)
                     renderer->get()->update(

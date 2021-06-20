@@ -6,7 +6,7 @@
 #include <render/renderer.h>
 #include <render/timer.h>
 #include <render/draft/draft_renderer.h>
-#include <util/model_loader.h>
+#include <util/asset_loader.h>
 
 namespace cr::ui
 {
@@ -130,12 +130,12 @@ namespace cr::ui
         cr::ui::init_dock(
           ui_ctx,
           "Scene Objects",
-          "Skybox Loader",
+          "Skybox",
           "Model Loader",
           "Scene Preview",
           "Export",
           "Property Editor",
-          "Render Quality");
+          "Render");
 
         ImGui::End();
     }

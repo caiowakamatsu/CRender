@@ -22,7 +22,7 @@ namespace cr
     public:
         scene() = default;
 
-        void add_model(const cr::model_loader::model_data &model);
+        void add_model(const cr::asset_loader::model_data &model);
 
         void set_skybox(cr::image &&skybox);
 

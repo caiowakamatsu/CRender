@@ -28,7 +28,7 @@ namespace
     }
 }    // namespace
 
-void cr::scene::add_model(const cr::model_loader::model_data &model)
+void cr::scene::add_model(const cr::asset_loader::model_data &model)
 {
     const auto mesh = _entities.register_model(model);
 

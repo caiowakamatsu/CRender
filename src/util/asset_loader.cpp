@@ -1,4 +1,4 @@
-#include "model_loader.h"
+#include "asset_loader.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tinyobj/tinobj.h>
@@ -6,6 +6,9 @@
 #include <obj_loader/OBJ_Loader.h>
 
 #include <stb/stb_image.h>
+
+#define TINYEXR_IMPLEMENTATION
+#include <tinyexr/tinyexr.h>
 
 namespace
 {
@@ -16,12 +19,54 @@ namespace
           0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
     }
 
+    [[nodiscard]] cr::asset_loader::picture_data load_exr(const std::filesystem::path &path)
+    {
+        float *     raw_data;
+        auto        dimension = glm::ivec2();
+        const char *err       = nullptr;
+
+        auto ret = LoadEXR(&raw_data, &dimension.x, &dimension.y, path.string().c_str(), &err);
+
+        if (ret != TINYEXR_SUCCESS)
+            cr::exit(
+              fmt::format("There was an error loading EXR image {}", path.filename().string()));
+
+        auto data = std::vector<float>(dimension.x * dimension.y * 4);
+
+        std::memcpy(data.data(), raw_data, dimension.x * dimension.y * 4 * sizeof(float));
+
+        // This is a C api im sorry
+        free(raw_data);
+
+        return { dimension, std::move(data) };
+    }
+
+    [[nodiscard]] cr::asset_loader::picture_data load_jpg_png(const std::filesystem::path &path)
+    {
+        auto image_dimensions = glm::ivec3();
+        auto data             = stbi_load(
+          path.string().c_str(),
+          &image_dimensions.x,
+          &image_dimensions.y,
+          &image_dimensions.z,
+          4);
+
+        auto output = std::vector<float>(image_dimensions.x * image_dimensions.y * 4);
+
+        for (auto i = 0; i < image_dimensions.x * image_dimensions.y * 4; i++)
+            output[i] = data[i] / 255.f;
+
+        auto dim = glm::vec2(image_dimensions.x, image_dimensions.y);
+
+        return { dim, std::move(output) };
+    }
+
 }    // namespace
 
-cr::model_loader::model_data
-  cr::model_loader::load(const std::string &file, const std::string &folder)
+cr::asset_loader::model_data
+  cr::asset_loader::load_model(const std::string &file, const std::string &folder)
 {
-    auto model_data = cr::model_loader::model_data();
+    auto model_data = cr::asset_loader::model_data();
 
     tinyobj::ObjReaderConfig readerConfig;
     readerConfig.triangulate = true;
@@ -112,12 +157,9 @@ cr::model_loader::model_data
     {
         for (const auto idx : shape.mesh.indices)
         {
-            if (idx.vertex_index == -1)
-                cr::exit("Vertex index was -1");
-            if (idx.texcoord_index == -1)
-                cr::exit("Tex coord index was -1");
-            if (idx.normal_index == -1)
-                cr::exit("Normal index was -1");
+            if (idx.vertex_index == -1) cr::exit("Vertex index was -1");
+            if (idx.texcoord_index == -1) cr::exit("Tex coord index was -1");
+            if (idx.normal_index == -1) cr::exit("Normal index was -1");
 
             model_data.vertex_indices.push_back(idx.vertex_index);
 
@@ -138,8 +180,22 @@ cr::model_loader::model_data
     return model_data;
 }
 
+cr::asset_loader::picture_data cr::asset_loader::load_picture(const std::string &file)
+{
+    auto path = std::filesystem::path(file);
+
+    auto extension = path.extension().string();
+
+    if (extension == ".exr")
+        return load_exr(path);
+    else if (extension == ".jpg" || extension == ".png")
+        return load_jpg_png(path);
+
+    return {};
+}
+
 std::optional<std::string>
-  cr::model_loader::valid_directory(const std::filesystem::directory_entry &directory)
+  cr::asset_loader::valid_directory(const std::filesystem::directory_entry &directory)
 {
     // Model types accepted in a directory are
     // .obj

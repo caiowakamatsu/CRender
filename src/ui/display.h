@@ -27,7 +27,7 @@
 #include <render/renderer.h>
 #include <render/timer.h>
 #include <render/draft/draft_renderer.h>
-#include <util/model_loader.h>
+#include <util/asset_loader.h>
 
 namespace cr
 {
