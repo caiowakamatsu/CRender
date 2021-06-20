@@ -131,6 +131,12 @@ void cr::draft_renderer::render()
 
     for (const auto &mesh : _scene->get()->meshes())
     {
+        if (mesh.material.info.tex.has_value())
+        {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, mesh.texture);
+        }
+
         glBindVertexArray(mesh.vao);
         glDrawArrays(GL_TRIANGLES, 0, mesh.indices);
     }

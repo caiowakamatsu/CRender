@@ -8,19 +8,10 @@ in vec3 out_normal;
 in vec3 worldspace_pos;
 in vec2 uv;
 
-uniform sampler2D texture;
+uniform sampler2D mesh_texture;
 
 void main()
 {
-
-    // Calculate fake shading based on
-    // VdotN
-    // V: Normal from fragment to camera
-    // N: Surface normal of fragment
-//    vec3 view_normal = normalize(camera_pos - worldspace_pos);
-
-//    float VdotN = clamp(dot(view_normal, out_normal), 0, 1);
-
-    FragColor = vec4(vec3(0.0f), 1.0f);
-//    FragColor = texture(texture, uv);
+//    FragColor = vec4(vec3(0.0f), 1.0f);
+    FragColor = texture(mesh_texture, uv);
 }

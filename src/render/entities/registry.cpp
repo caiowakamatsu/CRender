@@ -102,6 +102,9 @@ cr::raster_objects cr::registry::_get_meshes_by_material(const cr::model_loader:
 {
     auto objects = std::vector<cr::temporary_mesh>(data.materials.size());
 
+    for (auto i = 0; i < objects.size(); i++)
+        objects[i].material = data.materials[i];
+
     for (auto i = 0; i < data.vertex_indices.size(); i++)
     {
         const auto object_index = data.material_indices[i / 3];
@@ -129,6 +132,20 @@ cr::raster_objects
         // Upload the data
 
         const auto vertex_data = _zip_mesh_data(mesh);
+
+        if (mesh.material.info.tex.has_value())
+        {
+            glGenTextures(1, &new_mesh.texture);
+            glBindTexture(GL_TEXTURE_2D, new_mesh.texture);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+            const auto &texture = mesh.material.info.tex.value();
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width(), texture.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.data());
+        }
 
         glGenVertexArrays(1, &new_mesh.vao);
         glGenBuffers(1, &new_mesh.vbo);

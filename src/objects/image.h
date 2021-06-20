@@ -23,6 +23,8 @@ namespace cr
 
         [[nodiscard]] uint32_t *data() noexcept;
 
+        [[nodiscard]] const uint32_t *data() const noexcept;
+
         [[nodiscard]] uint64_t width() const noexcept;
 
         [[nodiscard]] uint64_t height() const noexcept;
