@@ -2,7 +2,7 @@
 
 int main()
 {
-    auto thread_pool = std::make_unique<cr::thread_pool>(16);
+    auto thread_pool = std::make_unique<cr::thread_pool>(std::thread::hardware_concurrency() / 4);
 
     auto scene = std::make_unique<cr::scene>();
 

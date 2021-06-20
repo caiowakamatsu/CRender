@@ -41,11 +41,16 @@ void cr::scene::set_skybox(cr::image &&skybox)
     _skybox = skybox;
 }
 
+void cr::scene::set_skybox_rotation(const glm::vec2 &rotation)
+{
+    _skybox_rotation = rotation;
+}
+
 glm::vec3 cr::scene::sample_skybox(float x, float y) const noexcept
 {
     if (_skybox.has_value())
     {
-        return _skybox->get_uv(x, y);
+        return _skybox->get_uv(x + _skybox_rotation.x, y + _skybox_rotation.y);
     }
     else
     {

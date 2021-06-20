@@ -112,7 +112,7 @@ void cr::display::start(
         // Root imgui node (Not visible)
         ui::root_node(ui_ctx);
 
-        ui::render_quality(renderer->get());
+        ui::render_quality(renderer->get(), *thread_pool);
 
         {
             // Render export frame
@@ -131,12 +131,17 @@ void cr::display::start(
                       std::to_string(attempt_number++) + ")" + ".jpg";
 
                 const auto data = renderer->get()->current_progress();
+
+                auto char_data = std::vector<uint8_t>(data->width() * data->height() * 4);
+                for (auto i = 0; i < char_data.size(); i++)
+                    char_data[i] = data->data()[i] * 255.f;
+
                 stbi_write_jpg(
                   directory.c_str(),
                   data->width(),
                   data->height(),
                   4,
-                  data->data(),
+                  char_data.data(),
                   100);
             }
 
@@ -144,7 +149,7 @@ void cr::display::start(
         }
 
         {
-            ImGui::Begin("Skybox Loader");
+            ImGui::Begin("Skybox");
 
             static std::string current_skybox;
             bool               throw_away = false;
@@ -175,6 +180,15 @@ void cr::display::start(
                     scene->get()->set_skybox(std::move(skybox));
                 });
             }
+
+            static auto rotation = glm::vec2();
+            ImGui::DragFloat2("Rotation", glm::value_ptr(rotation), 0.f, 1.f);
+
+            ImGui::SameLine();
+            if (ImGui::Button("Update"))
+                renderer->get()->update([&scene](){
+                    scene->get()->set_skybox_rotation(rotation);
+                });
 
             ImGui::End();
         }
@@ -524,7 +538,8 @@ void cr::display::start(
         _timer.frame_stop();
         glfwSwapBuffers(_glfw_window);
 
-        if (_key_states[static_cast<int>(key_code::KEY_R)] == key_state::pressed)
+        if (_key_states[static_cast<int>(key_code::KEY_R)] == key_state::pressed &&
+            !io.WantCaptureKeyboard)
         {
             _in_draft_mode     = !_in_draft_mode;
             draft_mode_changed = true;
@@ -601,6 +616,11 @@ void cr::display::_update_camera(cr::camera *camera)
         translation.x += 3.0f;
 
     translation *= static_cast<float>(_timer.since_last_frame()) * 5.75f;
+
+    if (
+      _key_states[static_cast<int>(key_code::KEY_A)] == key_state::held ||
+      _key_states[static_cast<int>(key_code::KEY_A)] == key_state::repeat)
+        translation *= 5;
 
     camera->translate(translation);
 

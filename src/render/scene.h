@@ -26,6 +26,8 @@ namespace cr
 
         void set_skybox(cr::image &&skybox);
 
+        void set_skybox_rotation(const glm::vec2 &rotation);
+
         [[nodiscard]] glm::vec3 sample_skybox(float x, float y) const noexcept;
 
         [[nodiscard]] cr::ray::intersection_record cast_ray(const cr::ray ray);
@@ -38,6 +40,8 @@ namespace cr
         std::optional<cr::image> _skybox;
 
         std::vector<cr::mesh> _meshes;
+
+        glm::vec2 _skybox_rotation;
 
         cr::registry _entities;
     };

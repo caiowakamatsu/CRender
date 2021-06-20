@@ -223,3 +223,8 @@ glm::ivec2 cr::renderer::current_resolution() const noexcept
 {
     return { _res_x, _res_y };
 }
+
+uint64_t cr::renderer::current_sample_count() const noexcept
+{
+    return _current_sample.load();
+}

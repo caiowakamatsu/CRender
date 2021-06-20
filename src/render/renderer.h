@@ -41,6 +41,8 @@ namespace cr
 
         void set_max_bounces(int bounces);
 
+        [[nodiscard]] uint64_t current_sample_count() const noexcept;
+
         [[nodiscard]] glm::ivec2 current_resolution() const noexcept;
 
         [[nodiscard]] cr::image *current_progress() noexcept;

@@ -140,12 +140,13 @@ namespace cr::ui
         ImGui::End();
     }
 
-    inline void render_quality(cr::renderer* renderer)
+    inline void render_quality(cr::renderer* renderer, std::unique_ptr<cr::thread_pool> &pool)
     {
-        ImGui::Begin("Render Quality");
+        ImGui::Begin("Render");
 
         static auto resolution = glm::ivec2();
         static auto bounces    = int(5);
+        static auto thread_count = static_cast<int>(std::thread::hardware_concurrency());
 
         if (resolution.x == 0)
             resolution.x = renderer->current_resolution().x;
@@ -155,14 +156,18 @@ namespace cr::ui
 
         ImGui::InputInt2("Resolution", glm::value_ptr(resolution));
         ImGui::InputInt("Max Bounces", &bounces);
+        ImGui::InputInt("Thread Count", &thread_count);
 
         if (ImGui::Button("Update"))
         {
-            renderer->update([renderer]() {
+            renderer->update([renderer, &pool]() {
               renderer->set_max_bounces(bounces);
               renderer->set_resolution(resolution.x, resolution.y);
+              pool = std::make_unique<cr::thread_pool>(thread_count);
             });
         }
+
+        ImGui::Text(fmt::format("Current sample count: [{}]", renderer->current_sample_count()).c_str());
 
         ImGui::End();
     }
