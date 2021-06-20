@@ -144,7 +144,7 @@ cr::raster_objects
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
             const auto &texture = mesh.material.info.tex.value();
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width(), texture.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.data());
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width(), texture.height(), 0, GL_RGBA, GL_FLOAT, texture.data());
         }
 
         glGenVertexArrays(1, &new_mesh.vao);

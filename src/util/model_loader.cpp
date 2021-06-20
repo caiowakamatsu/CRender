@@ -16,116 +16,7 @@ namespace
           0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
     }
 
-    /*
-     * Courtesy of criver#8473
-     */
-    [[nodiscard]] std::vector<glm::vec2> fix(
-      const std::vector<glm::vec2> &vtc,    // texture coordinates buffer
-      const std::vector<uint32_t> & vc,     // vertex coordinates index buffer
-      const std::vector<uint32_t> & vt      // vertex textures coordinates index buffer
-    )
-    {
-        // read vtc, vc, and vt from file...
-
-        // the code below reorders the texture coordinates in vtc_new so that the coordinates index
-        // buffer may be used and you don't have to keep 2 index buffers
-        std::vector<uint32_t>  vtci(vtc.size());       // map from vt to vc indexing
-        std::vector<glm::vec2> vtc_new(vtc.size());    // reordered texture coordinates
-
-        // construct mapping
-        for (size_t i = 0; i < vt.size(); ++i)
-            if (vtci[vt[i]] != -1 && vtci[vt[i]] != vc[i])
-            {
-                printf("No reordering possible.\n");
-                printf("rel1: vt: %d, vc: %d\n", vt[i] - 1, vtci[vt[i] - 1]);
-                printf("rel2: vt: %d, vc: %d\n", vt[i] - 1, vc[i] - 1);
-                return vtc;
-            }
-            else
-                vtci[vt[i]] = vc[i];
-        // reorder texture coordinates
-        for (size_t i = 0; i < vtc.size(); ++i) vtc_new[i] = vtc[vtci[i]];
-
-        return vtc_new;
-    }
-
 }    // namespace
-
-cr::model_loader::model_data
-  cr::model_loader::load_obj(const std::string &file, const std::string &folder)
-{
-    const auto file_fixed = std::regex_replace(file, std::regex("\\\\"), "/");
-
-    auto model_data = cr::model_loader::model_data();
-
-    auto loader = objl::Loader();
-
-    if (!loader.LoadFile(file_fixed)) cr::exit("Can't open file " + file_fixed);
-
-    for (const auto &mesh : loader.LoadedMeshes)
-    {
-        //        model_data.vertex_indices.insert(std::end(model_data.vertex_indices),
-        //        mesh.Indices.begin(), mesh.Indices.end());
-        model_data.texture_indices.insert(
-          std::end(model_data.texture_indices),
-          mesh.Indices.begin(),
-          mesh.Indices.end());
-
-        auto material_data = cr::material::information();
-        material_data.name = mesh.MeshMaterial.name;
-        material_data.colour =
-          glm::vec3(mesh.MeshMaterial.Kd.X, mesh.MeshMaterial.Kd.Y, mesh.MeshMaterial.Kd.Z);
-        material_data.type     = cr::material::type::smooth;
-        material_data.emission = 0.0f;
-
-        // Texture stuff!
-        if (!mesh.MeshMaterial.map_Kd.empty())
-        {
-            const auto texture_name = folder + '\\' + mesh.MeshMaterial.map_Kd;
-
-            auto image_dimensions = glm::ivec3();
-            stbi_set_flip_vertically_on_load(true);
-            auto data = stbi_load(
-              texture_name.c_str(),
-              &image_dimensions.x,
-              &image_dimensions.y,
-              &image_dimensions.z,
-              4);
-            stbi_set_flip_vertically_on_load(false);
-
-            auto texture_image = cr::image(image_dimensions.x, image_dimensions.y);
-            std::memcpy(texture_image.data(), data, image_dimensions.x * image_dimensions.y * 4);
-            stbi_image_free(data);
-            material_data.tex = std::move(texture_image);
-        }
-
-        const auto previous_size = model_data.materials.size();
-        model_data.materials.emplace_back(material_data);
-
-        for (const auto &vertex : mesh.Vertices)
-        {
-            model_data.material_indices.push_back(previous_size);
-
-            model_data.vertices.emplace_back(
-              vertex.Position.X,
-              vertex.Position.Y,
-              vertex.Position.Z);
-
-            model_data.texture_coords.emplace_back(
-              vertex.TextureCoordinate.X,
-              vertex.TextureCoordinate.Y);
-        }
-    }
-
-    for (auto i = 0; i < model_data.vertices.size(); i++)
-    {
-        model_data.vertex_indices.push_back(i);
-    }
-    //    assert(model_data.vertices.size() % 3 == 0 && "Vertex count in model is not a multiple of
-    //    3, what the fuck?");
-
-    return model_data;
-}
 
 cr::model_loader::model_data
   cr::model_loader::load(const std::string &file, const std::string &folder)
@@ -196,7 +87,20 @@ cr::model_loader::model_data
             stbi_set_flip_vertically_on_load(false);
 
             auto texture_image = cr::image(image_dimensions.x, image_dimensions.y);
-            std::memcpy(texture_image.data(), data, image_dimensions.x * image_dimensions.y * 4);
+
+            for (auto x = 0; x < image_dimensions.x; x++)
+                for (auto y = 0; y < image_dimensions.y; y++)
+                {
+                    const auto base_index = (x + y * image_dimensions.x) * 4;
+
+                    const auto r = data[base_index + 0] / 255.f;
+                    const auto g = data[base_index + 1] / 255.f;
+                    const auto b = data[base_index + 2] / 255.f;
+                    const auto a = data[base_index + 3] / 255.f;
+
+                    texture_image.set(x, y, glm::vec4(r, g, b, a));
+                }
+
             stbi_image_free(data);
             material_data.tex = std::move(texture_image);
         }
@@ -222,7 +126,7 @@ cr::model_loader::model_data
             model_data.normal_indices.push_back(idx.normal_index);
         }
 
-        for (int material_id : shape.mesh.material_ids)
+        for (auto material_id : shape.mesh.material_ids)
         {
             model_data.material_indices.push_back(material_id);
         }

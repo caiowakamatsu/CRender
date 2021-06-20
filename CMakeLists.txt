@@ -28,7 +28,6 @@ add_executable(CRender src/main.cpp
         src/util/exception.h
         src/render/renderer.cpp
         src/render/renderer.h
-        src/objects/image.cpp
         src/objects/image.h
         src/util/colour.h
         src/render/ray.cpp

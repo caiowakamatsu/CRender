@@ -176,12 +176,21 @@ void cr::display::start(
                       &image_dimensions.z,
                       4);
 
-                    auto skybox_image = cr::image(image_dimensions.x, image_dimensions.y);
-                    std::memcpy(
-                      skybox_image.data(),
-                      data,
-                      image_dimensions.x * image_dimensions.y * 4);
-                    stbi_image_free(data);
+                    auto skybox_image =
+                      cr::image(image_dimensions.x, image_dimensions.y);
+
+                    for (auto x = 0; x < image_dimensions.x; x++)
+                        for (auto y = 0; y < image_dimensions.y; y++)
+                        {
+                            const auto base_index = (x + y * image_dimensions.x) * 4;
+
+                            const auto r = data[base_index + 0] / 255.f;
+                            const auto g = data[base_index + 1] / 255.f;
+                            const auto b = data[base_index + 2] / 255.f;
+                            const auto a = data[base_index + 3] / 255.f;
+
+                            skybox_image.set(x, y, glm::vec4(r, g, b, a));
+                        }
 
                     scene->get()->set_skybox(std::move(skybox_image));
                 });
@@ -297,7 +306,7 @@ void cr::display::start(
                   current_progress->height(),
                   0,
                   GL_RGBA,
-                  GL_UNSIGNED_BYTE,
+                  GL_FLOAT,
                   current_progress->data());
                 glActiveTexture(GL_TEXTURE1);
 
@@ -323,7 +332,9 @@ void cr::display::start(
                       1,
                       glm::value_ptr(current_translation));
 
-                    glUniform1f(glGetUniformLocation(_compute_shader_program, "zoom"), current_zoom);
+                    glUniform1f(
+                      glGetUniformLocation(_compute_shader_program, "zoom"),
+                      current_zoom);
                 }
 
                 {

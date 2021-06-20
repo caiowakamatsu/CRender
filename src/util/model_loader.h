@@ -28,7 +28,5 @@ namespace cr::model_loader
 
     [[nodiscard]] model_data load(const std::string &file, const std::string &folder);
 
-    [[nodiscard]] model_data load_obj(const std::string &file, const std::string &folder);
-
     [[nodiscard]] std::optional<std::string> valid_directory(const std::filesystem::directory_entry& directory);
 }
