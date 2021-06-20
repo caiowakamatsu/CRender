@@ -21,6 +21,6 @@ void main()
 
 //    float VdotN = clamp(dot(view_normal, out_normal), 0, 1);
 
-//    FragColor = vec4(vec3(VdotN), 1.0f);
-    FragColor = texture(texture, uv);
+    FragColor = vec4(vec3(0.0f), 1.0f);
+//    FragColor = texture(texture, uv);
 }

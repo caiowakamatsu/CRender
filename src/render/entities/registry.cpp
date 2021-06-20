@@ -29,7 +29,7 @@ cr::registry::registry()
     entities.emplace<std::string>(_camera_entity, "Camera");
 }
 
-cr::mesh cr::registry::register_model(const cr::model_loader::model_data &data)
+cr::raster_objects cr::registry::register_model(const cr::model_loader::model_data &data)
 {
     // Expand the data we have have from the indices. Why?
     // Good question - I'm waiting on Intels Embree team to reply to my github issue
@@ -46,8 +46,7 @@ cr::mesh cr::registry::register_model(const cr::model_loader::model_data &data)
 
     auto expanded_normals = std::vector<glm::vec3>();
     expanded_normals.reserve(data.normals.size());
-    for (const auto index : data.normal_indices)
-        expanded_normals.push_back(data.normals[index]);
+    for (const auto index : data.normal_indices) expanded_normals.push_back(data.normals[index]);
 
     assert(
       expanded_vertices.size() == expanded_tex_coords.size() &&
@@ -96,56 +95,86 @@ cr::mesh cr::registry::register_model(const cr::model_loader::model_data &data)
       entity,
       std::string("Model - " + std::to_string(++current_model_count)));
 
-    // Combine the vertex positions and uv coordinates such as
-    // [[x, y, z] [u, v], [nx, ny, nz]
-    auto vertex_data = std::vector<float>(expanded_vertices.size() * 8);
+    return _get_meshes_by_material(data);
+}
 
-    for (auto i = 0; i < expanded_vertices.size(); i++)
+cr::raster_objects cr::registry::_get_meshes_by_material(const cr::model_loader::model_data &data)
+{
+    auto objects = std::vector<cr::temporary_mesh>(data.materials.size());
+
+    for (auto i = 0; i < data.vertex_indices.size(); i++)
     {
-        vertex_data[i * 8 + 0] = expanded_vertices[i].x;
-        vertex_data[i * 8 + 1] = expanded_vertices[i].y;
-        vertex_data[i * 8 + 2] = expanded_vertices[i].z;
-        vertex_data[i * 8 + 3] = expanded_tex_coords[i].x;
-        vertex_data[i * 8 + 4] = expanded_tex_coords[i].y;
+        const auto object_index = data.material_indices[i / 3];
 
-        vertex_data[i * 8 + 5] = expanded_normals[i].x;
-        vertex_data[i * 8 + 6] = expanded_normals[i].y;
-        vertex_data[i * 8 + 7] = expanded_normals[i].z;
+        objects[object_index].vertices.push_back(data.vertices[data.vertex_indices[i]]);
+
+        objects[object_index].texture_coords.push_back(
+          data.texture_coords[data.texture_indices[i]]);
+
+        objects[object_index].normals.push_back(
+          data.normals[data.normal_indices[i]]);
     }
 
-    auto mesh = cr::mesh();
+    return _upload_temporary_meshes(objects);
+}
 
-    // do texture stuff!
-    glGenTextures(1, &mesh.texture);
-    glBindTexture(GL_TEXTURE_2D, mesh.texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+cr::raster_objects
+  cr::registry::_upload_temporary_meshes(const std::vector<cr::temporary_mesh> &meshes)
+{
+    auto uploaded = cr::raster_objects();
 
-    data.
+    for (const auto &mesh : meshes)
+    {
+        auto new_mesh = cr::mesh(mesh.material);
+        // Upload the data
 
-    glGenVertexArrays(1, &mesh.vao);
-    glGenBuffers(1, &mesh.vbo);
-    mesh.indices = expanded_vertices.size();
+        const auto vertex_data = _zip_mesh_data(mesh);
 
-    glBindVertexArray(mesh.vao);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
+        glGenVertexArrays(1, &new_mesh.vao);
+        glGenBuffers(1, &new_mesh.vbo);
+        new_mesh.indices = mesh.vertices.size();
 
-    glBufferData(GL_ARRAY_BUFFER, vertex_data.size() * sizeof(float), vertex_data.data(), GL_STATIC_DRAW);
+        glBindVertexArray(new_mesh.vao);
+        glBindBuffer(GL_ARRAY_BUFFER, new_mesh.vbo);
 
-    // vertex positions
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0);
-    // vertex tex coords
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
-    // vertex normals
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (5 * sizeof(float)));
+        glBufferData(GL_ARRAY_BUFFER, vertex_data.size() * sizeof(float), vertex_data.data(), GL_STATIC_DRAW);
 
-    glBindVertexArray(0);
-    return mesh;
+        // vertex positions
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0);
+        // vertex tex coords
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
+        // vertex normals
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (5 * sizeof(float)));
+
+        glBindVertexArray(0);
+
+        uploaded.meshes.push_back(std::move(new_mesh));
+    }
+
+    return uploaded;
+}
+
+std::vector<float> cr::registry::_zip_mesh_data(const cr::temporary_mesh &mesh)
+{
+    auto data = std::vector<float>(mesh.vertices.size() * 8);
+
+    for (auto i = 0; i < mesh.vertices.size(); i++)
+    {
+        data[i * 8 + 0] = mesh.vertices[i].x;
+        data[i * 8 + 1] = mesh.vertices[i].y;
+        data[i * 8 + 2] = mesh.vertices[i].z;
+        data[i * 8 + 3] = mesh.texture_coords[i].x;
+        data[i * 8 + 4] = mesh.texture_coords[i].y;
+
+        data[i * 8 + 5] = mesh.normals[i].x;
+        data[i * 8 + 6] = mesh.normals[i].y;
+        data[i * 8 + 7] = mesh.normals[i].z;
+    }
+
+    return data;
 }
 
 cr::camera *cr::registry::camera()

@@ -208,11 +208,18 @@ cr::model_loader::model_data
     {
         for (const auto idx : shape.mesh.indices)
         {
-            if (idx.vertex_index != -1) model_data.vertex_indices.push_back(idx.vertex_index);
+            if (idx.vertex_index == -1)
+                cr::exit("Vertex index was -1");
+            if (idx.texcoord_index == -1)
+                cr::exit("Tex coord index was -1");
+            if (idx.normal_index == -1)
+                cr::exit("Normal index was -1");
 
-            if (idx.texcoord_index != -1) model_data.texture_indices.push_back(idx.texcoord_index);
+            model_data.vertex_indices.push_back(idx.vertex_index);
 
-            if (idx.normal_index != -1) model_data.normal_indices.push_back(idx.normal_index);
+            model_data.texture_indices.push_back(idx.texcoord_index);
+
+            model_data.normal_indices.push_back(idx.normal_index);
         }
 
         for (int material_id : shape.mesh.material_ids)

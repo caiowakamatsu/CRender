@@ -32,7 +32,8 @@ void cr::scene::add_model(const cr::model_loader::model_data &model)
 {
     const auto mesh = _entities.register_model(model);
 
-    _meshes.push_back(mesh);
+    for (const auto inner_mesh : mesh.meshes)
+        _meshes.push_back(inner_mesh);
 }
 
 void cr::scene::set_skybox(cr::image &&skybox)

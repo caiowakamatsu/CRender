@@ -26,12 +26,6 @@ namespace cr::model_loader
         std::vector<uint32_t> normal_indices;
     };
 
-    struct object_data
-    {
-        std::vector<model_data> models;
-        std::string name;
-    };
-
     [[nodiscard]] model_data load(const std::string &file, const std::string &folder);
 
     [[nodiscard]] model_data load_obj(const std::string &file, const std::string &folder);

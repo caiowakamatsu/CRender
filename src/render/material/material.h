@@ -28,15 +28,17 @@ namespace cr
 
         struct information
         {
-            type                     type;
+            type                     type           = smooth;
             float                    ior            = 0;
             float                    roughness      = 0;
             float                    reflectiveness = 0;
             float                    emission       = 0;
-            glm::vec3                colour;
-            std::string              name;
+            glm::vec3                colour         = glm::vec3(1, 1, 1);
+            std::string              name           = "ERROR - Report";
             std::optional<cr::image> tex;
         };
+
+        material() { info = information(); }
 
         explicit material(information information);
 
