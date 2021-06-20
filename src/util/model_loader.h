@@ -18,11 +18,14 @@ namespace cr::model_loader
         std::vector<glm::vec3> vertices;
         std::vector<material> materials;
         std::vector<glm::vec2> texture_coords;
+        std::vector<glm::vec3> normals;
 
         std::vector<uint32_t> vertex_indices;
         std::vector<uint32_t> material_indices;
         std::vector<uint32_t> texture_indices;
+        std::vector<uint32_t> normal_indices;
     };
+
     [[nodiscard]] model_data load(const std::string &file, const std::string &folder);
 
     [[nodiscard]] model_data load_obj(const std::string &file, const std::string &folder);

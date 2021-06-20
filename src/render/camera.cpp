@@ -1,31 +1,54 @@
 #include "camera.h"
 
-cr::camera::camera(const glm::vec3 position, const glm::vec3 look_at, float fov)
-    : look_at(look_at), fov(fov)
+cr::camera::camera(glm::vec3 position, float fov) :
+position(position), fov(fov), _cached_matrix(1)
 {
-    const auto theta       = fov * 3.141592f / 180.0f;
-    const auto half_height = tanf(theta / 2.f);
-    const auto half_width  = half_height;
 
-    constexpr auto up = glm::vec3(0, 1, 0);
-    const auto     w  = glm::normalize(look_at - position);
-    const auto     u  = glm::normalize(glm::cross(up, w));
-    const auto     v  = glm::cross(w, u);
-
-    this->horizontal = u * half_width;
-    this->vertical   = v * half_height;
-    this->position   = position;
-    this->center     = position + w;
 }
-cr::ray cr::camera::get_ray(float x, float y, const cr::camera &camera)
+
+glm::mat4 cr::camera::mat4() const noexcept
 {
-    const auto x_offset  = camera.horizontal * (x * 2.f - 1);
-    const auto y_offset  = camera.vertical * (y * 2.f - 1);
-    const auto direction = glm::normalize((camera.center + x_offset + y_offset) - camera.position);
+    return _cached_matrix;
+}
 
-    auto ray      = cr::ray();
-    ray.origin    = camera.position;
-    ray.direction = direction;
+cr::ray cr::camera::get_ray(float x, float y)
+{
+    x *= -1;
+    x += 1;
+    const auto u = 2.0f * x - 1.0f;
+    const auto v = 2.0f * y - 1.0f;
+    const auto w = 1.0f / glm::tan(0.5f * fov);
 
-    return ray;
+    const auto direction = glm::vec3((_cached_matrix * glm::vec4(u, v, w, 0.0f)));
+
+    return cr::ray(position, glm::normalize(direction));
+}
+
+void cr::camera::translate(const glm::vec3 &translation)
+{
+    position = glm::vec3(_cached_matrix * glm::vec4(translation, 1.0f));
+    _update_cache();
+}
+
+void cr::camera::rotate(const glm::vec3 &rotation)
+{
+    this->rotation += rotation;
+    this->rotation.y = glm::clamp(this->rotation.y, -90.f, 90.f);
+    _update_cache();
+}
+
+void cr::camera::_update_cache()
+{
+    constexpr glm::vec3 UP = glm::vec3(0, 1, 0);
+    constexpr glm::vec3 RIGHT = glm::vec3(1, 0, 0);
+    constexpr glm::vec3 FORWARD = glm::vec3(0, 0, 1);
+
+    auto mat = glm::mat4(1.f);
+
+    mat = glm::translate(mat, position);
+    mat = glm::rotate(mat, glm::radians(rotation.x), UP);
+    mat = glm::rotate(mat, glm::radians(rotation.y), RIGHT);
+    mat = glm::rotate(mat, glm::radians(rotation.z), FORWARD);
+
+    _cached_matrix = mat;
 }

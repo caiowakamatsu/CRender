@@ -15,5 +15,6 @@ void main ()
 {
     vec2 translated_target_pixel = vec2(TARGET_PIXEL.xy) + translation;
     vec2 target = translated_target_pixel * zoom;
-    imageStore(img_output, ivec2(TARGET_PIXEL), texture(rendered_scene, target / vec2(SCENE_SIZE.xy)));
+//    imageStore(img_output, ivec2(TARGET_PIXEL), texture(rendered_scene, target / vec2(SCENE_SIZE.xy)));
+    imageStore(img_output, ivec2(TARGET_PIXEL), vec4(1, 1, 1, 1));
 }

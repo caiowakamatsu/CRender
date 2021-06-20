@@ -54,7 +54,7 @@ add_executable(CRender src/main.cpp
         src/render/entities/entity_type.h
         src/render/entities/components.h
         src/render/entities/registry.cpp
-        src/render/entities/registry.h)
+        src/render/entities/registry.h src/render/draft/draft_renderer.cpp src/render/draft/draft_renderer.h src/render/mesh.h src/render/timer.cpp src/render/timer.h)
 
 target_include_directories(CRender PRIVATE src)
 target_include_directories(CRender PRIVATE external)

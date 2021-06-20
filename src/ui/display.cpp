@@ -32,65 +32,42 @@ cr::display::display()
 
     glGenTextures(1, &_scene_texture_handle);
     glGenTextures(1, &_target_texture);
-    _reload_compute();
-}
 
-void cr::display::_reload_compute()
-{
-    // Create our compute shader for moving around the image
-    auto compute_shader = std::ifstream("./assets/shaders/compute.glsl");
-    auto string_stream  = std::stringstream();
-    string_stream << compute_shader.rdbuf();
-    auto source_str = string_stream.str();
-    auto source_c   = source_str.c_str();
+    glfwSetWindowUserPointer(_glfw_window, this);
 
-    _compute_shader_id = glCreateShader(GL_COMPUTE_SHADER);
-    glShaderSource(_compute_shader_id, 1, &source_c, nullptr);
-    glCompileShader(_compute_shader_id);
-    GLint isCompiled = 0;
-    glGetShaderiv(_compute_shader_id, GL_COMPILE_STATUS, &isCompiled);
-    if (isCompiled == GL_FALSE)
-    {
-        GLint maxLength = 1024;
-        glGetShaderiv(_compute_shader_id, GL_INFO_LOG_LENGTH, &maxLength);
+    glfwSetCursorPosCallback(_glfw_window, [](GLFWwindow *window, double x, double y) {
+        auto ptr = reinterpret_cast<display *>(glfwGetWindowUserPointer(window));
 
-        // The maxLength includes the NULL character
-        std::vector<char> errorLog(maxLength);
-        glGetShaderInfoLog(_compute_shader_id, maxLength, &maxLength, &errorLog[0]);
+        ptr->_mouse_pos.x = x;
+        ptr->_mouse_pos.y = y;
 
-        std::cout << errorLog.data() << std::endl;
-        // Provide the infolog in whatever manor you deem best.
-        // Exit with failure.
-        glDeleteShader(_compute_shader_id);    // Don't leak the shader.
-        return;
-    }
+        ptr->_mouse_change_prev = ptr->_mouse_pos_prev - ptr->_mouse_pos;
 
-    isCompiled              = 0;
-    _compute_shader_program = glCreateProgram();
-    glAttachShader(_compute_shader_program, _compute_shader_id);
-    glLinkProgram(_compute_shader_program);
-    glGetProgramiv(_compute_shader_program, GL_LINK_STATUS, &isCompiled);
-    if (isCompiled == GL_FALSE)
-    {
-        GLint maxLength = 1024;
-        glGetProgramiv(_compute_shader_program, GL_INFO_LOG_LENGTH, &maxLength);
+        // coordinates are reversed on y axis (top left vs bottom left)
+        ptr->_mouse_change_prev.x *= -1;
 
-        // The maxLength includes the NULL character
-        std::vector<char> errorLog(maxLength);
-        glGetProgramInfoLog(_compute_shader_program, maxLength, &maxLength, &errorLog[0]);
+        ptr->_mouse_pos_prev = ptr->_mouse_pos;
+    });
 
-        std::cout << errorLog.data() << std::endl;
-        // Provide the infolog in whatever manor you deem best.
-        // Exit with failure.
-        glDeleteProgram(_compute_shader_program);    // Don't leak the program.
-        return;
-    }
+    glfwSetKeyCallback(
+      _glfw_window,
+      [](GLFWwindow *window, int key, int scancode, int action, int mods) {
+          auto ptr = reinterpret_cast<display *>(glfwGetWindowUserPointer(window));
+
+          if (action == GLFW_RELEASE)
+              ptr->_key_states[key] = key_state::released;
+          else if (action == GLFW_REPEAT)
+              ptr->_key_states[key] = key_state::repeat;
+          else if (action == GLFW_PRESS)
+              ptr->_key_states[key] = key_state::pressed;
+      });
 }
 
 void cr::display::start(
-  std::unique_ptr<cr::scene> *      scene,
-  std::unique_ptr<cr::renderer> *   renderer,
-  std::unique_ptr<cr::thread_pool> *thread_pool)
+  std::unique_ptr<cr::scene> *         scene,
+  std::unique_ptr<cr::renderer> *      renderer,
+  std::unique_ptr<cr::draft_renderer> *draft_renderer,
+  std::unique_ptr<cr::thread_pool> *   thread_pool)
 {
     auto work_group_max = std::array<int, 3>();
 
@@ -111,54 +88,31 @@ void cr::display::start(
     ImGui_ImplGlfw_InitForOpenGL((GLFWwindow *) _glfw_window, true);
     ImGui_ImplOpenGL3_Init("#version 450");
 
+    bool draft_mode_changed = false;
     while (!glfwWindowShouldClose(_glfw_window))
     {
-        glfwPollEvents();
-
+        _timer.frame_start();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
         auto ui_ctx = cr::ui::init();
 
+        if (!_in_draft_mode && draft_mode_changed)
         {
-            // Root imgui node (Not visible)
-            ImGui::Begin("DockSpace", nullptr, ui_ctx.window_flags);
-            ImGui::PopStyleVar(3);
-
-            // Setup the dock
-            cr::ui::init_dock(
-              ui_ctx,
-              "Scene Objects",
-              "Skybox Loader",
-              "Model Loader",
-              "Scene Preview",
-              "Export",
-              "Property Editor",
-              "Render Quality");
-
-            ImGui::End();
+            draft_mode_changed = false;
+            renderer->get()->start();
+        }
+        else if (_in_draft_mode && draft_mode_changed)
+        {
+            draft_mode_changed = false;
+            renderer->get()->pause();
         }
 
-        {
-            ImGui::Begin("Render Quality");
+        // Root imgui node (Not visible)
+        ui::root_node(ui_ctx);
 
-            static auto resolution = glm::ivec2();
-            static auto bounces    = int(5);
-
-            ImGui::InputInt2("Resolution", glm::value_ptr(resolution));
-            ImGui::InputInt("Max Bounces", &bounces);
-
-            if (ImGui::Button("Update"))
-            {
-                renderer->get()->update([renderer]() {
-                    renderer->get()->set_max_bounces(bounces);
-                    renderer->get()->set_resolution(resolution.x, resolution.y);
-                });
-            }
-
-            ImGui::End();
-        }
+        ui::render_quality(renderer->get());
 
         {
             // Render export frame
@@ -223,7 +177,10 @@ void cr::display::start(
                       4);
 
                     auto skybox_image = cr::image(image_dimensions.x, image_dimensions.y);
-                    std::memcpy(skybox_image.data(), data, image_dimensions.x * image_dimensions.y * 4);
+                    std::memcpy(
+                      skybox_image.data(),
+                      data,
+                      image_dimensions.x * image_dimensions.y * 4);
                     stbi_image_free(data);
 
                     scene->get()->set_skybox(std::move(skybox_image));
@@ -254,7 +211,7 @@ void cr::display::start(
                     if (ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
                     {
                         current_directory = entry.path().string();
-                        current_model = model_path.value();
+                        current_model     = model_path.value();
                         break;
                     }
                 }
@@ -264,11 +221,13 @@ void cr::display::start(
             if (current_model != std::filesystem::path() && ImGui::Button("Load Model"))
             {
                 // Load model in
-                renderer->get()->update([&scene, current_model = current_model, current_directory = current_directory] {
-//                    const auto model_data_ = cr::model_loader::load_obj(current_model, current_directory);
-                    const auto model_data = cr::model_loader::load(current_model, current_directory);
+                const auto model_data = cr::model_loader::load(current_model, current_directory);
+
+                if (!_in_draft_mode)
+                    renderer->get()->update(
+                      [&scene, &model_data] { scene->get()->add_model(model_data); });
+                else
                     scene->get()->add_model(model_data);
-                });
             }
 
             ImGui::End();
@@ -298,87 +257,88 @@ void cr::display::start(
 
             auto window_size = ImGui::GetContentRegionAvail();
 
-            glBindTexture(GL_TEXTURE_2D, _target_texture);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexImage2D(
-              GL_TEXTURE_2D,
-              0,
-              GL_RGBA8,
-              static_cast<int>(window_size.x),
-              static_cast<int>(window_size.y),
-              0,
-              GL_RGBA,
-              GL_UNSIGNED_BYTE,
-              nullptr);
-            glBindImageTexture(0, _target_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
-
-            const auto current_progress = renderer->get()->current_progress();
-            // Upload rendered scene to GPU
-            glBindTexture(GL_TEXTURE_2D, _scene_texture_handle);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-            //            fmt::print("Updating image texture with [X: {}, Y: {}]\n",
-            //            static_cast<int>(window_size.x), static_cast<int>(window_size.y));
-            glTexImage2D(
-              GL_TEXTURE_2D,
-              0,
-              GL_RGBA8,
-              current_progress->width(),
-              current_progress->height(),
-              0,
-              GL_RGBA,
-              GL_UNSIGNED_BYTE,
-              current_progress->data());
-            glActiveTexture(GL_TEXTURE1);
-
-            // Set uniforms
+            if (_in_draft_mode)
             {
-                static auto current_translation = glm::vec2(0.0f, 0.0f);
-                static auto current_zoom        = float(1);
-                if (ImGui::IsWindowHovered())
-                {
-                    current_zoom += io.MouseWheel * -.05;
-
-                    if (ImGui::IsMouseDown(0))
-                    {
-                        const auto delta =
-                          glm::vec2(io.MouseDelta.x, io.MouseDelta.y) * glm::vec2(-1, -1);
-                        current_translation.x += delta.x;
-                        current_translation.y += delta.y;
-                    }
-                }
-
-                glUniform2fv(
-                  glGetUniformLocation(_compute_shader_program, "translation"),
-                  1,
-                  glm::value_ptr(current_translation));
-
-                glUniform1f(glGetUniformLocation(_compute_shader_program, "zoom"), current_zoom);
+                draft_renderer->get()->render();
+                ImGui::Image((void *) draft_renderer->get()->rendered_texture(), window_size);
             }
-
+            else
             {
-                if (glfwGetKey(_glfw_window, GLFW_KEY_R) == GLFW_PRESS)
-                {
-                    fmt::print("Reloading Compute Shader\n");
-                    _reload_compute();
-                }
-                glUseProgram(_compute_shader_program);
-
-                glDispatchCompute(
+                glBindTexture(GL_TEXTURE_2D, _target_texture);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexImage2D(
+                  GL_TEXTURE_2D,
+                  0,
+                  GL_RGBA8,
                   static_cast<int>(window_size.x),
                   static_cast<int>(window_size.y),
-                  1);
+                  0,
+                  GL_RGBA,
+                  GL_UNSIGNED_BYTE,
+                  nullptr);
+                glBindImageTexture(0, _target_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+
+                const auto current_progress = renderer->get()->current_progress();
+                // Upload rendered scene to GPU
+                glBindTexture(GL_TEXTURE_2D, _scene_texture_handle);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+                glTexImage2D(
+                  GL_TEXTURE_2D,
+                  0,
+                  GL_RGBA8,
+                  current_progress->width(),
+                  current_progress->height(),
+                  0,
+                  GL_RGBA,
+                  GL_UNSIGNED_BYTE,
+                  current_progress->data());
+                glActiveTexture(GL_TEXTURE1);
+
+                // Set uniforms
+                {
+                    static auto current_translation = glm::vec2(0.0f, 0.0f);
+                    static auto current_zoom        = float(1);
+                    if (ImGui::IsWindowHovered())
+                    {
+                        current_zoom += io.MouseWheel * -.05;
+
+                        if (ImGui::IsMouseDown(0))
+                        {
+                            const auto delta =
+                              glm::vec2(io.MouseDelta.x, io.MouseDelta.y) * glm::vec2(-1, -1);
+                            current_translation.x += delta.x;
+                            current_translation.y += delta.y;
+                        }
+                    }
+
+                    glUniform2fv(
+                      glGetUniformLocation(_compute_shader_program, "translation"),
+                      1,
+                      glm::value_ptr(current_translation));
+
+                    glUniform1f(glGetUniformLocation(_compute_shader_program, "zoom"), current_zoom);
+                }
+
+                {
+                    glUseProgram(_compute_shader_program);
+
+                    glDispatchCompute(
+                      static_cast<int>(window_size.x),
+                      static_cast<int>(window_size.y),
+                      1);
+
+                    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+                }
+                ImGui::Image((void *) _scene_texture_handle, window_size);
             }
 
-            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
-            ImGui::Image((void *) _target_texture, window_size);
             ImGui::End();
         }
 
@@ -418,18 +378,21 @@ void cr::display::start(
                     static auto position = std::optional<glm::vec3>();
                     if (!position.has_value()) position = camera.position;
                     static auto look_at = std::optional<glm::vec3>();
-                    if (!look_at.has_value()) look_at = camera.look_at;
+                    //                    if (!look_at.has_value()) look_at = camera.look_at;
                     static auto fov = std::optional<float>();
                     if (!fov.has_value()) fov = camera.fov;
 
                     ImGui::InputFloat3("Position", glm::value_ptr(position.value()));
-                    ImGui::InputFloat3("Look At", glm::value_ptr(look_at.value()));
+                    //                    ImGui::InputFloat3("Look At",
+                    //                    glm::value_ptr(look_at.value()));
                     ImGui::SliderFloat("FOV", &fov.value(), 10, 120);
 
                     if (should_update)
                     {
-                        registry.get<cr::camera>(_current_entity.value()) =
-                          cr::camera(position.value(), look_at.value(), fov.value());
+                        //                        registry.get<cr::camera>(_current_entity.value())
+                        //                        =
+                        //                          cr::camera(position.value(), look_at.value(),
+                        //                          fov.value());
 
                         position.reset();
                         look_at.reset();
@@ -562,24 +525,98 @@ void cr::display::start(
             ImGui::End();
         }
 
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         ImGui::Render();
         glClearColor(1, 1, 1, 1);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        _timer.frame_stop();
         glfwSwapBuffers(_glfw_window);
+
+        if (_key_states[static_cast<int>(key_code::KEY_R)] == key_state::pressed)
+        {
+            _in_draft_mode     = !_in_draft_mode;
+            draft_mode_changed = true;
+        }
+
+        glfwSetInputMode(
+          _glfw_window,
+          GLFW_CURSOR,
+          _in_draft_mode ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+
+        if (_in_draft_mode) _update_camera(scene->get()->registry()->camera());
+        _poll_events();
     }
     glDeleteTextures(1, &_scene_texture_handle);
     stop();
+}
+
+void cr::display::_poll_events()
+{
+    for (auto &key : _key_states)
+    {
+        if (key == key_state::released) key = key_state::none;
+        if (key == key_state::pressed) key = key_state::held;
+    }
+    glfwPollEvents();
 }
 
 void cr::display::stop()
 {
     glfwSetWindowShouldClose(_glfw_window, true);
 }
+
 cr::display::~display()
 {
     glDeleteTextures(1, &_target_texture);
     glDeleteTextures(1, &_scene_texture_handle);
     glDeleteShader(_compute_shader_id);
     glDeleteProgram(_compute_shader_program);
+}
+
+void cr::display::_update_camera(cr::camera *camera)
+{
+    auto translation = glm::vec3();
+    auto rotation    = glm::vec3();
+
+    if (
+      _key_states[static_cast<int>(key_code::SPACE)] == key_state::held ||
+      _key_states[static_cast<int>(key_code::SPACE)] == key_state::repeat)
+        translation.y += 3.0f;
+
+    if (
+      _key_states[static_cast<int>(key_code::KEY_LEFT_CONTROL)] == key_state::held ||
+      _key_states[static_cast<int>(key_code::KEY_LEFT_CONTROL)] == key_state::repeat)
+        translation.y -= 3.0f;
+
+    if (
+      _key_states[static_cast<int>(key_code::KEY_W)] == key_state::held ||
+      _key_states[static_cast<int>(key_code::KEY_W)] == key_state::repeat)
+        translation.z -= 3.0f;
+
+    if (
+      _key_states[static_cast<int>(key_code::KEY_S)] == key_state::held ||
+      _key_states[static_cast<int>(key_code::KEY_S)] == key_state::repeat)
+        translation.z += 3.0f;
+
+    if (
+      _key_states[static_cast<int>(key_code::KEY_D)] == key_state::held ||
+      _key_states[static_cast<int>(key_code::KEY_D)] == key_state::repeat)
+        translation.x -= 3.0f;
+
+    if (
+      _key_states[static_cast<int>(key_code::KEY_A)] == key_state::held ||
+      _key_states[static_cast<int>(key_code::KEY_A)] == key_state::repeat)
+        translation.x += 3.0f;
+
+    translation *= static_cast<float>(_timer.since_last_frame()) * 5.75f;
+
+    camera->translate(translation);
+
+    rotation.x += _mouse_change_prev.x * 2.0 * _timer.since_last_frame();
+    rotation.y += _mouse_change_prev.y * 2.0 * _timer.since_last_frame();
+
+    _mouse_change_prev = {};
+
+    camera->rotate(rotation);
 }

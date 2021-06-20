@@ -3,6 +3,10 @@
 #include <string>
 
 #include <imgui/imgui.h>
+#include <render/renderer.h>
+#include <render/timer.h>
+#include <render/draft/draft_renderer.h>
+#include <util/model_loader.h>
 
 namespace cr::ui
 {
@@ -68,12 +72,14 @@ namespace cr::ui
               0.15f,
               nullptr,
               &dockspace_id);
+
             auto dock_id_right_top = ImGui::DockBuilderSplitNode(
               dock_id_right_bottom,
               ImGuiDir_Up,
               .175,
               nullptr,
               &dock_id_right_bottom);
+
             auto dock_id_right_middle = ImGui::DockBuilderSplitNode(
               dock_id_right_bottom,
               ImGuiDir_Up,
@@ -114,4 +120,53 @@ namespace cr::ui
             ImGui::DockBuilderFinish(dockspace_id);
         }
     }
+
+    inline void root_node(init_ctx ui_ctx)
+    {
+        ImGui::Begin("DockSpace", nullptr, ui_ctx.window_flags);
+        ImGui::PopStyleVar(3);
+
+        // Setup the dock
+        cr::ui::init_dock(
+          ui_ctx,
+          "Scene Objects",
+          "Skybox Loader",
+          "Model Loader",
+          "Scene Preview",
+          "Export",
+          "Property Editor",
+          "Render Quality");
+
+        ImGui::End();
+    }
+
+    inline void render_quality(cr::renderer* renderer)
+    {
+        ImGui::Begin("Render Quality");
+
+        static auto resolution = glm::ivec2();
+        static auto bounces    = int(5);
+
+        if (resolution.x == 0)
+            resolution.x = renderer->current_resolution().x;
+
+        if (resolution.y == 0)
+            resolution.y = renderer->current_resolution().y;
+
+        ImGui::InputInt2("Resolution", glm::value_ptr(resolution));
+        ImGui::InputInt("Max Bounces", &bounces);
+
+        if (ImGui::Button("Update"))
+        {
+            renderer->update([renderer]() {
+              renderer->set_max_bounces(bounces);
+              renderer->set_resolution(resolution.x, resolution.y);
+            });
+        }
+
+        ImGui::End();
+    }
+
+//    inline void export_ui
+
 }    // namespace cr::ui

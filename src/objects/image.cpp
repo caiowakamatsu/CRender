@@ -30,6 +30,11 @@ uint32_t *cr::image::data() noexcept
     return _image_data.data();
 }
 
+const uint32_t *cr::image::data() const noexcept
+{
+    return _image_data.data();
+}
+
 uint64_t cr::image::width() const noexcept
 {
     return _width;

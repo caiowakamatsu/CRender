@@ -8,6 +8,7 @@
 #include <glm/gtx/norm.hpp>
 
 #include <render/ray.h>
+#include <render/mesh.h>
 #include <render/material/material.h>
 #include <render/entities/registry.h>
 #include <objects/model.h>
@@ -29,10 +30,14 @@ namespace cr
 
         [[nodiscard]] cr::ray::intersection_record cast_ray(const cr::ray ray);
 
+        [[nodiscard]] const std::vector<cr::mesh> &meshes() const noexcept;
+
         [[nodiscard]] cr::registry* registry();
 
     private:
         std::optional<cr::image> _skybox;
+
+        std::vector<cr::mesh> _meshes;
 
         cr::registry _entities;
     };
