@@ -22,9 +22,11 @@ namespace cr
     public:
         scene() = default;
 
-        void add_model(const cr::model_loader::model_data &model);
+        void add_model(const cr::asset_loader::model_data &model);
 
         void set_skybox(cr::image &&skybox);
+
+        void set_skybox_rotation(const glm::vec2 &rotation);
 
         [[nodiscard]] glm::vec3 sample_skybox(float x, float y) const noexcept;
 
@@ -38,6 +40,8 @@ namespace cr
         std::optional<cr::image> _skybox;
 
         std::vector<cr::mesh> _meshes;
+
+        glm::vec2 _skybox_rotation;
 
         cr::registry _entities;
     };

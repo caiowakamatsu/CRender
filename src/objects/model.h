@@ -13,7 +13,7 @@
 #include <render/material/material.h>
 #include <render/ray.h>
 #include <render/entities/components.h>
-#include <util/model_loader.h>
+#include <util/asset_loader.h>
 #include <util/exception.h>
 
 namespace cr

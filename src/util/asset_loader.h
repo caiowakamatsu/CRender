@@ -11,12 +11,12 @@
 #include <util/exception.h>
 #include <regex>
 
-namespace cr::model_loader
+namespace cr::asset_loader
 {
     struct model_data
     {
         std::vector<glm::vec3> vertices;
-        std::vector<material> materials;
+        std::vector<material>  materials;
         std::vector<glm::vec2> texture_coords;
         std::vector<glm::vec3> normals;
 
@@ -26,9 +26,15 @@ namespace cr::model_loader
         std::vector<uint32_t> normal_indices;
     };
 
-    [[nodiscard]] model_data load(const std::string &file, const std::string &folder);
+    [[nodiscard]] model_data load_model(const std::string &file, const std::string &folder);
 
-    [[nodiscard]] model_data load_obj(const std::string &file, const std::string &folder);
+    struct picture_data
+    {
+        glm::ivec2         res;
+        std::vector<float> colour;
+    };
+    [[nodiscard]] picture_data load_picture(const std::string &file);
 
-    [[nodiscard]] std::optional<std::string> valid_directory(const std::filesystem::directory_entry& directory);
-}
+    [[nodiscard]] std::optional<std::string>
+      valid_directory(const std::filesystem::directory_entry &directory);
+}    // namespace cr::asset_loader

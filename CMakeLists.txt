@@ -28,7 +28,6 @@ add_executable(CRender src/main.cpp
         src/util/exception.h
         src/render/renderer.cpp
         src/render/renderer.h
-        src/objects/image.cpp
         src/objects/image.h
         src/util/colour.h
         src/render/ray.cpp
@@ -41,8 +40,8 @@ add_executable(CRender src/main.cpp
         src/util/algorithm.h
         src/render/material/material.cpp
         src/render/material/material.h
-        src/util/model_loader.cpp
-        src/util/model_loader.h
+        src/util/asset_loader.cpp
+        src/util/asset_loader.h
         src/objects/thread_pool.cpp
         src/objects/thread_pool.h
         src/ui/nodes/node_editor.cpp

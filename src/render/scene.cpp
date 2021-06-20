@@ -28,7 +28,7 @@ namespace
     }
 }    // namespace
 
-void cr::scene::add_model(const cr::model_loader::model_data &model)
+void cr::scene::add_model(const cr::asset_loader::model_data &model)
 {
     const auto mesh = _entities.register_model(model);
 
@@ -41,11 +41,16 @@ void cr::scene::set_skybox(cr::image &&skybox)
     _skybox = skybox;
 }
 
+void cr::scene::set_skybox_rotation(const glm::vec2 &rotation)
+{
+    _skybox_rotation = rotation;
+}
+
 glm::vec3 cr::scene::sample_skybox(float x, float y) const noexcept
 {
     if (_skybox.has_value())
     {
-        return _skybox->get_uv(x, y);
+        return _skybox->get_uv(x + _skybox_rotation.x, y + _skybox_rotation.y);
     }
     else
     {

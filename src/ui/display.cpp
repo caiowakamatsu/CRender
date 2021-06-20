@@ -112,7 +112,7 @@ void cr::display::start(
         // Root imgui node (Not visible)
         ui::root_node(ui_ctx);
 
-        ui::render_quality(renderer->get());
+        ui::render_quality(renderer->get(), *thread_pool);
 
         {
             // Render export frame
@@ -131,12 +131,17 @@ void cr::display::start(
                       std::to_string(attempt_number++) + ")" + ".jpg";
 
                 const auto data = renderer->get()->current_progress();
+
+                auto char_data = std::vector<uint8_t>(data->width() * data->height() * 4);
+                for (auto i = 0; i < char_data.size(); i++)
+                    char_data[i] = data->data()[i] * 255.f;
+
                 stbi_write_jpg(
                   directory.c_str(),
                   data->width(),
                   data->height(),
                   4,
-                  data->data(),
+                  char_data.data(),
                   100);
             }
 
@@ -144,7 +149,7 @@ void cr::display::start(
         }
 
         {
-            ImGui::Begin("Skybox Loader");
+            ImGui::Begin("Skybox");
 
             static std::string current_skybox;
             bool               throw_away = false;
@@ -168,24 +173,22 @@ void cr::display::start(
             {
                 // Load skybox in
                 renderer->get()->update([&scene, current_skybox = current_skybox] {
-                    auto image_dimensions = glm::ivec3();
-                    auto data             = stbi_load(
-                      current_skybox.c_str(),
-                      &image_dimensions.x,
-                      &image_dimensions.y,
-                      &image_dimensions.z,
-                      4);
+                    auto image = cr::asset_loader::load_picture(current_skybox);
 
-                    auto skybox_image = cr::image(image_dimensions.x, image_dimensions.y);
-                    std::memcpy(
-                      skybox_image.data(),
-                      data,
-                      image_dimensions.x * image_dimensions.y * 4);
-                    stbi_image_free(data);
+                    auto skybox = cr::image(image.colour, image.res.x, image.res.y);
 
-                    scene->get()->set_skybox(std::move(skybox_image));
+                    scene->get()->set_skybox(std::move(skybox));
                 });
             }
+
+            static auto rotation = glm::vec2();
+            ImGui::DragFloat2("Rotation", glm::value_ptr(rotation), 0.f, 1.f);
+
+            ImGui::SameLine();
+            if (ImGui::Button("Update"))
+                renderer->get()->update([&scene](){
+                    scene->get()->set_skybox_rotation(rotation);
+                });
 
             ImGui::End();
         }
@@ -204,7 +207,7 @@ void cr::display::start(
                 {
                     if (!entry.is_directory()) continue;
 
-                    const auto model_path = cr::model_loader::valid_directory(entry);
+                    const auto model_path = cr::asset_loader::valid_directory(entry);
                     if (!model_path.has_value()) continue;
 
                     // Go through each file in the directory
@@ -221,7 +224,7 @@ void cr::display::start(
             if (current_model != std::filesystem::path() && ImGui::Button("Load Model"))
             {
                 // Load model in
-                const auto model_data = cr::model_loader::load(current_model, current_directory);
+                const auto model_data = cr::asset_loader::load_model(current_model, current_directory);
 
                 if (!_in_draft_mode)
                     renderer->get()->update(
@@ -297,7 +300,7 @@ void cr::display::start(
                   current_progress->height(),
                   0,
                   GL_RGBA,
-                  GL_UNSIGNED_BYTE,
+                  GL_FLOAT,
                   current_progress->data());
                 glActiveTexture(GL_TEXTURE1);
 
@@ -323,7 +326,9 @@ void cr::display::start(
                       1,
                       glm::value_ptr(current_translation));
 
-                    glUniform1f(glGetUniformLocation(_compute_shader_program, "zoom"), current_zoom);
+                    glUniform1f(
+                      glGetUniformLocation(_compute_shader_program, "zoom"),
+                      current_zoom);
                 }
 
                 {
@@ -533,7 +538,8 @@ void cr::display::start(
         _timer.frame_stop();
         glfwSwapBuffers(_glfw_window);
 
-        if (_key_states[static_cast<int>(key_code::KEY_R)] == key_state::pressed)
+        if (_key_states[static_cast<int>(key_code::KEY_R)] == key_state::pressed &&
+            !io.WantCaptureKeyboard)
         {
             _in_draft_mode     = !_in_draft_mode;
             draft_mode_changed = true;
@@ -610,6 +616,11 @@ void cr::display::_update_camera(cr::camera *camera)
         translation.x += 3.0f;
 
     translation *= static_cast<float>(_timer.since_last_frame()) * 5.75f;
+
+    if (
+      _key_states[static_cast<int>(key_code::KEY_A)] == key_state::held ||
+      _key_states[static_cast<int>(key_code::KEY_A)] == key_state::repeat)
+        translation *= 5;
 
     camera->translate(translation);
 
