@@ -20,12 +20,11 @@ If you're a developer, and want to get started and [contribute](#Contributing) t
 ***
 ### Installation
 
-WIP: Instructions are not complete, and will most likely not work...
-
-1) Download the latest release for your operating system from here. (Need to link to releases)
-2) Unzip the zipped folder
-3) Extract the contents to wherever you want to have it's home be
-4) Run and enjoy
+1) Download the latest release for your operating system from [here](https://github.com/LegendWasTaken/CRender/releases)
+2) Extract to destination
+3) Download and install [Embree](https://github.com/embree/embree/releases/tag/v3.13.0)
+<br />Note: On Windows, make sure to add `bin` to the  `PATH` variable - **follow the instructions on the Embree repository for your OS**. 
+5) Run `CRender.exe` and enjoy!
 
 ***
 ## Contributing
