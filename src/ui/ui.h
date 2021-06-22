@@ -276,6 +276,7 @@ namespace cr::ui
             const auto data = renderer->get()->current_progress();
 
             cr::asset_loader::export_framebuffer(*data, file_string.data(), selected_type);
+            cr::logger::info("Finished exporting image in [{}s]", timer.time_since_start());
         }
     }
 
