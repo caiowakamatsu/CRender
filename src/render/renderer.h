@@ -31,15 +31,17 @@ namespace cr
 
         ~renderer();
 
-        void start();
+        bool start();
 
-        void pause();
+        bool pause();
 
         void update(const std::function<void()> &update);
 
         void set_resolution(int x, int y);
 
         void set_max_bounces(int bounces);
+
+        void set_target_spp(uint64_t target);
 
         [[nodiscard]] uint64_t current_sample_count() const noexcept;
 
@@ -56,23 +58,24 @@ namespace cr
 
         void _sample_pixel(uint64_t x, uint64_t y);
 
-        cr::camera *_camera;
-        uint64_t    _res_x;
-        uint64_t    _res_y;
-        float _aspect_correction = 1;
-        uint64_t    _max_bounces;
-
+        cr::camera *                      _camera;
+        uint64_t                          _res_x;
+        uint64_t                          _res_y;
+        float                             _aspect_correction = 1;
+        uint64_t                          _spp_target        = 0;
         std::unique_ptr<cr::thread_pool> *_thread_pool;
-        std::unique_ptr<cr::scene> *      _scene;
 
-        std::vector<float> _raw_buffer;
+        std::unique_ptr<cr::scene> *_scene;
+        std::vector<float>          _raw_buffer;
 
         cr::image _buffer;
+
         cr::image _normals;
         cr::image _albedo;
 
         std::atomic<bool>     _run_management = true;
         std::atomic<bool>     _pause          = false;
+        std::atomic<uint64_t> _max_bounces;
         std::atomic<uint64_t> _current_sample = 0;
         std::thread           _management_thread;
 

@@ -240,6 +240,35 @@ namespace cr::ui
         ImGui::Text(
           "%s",
           fmt::format("Current sample count: [{}]", renderer->current_sample_count()).c_str());
+
+        ImGui::NewLine();
+        ImGui::Separator();
+
+        if (ImGui::Button("Pause"))
+        {
+            const auto success = renderer->pause();
+
+            if (success)
+                cr::logger::info("Paused the renderer successfully");
+            else
+                cr::logger::warn("Cannot pause the renderer when it's already paused");
+        }
+        else if (ImGui::SameLine(); ImGui::Button("Start"))
+        {
+            const auto success = renderer->start();
+
+            if (success)
+                cr::logger::info("Started the renderer successfully");
+            else
+                cr::logger::warn("Cannot start the renderer when it's started");
+        }
+        static auto target_spp = int(0);
+        ImGui::InputInt("Target Sample Count (?)", &target_spp, 16, 64);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Set amount of samples per pixel you want to render, 0 for no limit");
+        if (ImGui::Button("Set target sample count"))
+            renderer->set_target_spp(target_spp);
+
     }
 
     inline void setting_export(std::unique_ptr<cr::renderer> *renderer)

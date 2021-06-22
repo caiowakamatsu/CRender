@@ -25,7 +25,7 @@ namespace
         if (record.material->info.tex.has_value())
             out.albedo = record.material->info.tex->get_uv(record.uv.x, record.uv.y);
         else
-            out.albedo   = record.material->info.colour;
+            out.albedo = record.material->info.colour;
 
         switch (record.material->info.type)
         {
@@ -57,22 +57,29 @@ cr::renderer::renderer(
   const uint64_t                    bounces,
   std::unique_ptr<cr::thread_pool> *pool,
   std::unique_ptr<cr::scene> *      scene)
-    : _camera(scene->get()->registry()->camera()), _buffer(res_x, res_y), _normals(res_x, res_y), _albedo(res_x, res_y), _res_x(res_x),
-      _res_y(res_y), _max_bounces(bounces), _thread_pool(pool), _scene(scene),
-      _raw_buffer(res_x * res_y * 3)
+    : _camera(scene->get()->registry()->camera()), _buffer(res_x, res_y), _normals(res_x, res_y),
+      _albedo(res_x, res_y), _res_x(res_x), _res_y(res_y), _max_bounces(bounces),
+      _thread_pool(pool), _scene(scene), _raw_buffer(res_x * res_y * 3)
 {
     _management_thread = std::thread([this]() {
         while (_run_management)
         {
             const auto tasks = _get_tasks();
 
-            if (!tasks.empty())
+            if (!tasks.empty() && (_current_sample < _spp_target || _spp_target == 0))
             {
                 _thread_pool->get()->wait_on_tasks(tasks);
                 _current_sample++;
             }
             else
             {
+                if (_current_sample == _spp_target && _current_sample != 0)
+                    cr::logger::info(
+                      "Finished rendering [{}] samples at resolution [X: {}, Y: {}]",
+                      _spp_target,
+                      _res_x,
+                      _res_y);
+
                 {
                     auto guard = std::unique_lock(_pause_mutex);
                     _pause_cond_var.notify_one();
@@ -91,23 +98,33 @@ cr::renderer::~renderer()
     _management_thread.join();
 }
 
-void cr::renderer::start()
+bool cr::renderer::start()
 {
-    _buffer.clear();
-    for (auto i = 0; i < _res_x * _res_y * 3; i++)
-        _raw_buffer[i] = 0.0f;
-    _current_sample = 0;
+    if (_pause)
+    {
+        _pause = false;
+        _buffer.clear();
+        for (auto i = 0; i < _res_x * _res_y * 3; i++) _raw_buffer[i] = 0.0f;
+        _current_sample = 0;
 
-    auto guard      = std::unique_lock(_start_mutex);
-    _start_cond_var.notify_all();
+        auto guard = std::unique_lock(_start_mutex);
+        _start_cond_var.notify_all();
+        return true;
+    }
+    return false;
 }
 
-void cr::renderer::pause()
+bool cr::renderer::pause()
 {
-    _pause = true;
+    if (!_pause)
+    {
+        _pause = true;
 
-    auto guard = std::unique_lock(_pause_mutex);
-    _pause_cond_var.wait(guard);
+        auto guard = std::unique_lock(_pause_mutex);
+        _pause_cond_var.wait(guard);
+        return true;
+    }
+    return false;
 }
 
 void cr::renderer::update(const std::function<void()> &update)
@@ -126,14 +143,19 @@ void cr::renderer::set_resolution(int x, int y)
 
     _aspect_correction = static_cast<float>(_res_x) / static_cast<float>(_res_y);
 
-    _buffer = cr::image(x, y);
-    _raw_buffer = std::vector<float>(x * y * 3);
+    _buffer         = cr::image(x, y);
+    _raw_buffer     = std::vector<float>(x * y * 3);
     _current_sample = 0;
 }
 
 void cr::renderer::set_max_bounces(int bounces)
 {
     _max_bounces = bounces;
+}
+
+void cr::renderer::set_target_spp(uint64_t target)
+{
+    _spp_target = target;
 }
 
 cr::image *cr::renderer::current_progress() noexcept
@@ -155,11 +177,7 @@ std::vector<std::function<void()>> cr::renderer::_get_tasks()
 {
     auto tasks = std::vector<std::function<void()>>();
 
-    if (_pause)
-    {
-        _pause = false;
-        return tasks;
-    }
+    if (_pause) return tasks;
 
     tasks.reserve(_res_y);
 
@@ -213,10 +231,19 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y)
     _raw_buffer[base_index + 1] += final.y;
     _raw_buffer[base_index + 2] += final.z;
 
-    _buffer.set(x, y, glm::vec3(
-      glm::pow(glm::clamp(_raw_buffer[base_index + 0] / float(_current_sample + 1), 0.0f, 1.0f), 1.f / 2.2f),
-      glm::pow(glm::clamp(_raw_buffer[base_index + 1] / float(_current_sample + 1), 0.0f, 1.0f), 1.f / 2.2f),
-      glm::pow(glm::clamp(_raw_buffer[base_index + 2] / float(_current_sample + 1), 0.0f, 1.0f), 1.f / 2.2f)));
+    _buffer.set(
+      x,
+      y,
+      glm::vec3(
+        glm::pow(
+          glm::clamp(_raw_buffer[base_index + 0] / float(_current_sample + 1), 0.0f, 1.0f),
+          1.f / 2.2f),
+        glm::pow(
+          glm::clamp(_raw_buffer[base_index + 1] / float(_current_sample + 1), 0.0f, 1.0f),
+          1.f / 2.2f),
+        glm::pow(
+          glm::clamp(_raw_buffer[base_index + 2] / float(_current_sample + 1), 0.0f, 1.0f),
+          1.f / 2.2f)));
 }
 
 glm::ivec2 cr::renderer::current_resolution() const noexcept
