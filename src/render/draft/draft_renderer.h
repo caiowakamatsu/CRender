@@ -17,6 +17,7 @@
 #include <render/scene.h>
 #include <objects/thread_pool.h>
 #include <util/sampling.h>
+#include <util/logger.h>
 
 #include <glad/glad.h>
 

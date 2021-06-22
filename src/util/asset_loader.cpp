@@ -10,6 +10,8 @@
 #define TINYEXR_IMPLEMENTATION
 #include <tinyexr/tinyexr.h>
 
+#include <util/logger.h>
+
 namespace
 {
     // Thanks https://stackoverflow.com/a/42844629
@@ -75,7 +77,7 @@ cr::asset_loader::model_data
 
     if (!reader.ParseFromFile(file, readerConfig) && !reader.Error().empty())
         cr::exit("Couldn't parse OBJ from file");
-    fmt::print("Obj stuff: [{}]", reader.Warning());
+    cr::logger::warn("Obj stuff: [{}]", reader.Warning());
 
     auto &attrib    = reader.GetAttrib();
     auto &shapes    = reader.GetShapes();
@@ -210,5 +212,13 @@ std::optional<std::string>
             if (ends_with(entry_name, ".obj")) return entry_name;
         }
     }
+    return {};
+}
+
+std::optional<std::string>
+  cr::asset_loader::valid_font(const std::filesystem::directory_entry &directory)
+{
+    if (ends_with(directory.path().filename().extension().string(), ".ttf"))
+        return directory.path().string();
     return {};
 }

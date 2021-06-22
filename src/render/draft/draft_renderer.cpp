@@ -29,7 +29,7 @@ cr::draft_renderer::draft_renderer(
       _rbo);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        fmt::print("[ERROR] Framebuffer is not complete");
+        cr::logger::error("Framebuffer is not complete");
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -38,7 +38,7 @@ cr::draft_renderer::draft_renderer(
     // Load shaders in
     // Load the shader into the string
     {
-        auto shader_file_in_stream = std::ifstream("./assets/shaders/shader.vert");
+        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/shader.vert");
         auto shader_string_stream  = std::stringstream();
         shader_string_stream << shader_file_in_stream.rdbuf();
         const auto shader_source = shader_string_stream.str();
@@ -56,13 +56,13 @@ cr::draft_renderer::draft_renderer(
         if (!success)
         {
             glGetShaderInfoLog(shader_handle, 512, nullptr, log.data());
-            fmt::print("[ERROR] Compiling shader [{}], with error [{}]\n", "vertex", log.data());
+            cr::logger::error("Compiling shader [{}], with error [{}]\n", "vertex", log.data());
         }
         _vertex_handle = shader_handle;
     }
 
     {
-        auto shader_file_in_stream = std::ifstream("./assets/shaders/shader.frag");
+        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/shader.frag");
         auto shader_string_stream  = std::stringstream();
         shader_string_stream << shader_file_in_stream.rdbuf();
         const auto shader_source = shader_string_stream.str();
@@ -82,7 +82,7 @@ cr::draft_renderer::draft_renderer(
         if (!success)
         {
             glGetShaderInfoLog(shader_handle, 512, nullptr, log.data());
-            fmt::print("[ERROR] Compiling shader [{}], with error [{}]\n", "frag", log.data());
+            cr::logger::error("Compiling shader [{}], with error [{}]\n", "frag", log.data());
         }
         _fragment_handle = shader_handle;
     }
@@ -103,8 +103,8 @@ cr::draft_renderer::draft_renderer(
         if (!success)
         {
             glGetProgramInfoLog(program_handle, 512, nullptr, log.data());
-            fmt::print(
-              "[ERROR] Linking program [{}], with error [{}]\n",
+            cr::logger::error(
+              "Linking program [{}], with error [{}]\n",
               program_handle,
               log.data());
         }

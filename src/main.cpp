@@ -11,5 +11,5 @@ int main()
 
     auto draft_renderer = std::make_unique<cr::draft_renderer>(1024, 1024, &scene);
 
-    main_display.start(&scene, &renderer, &draft_renderer, &thread_pool);
+    main_display.start(scene, renderer, thread_pool, draft_renderer);
 }

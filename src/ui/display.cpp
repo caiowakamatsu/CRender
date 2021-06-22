@@ -9,7 +9,7 @@
 cr::display::display()
 {
     glfwSetErrorCallback([](int error, const char *description) {
-        fmt::print("Error [{}], Description [{}]", error, description);
+        cr::logger::error("GLFW Failed with error [{}], description [{}]", error, description);
     });
 
     const auto init_glfw = glfwInit();
@@ -64,17 +64,17 @@ cr::display::display()
 }
 
 void cr::display::start(
-  std::unique_ptr<cr::scene> *         scene,
-  std::unique_ptr<cr::renderer> *      renderer,
-  std::unique_ptr<cr::draft_renderer> *draft_renderer,
-  std::unique_ptr<cr::thread_pool> *   thread_pool)
+  std::unique_ptr<cr::scene> &         scene,
+  std::unique_ptr<cr::renderer> &      renderer,
+  std::unique_ptr<cr::thread_pool> &   thread_pool,
+  std::unique_ptr<cr::draft_renderer> &draft_renderer)
 {
     auto work_group_max = std::array<int, 3>();
 
     glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &work_group_max[0]);
     glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &work_group_max[1]);
     glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &work_group_max[2]);
-    fmt::print(
+    cr::logger::info(
       "Maximum compute work group count [x: {}, y: {}, z: {}]\n",
       work_group_max[0],
       work_group_max[1],
@@ -83,11 +83,16 @@ void cr::display::start(
     auto &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
+    const auto font = io.Fonts->AddFontFromFileTTF("./assets/app/fonts/Oxygen-Regular.ttf", 18.f);
+
     cr::ImGuiThemes::CorporateGrey();
 
     ImGui_ImplGlfw_InitForOpenGL((GLFWwindow *) _glfw_window, true);
     ImGui_ImplOpenGL3_Init("#version 450");
 
+    auto current_frame = 0;
+
+    cr::logger::info("Starting main display loop");
     bool draft_mode_changed = false;
     while (!glfwWindowShouldClose(_glfw_window))
     {
@@ -101,137 +106,50 @@ void cr::display::start(
         if (!_in_draft_mode && draft_mode_changed)
         {
             draft_mode_changed = false;
-            renderer->get()->start();
+            renderer.get()->start();
         }
         else if (_in_draft_mode && draft_mode_changed)
         {
             draft_mode_changed = false;
-            renderer->get()->pause();
+            renderer.get()->pause();
         }
 
         // Root imgui node (Not visible)
         ui::root_node(ui_ctx);
 
+        ImGui::PushFont(font);
+
+        ui::scene_preview(
+          renderer.get(),
+          draft_renderer.get(),
+          _target_texture,
+          _scene_texture_handle,
+          _compute_shader_program,
+          _in_draft_mode);
+
+        static auto messages = std::vector<std::string>();
+
+        if (current_frame == 0)
+            messages.push_back("Welcome to CRender - The discord for support / updates is ");
+
+        cr::logger::read_messages(messages);
+
+        ui::console(messages);
+        messages.clear();
+
+
+        ui::settings(&renderer, &scene, &thread_pool, _in_draft_mode);
+
+        //        if (new_font != nullptr)
+        ImGui::PopFont();
+        /*
         ui::render_quality(renderer->get(), *thread_pool);
-
-        {
-            // Render export frame
-            ImGui::Begin("Export");
-
-            static auto file_string = std::array<char, 32>();
-            ImGui::InputTextWithHint("File Name (JPG)", "Max 32 chars", file_string.data(), 32);
-
-            if (ImGui::Button("Save"))
-            {
-                // Checking if the file already exists
-                auto directory      = std::string("./out/") + file_string.data() + ".jpg";
-                auto attempt_number = 1;
-                while (std::filesystem::exists(directory))
-                    directory = std::string("./out/") + file_string.data() + ' ' + "(" +
-                      std::to_string(attempt_number++) + ")" + ".jpg";
-
-                const auto data = renderer->get()->current_progress();
-
-                auto char_data = std::vector<uint8_t>(data->width() * data->height() * 4);
-                for (auto i = 0; i < char_data.size(); i++)
-                    char_data[i] = data->data()[i] * 255.f;
-
-                stbi_write_jpg(
-                  directory.c_str(),
-                  data->width(),
-                  data->height(),
-                  4,
-                  char_data.data(),
-                  100);
-            }
-
-            ImGui::End();
-        }
-
-        {
-            ImGui::Begin("Skybox");
-
-            static std::string current_skybox;
-            bool               throw_away = false;
-
-            if (ImGui::BeginCombo("Select Skybox", current_skybox.c_str()))
-            {
-                for (const auto &entry : std::filesystem::directory_iterator("./assets/skybox"))
-                {
-                    if (entry.is_directory()) continue;
-
-                    if (ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
-                    {
-                        current_skybox = entry.path().string();
-                        break;
-                    }
-                }
-                ImGui::EndCombo();
-            }
-
-            if (!current_skybox.empty() && ImGui::Button("Load Skybox"))
-            {
-                // Load skybox in
-                renderer->get()->update([&scene, current_skybox = current_skybox] {
-                    auto image = cr::asset_loader::load_picture(current_skybox);
-
-                    auto skybox = cr::image(image.colour, image.res.x, image.res.y);
-
-                    scene->get()->set_skybox(std::move(skybox));
-                });
-            }
-
-            static auto rotation = glm::vec2();
-            ImGui::DragFloat2("Rotation", glm::value_ptr(rotation), 0.f, 1.f);
-
-            ImGui::SameLine();
-            if (ImGui::Button("Update"))
-                renderer->get()->update([&scene](){
-                    scene->get()->set_skybox_rotation(rotation);
-                });
-
-            ImGui::End();
-        }
 
         {
             // Render model loader
             ImGui::Begin("Model Loader");
 
-            static std::string current_directory;
-            static std::string current_model;
-            bool               throw_away = false;
 
-            if (ImGui::BeginCombo("Select Model", current_directory.c_str()))
-            {
-                for (const auto &entry : std::filesystem::directory_iterator("./assets/models"))
-                {
-                    if (!entry.is_directory()) continue;
-
-                    const auto model_path = cr::asset_loader::valid_directory(entry);
-                    if (!model_path.has_value()) continue;
-
-                    // Go through each file in the directory
-                    if (ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
-                    {
-                        current_directory = entry.path().string();
-                        current_model     = model_path.value();
-                        break;
-                    }
-                }
-                ImGui::EndCombo();
-            }
-
-            if (current_model != std::filesystem::path() && ImGui::Button("Load Model"))
-            {
-                // Load model in
-                const auto model_data = cr::asset_loader::load_model(current_model, current_directory);
-
-                if (!_in_draft_mode)
-                    renderer->get()->update(
-                      [&scene, &model_data] { scene->get()->add_model(model_data); });
-                else
-                    scene->get()->add_model(model_data);
-            }
 
             ImGui::End();
         }
@@ -258,91 +176,7 @@ void cr::display::start(
             // Render middle thing
             ImGui::Begin("Scene Preview");
 
-            auto window_size = ImGui::GetContentRegionAvail();
 
-            if (_in_draft_mode)
-            {
-                draft_renderer->get()->render();
-                ImGui::Image((void *) draft_renderer->get()->rendered_texture(), window_size);
-            }
-            else
-            {
-                glBindTexture(GL_TEXTURE_2D, _target_texture);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexImage2D(
-                  GL_TEXTURE_2D,
-                  0,
-                  GL_RGBA8,
-                  static_cast<int>(window_size.x),
-                  static_cast<int>(window_size.y),
-                  0,
-                  GL_RGBA,
-                  GL_UNSIGNED_BYTE,
-                  nullptr);
-                glBindImageTexture(0, _target_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
-
-                const auto current_progress = renderer->get()->current_progress();
-                // Upload rendered scene to GPU
-                glBindTexture(GL_TEXTURE_2D, _scene_texture_handle);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-                glTexImage2D(
-                  GL_TEXTURE_2D,
-                  0,
-                  GL_RGBA8,
-                  current_progress->width(),
-                  current_progress->height(),
-                  0,
-                  GL_RGBA,
-                  GL_FLOAT,
-                  current_progress->data());
-                glActiveTexture(GL_TEXTURE1);
-
-                // Set uniforms
-                {
-                    static auto current_translation = glm::vec2(0.0f, 0.0f);
-                    static auto current_zoom        = float(1);
-                    if (ImGui::IsWindowHovered())
-                    {
-                        current_zoom += io.MouseWheel * -.05;
-
-                        if (ImGui::IsMouseDown(0))
-                        {
-                            const auto delta =
-                              glm::vec2(io.MouseDelta.x, io.MouseDelta.y) * glm::vec2(-1, -1);
-                            current_translation.x += delta.x;
-                            current_translation.y += delta.y;
-                        }
-                    }
-
-                    glUniform2fv(
-                      glGetUniformLocation(_compute_shader_program, "translation"),
-                      1,
-                      glm::value_ptr(current_translation));
-
-                    glUniform1f(
-                      glGetUniformLocation(_compute_shader_program, "zoom"),
-                      current_zoom);
-                }
-
-                {
-                    glUseProgram(_compute_shader_program);
-
-                    glDispatchCompute(
-                      static_cast<int>(window_size.x),
-                      static_cast<int>(window_size.y),
-                      1);
-
-                    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-                }
-                ImGui::Image((void *) _scene_texture_handle, window_size);
-            }
 
             ImGui::End();
         }
@@ -529,6 +363,7 @@ void cr::display::start(
 
             ImGui::End();
         }
+         */
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         ImGui::Render();
@@ -538,11 +373,16 @@ void cr::display::start(
         _timer.frame_stop();
         glfwSwapBuffers(_glfw_window);
 
-        if (_key_states[static_cast<int>(key_code::KEY_R)] == key_state::pressed &&
-            !io.WantCaptureKeyboard)
+        if (
+          _key_states[static_cast<int>(key_code::KEY_R)] == key_state::pressed &&
+          !io.WantCaptureKeyboard)
         {
             _in_draft_mode     = !_in_draft_mode;
             draft_mode_changed = true;
+            if (_in_draft_mode)
+                cr::logger::info("Switched to draft mode");
+            else
+                cr::logger::info("Switched to path tracing mode");
         }
 
         glfwSetInputMode(
@@ -550,8 +390,10 @@ void cr::display::start(
           GLFW_CURSOR,
           _in_draft_mode ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 
-        if (_in_draft_mode) _update_camera(scene->get()->registry()->camera());
+        if (_in_draft_mode) _update_camera(scene.get()->registry()->camera());
         _poll_events();
+
+        current_frame++;
     }
     glDeleteTextures(1, &_scene_texture_handle);
     stop();
