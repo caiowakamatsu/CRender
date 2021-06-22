@@ -374,6 +374,10 @@ namespace cr::ui
                 scene->get()->set_skybox(std::move(skybox));
 
                 cr::logger::info("Finished loading skybox in [{}s]", timer.time_since_start());
+                cr::logger::info(
+                  "-- Skybox Stats\n\tResolution:\n\t\tX: [{}]\n\t\tY: [{}]",
+                  image.res.x,
+                  image.res.y);
             });
         }
 
