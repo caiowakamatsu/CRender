@@ -93,3 +93,8 @@ cr::registry *cr::scene::registry()
 {
     return &_entities;
 }
+
+const std::vector<cr::scene::mesh_index> &cr::scene::models() const noexcept
+{
+    return _models;
+}

@@ -7,6 +7,7 @@
 #include <render/timer.h>
 #include <render/draft/draft_renderer.h>
 #include <util/asset_loader.h>
+#include <util/algorithm.h>
 #include <stb/stbi_image_write.h>
 #include <stb/stb_image.h>
 #include "display.h"
@@ -281,9 +282,7 @@ namespace cr::ui
         ImGui::InputInt("Count", &target_spp, 16, 64);
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Set amount of samples per pixel you want to render, 0 for no limit");
-        if (ImGui::Button("Set target sample count"))
-            renderer->set_target_spp(target_spp);
-
+        if (ImGui::Button("Set target sample count")) renderer->set_target_spp(target_spp);
     }
 
     inline void setting_export(std::unique_ptr<cr::renderer> *renderer)
@@ -323,8 +322,62 @@ namespace cr::ui
         }
     }
 
-    inline void setting_materials(cr::scene *scene) {
-        scene->registry()->entities
+    inline void setting_materials(cr::scene *scene)
+    {
+        const auto &models = scene->models();
+
+        if (models.size() > 0)
+        {
+            ImGui::BeginChild(
+              "setting-materials-models-child",
+              { 0, ImGui::GetContentRegionAvail().y / 5 });
+            static auto selected_index   = 0;
+            bool        selected_changed = true;
+            for (auto i = 0; i < models.size(); i++)
+            {
+                const auto &model = models[i];
+                if (ImGui::Button(model.object_name.c_str()))
+                {
+                    if (selected_index != i) selected_changed = true;
+                    selected_index = i;
+                }
+            }
+            ImGui::EndChild();
+
+            ImGui::BeginChild("settings-materials-materials-list");
+
+            static auto material_search_string = std::array<char, 65>();
+            material_search_string[64] = '\0';
+            ImGui::InputTextWithHint(
+              "Material name",
+              "Max 64 chars",
+              material_search_string.data(),
+              64);
+
+            static auto materials = std::vector<cr::material>();
+            if (selected_changed)
+            {
+                selected_changed = false;
+                materials.clear();
+                for (auto i = models[selected_index].index_start;
+                     i < models[selected_index].index_end;
+                     i++)
+                    materials.push_back(scene->meshes()[i].material);
+            }
+
+            // This is a cool Imgui thing im going to make (search thing)
+            const auto found_material_indices = cr::algorithm::find_string_matches<cr::material>(
+              std::string(material_search_string.data()),
+              materials,
+              [](const cr::material &material) {
+                  return material.info.name;
+              });
+
+            for (const auto index : found_material_indices)
+                ImGui::Text("%s", materials[index].info.name.c_str());
+
+            ImGui::EndChild();
+        }
     }
 
     inline void setting_asset_loader(
@@ -510,7 +563,7 @@ namespace cr::ui
         {
         case 0: setting_render(renderer->get(), *pool); break;
         case 1: setting_export(renderer); break;
-        case 2: setting_materials(); break;
+        case 2: setting_materials(scene->get()); break;
         case 3: setting_asset_loader(renderer, scene, draft_mode); break;
         case 4: setting_stats(); break;
         case 5: setting_style(); break;

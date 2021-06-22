@@ -43,6 +43,8 @@ namespace cr
 
         [[nodiscard]] cr::registry *registry();
 
+        [[nodiscard]] const std::vector<mesh_index> &models() const noexcept;
+
     private:
         std::optional<cr::image> _skybox;
 
