@@ -225,7 +225,21 @@ namespace cr::ui
         if (resolution.y == 0) resolution.y = renderer->current_resolution().y;
 
         ImGui::InputInt2("Resolution", glm::value_ptr(resolution));
-        ImGui::InputInt("Max Bounces", &bounces);
+        ImGui::InputInt("Max Bounces (?)", &bounces);
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+
+            ImGui::Text("How many times can the ray bounce around before getting terminated");
+            ImGui::Separator();
+            ImGui::Text("Suggested amounts");
+            ImGui::Text("---------");
+            ImGui::Text("< 4 | Not suggested");
+            ImGui::Text("5-12 | Good for general use");
+            ImGui::Text("12-20 | Enough for near perfect lighting");
+            ImGui::Text("> 20 | Not suggest, performance to lighting tradeoff not optimal");
+            ImGui::EndTooltip();
+        }
         ImGui::InputInt("Thread Count", &thread_count);
 
         if (ImGui::Button("Update"))
@@ -263,7 +277,8 @@ namespace cr::ui
                 cr::logger::warn("Cannot start the renderer when it's started");
         }
         static auto target_spp = int(0);
-        ImGui::InputInt("Target Sample Count (?)", &target_spp, 16, 64);
+        ImGui::Text("Target Sample Count (?)");
+        ImGui::InputInt("Count", &target_spp, 16, 64);
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Set amount of samples per pixel you want to render, 0 for no limit");
         if (ImGui::Button("Set target sample count"))
@@ -427,7 +442,9 @@ namespace cr::ui
     {
         ImGui::Separator();
         ImGui::Indent(4.0f);
-        ImGui::Text("Custom Theme");
+        ImGui::Text("Custom Theme (?)");
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Don't like the default colours? Spice it up a bit!");
 
         static std::string current_directory;
         static std::string current_font;
@@ -506,7 +523,7 @@ namespace cr::ui
     {
         ImGui::Begin("Console");
 
-        ImGui::Text("Console Output - Useful for nerds");
+        ImGui::Text("Console Output");
         ImGui::Separator();
 
         ImGui::BeginChild("Console-Text-Region");
