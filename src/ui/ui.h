@@ -247,15 +247,14 @@ namespace cr::ui
         static auto file_string = std::array<char, 32>();
         ImGui::InputTextWithHint("File Name", "Max 32 chars", file_string.data(), 32);
 
-        static const auto export_types = std::array<std::string, 3>({"PNG", "JPG", "EXR"});
+        static const auto export_types = std::array<std::string, 3>({ "PNG", "JPG", "EXR" });
 
         static auto current_type = 0;
 
         if (ImGui::BeginCombo("Export Type", export_types[current_type].c_str()))
         {
             for (auto i = 0; i < 3; i++)
-                if (ImGui::Button(export_types[i].c_str()))
-                    current_type = i;
+                if (ImGui::Button(export_types[i].c_str())) current_type = i;
             ImGui::EndCombo();
         }
 
@@ -327,6 +326,18 @@ namespace cr::ui
             else
                 scene->get()->add_model(model_data);
             cr::logger::info("Finished loading model in [{}s]", timer.time_since_start());
+
+            auto texture_count = 0;
+            for (const auto &material : model_data.materials)
+                if (material.info.tex.has_value()) texture_count++;
+
+            cr::logger::info(
+              "-- Model Stats\n\tVertices: [{}]\n\tTriangles: [{}]\n\tMaterials: [{}]\n\tTextures: "
+              "[{}]",
+              model_data.vertices.size(),
+              model_data.vertex_indices.size() / 3,
+              model_data.materials.size(),
+              texture_count);
         }
 
         ImGui::Unindent(4.f);
