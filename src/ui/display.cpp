@@ -31,7 +31,56 @@ cr::display::display()
     imnodes::Initialize();
 
     glGenTextures(1, &_scene_texture_handle);
+
     glGenTextures(1, &_target_texture);
+
+    // Load the compute shader into the string
+    {
+        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/compute.glsl");
+        auto shader_string_stream  = std::stringstream();
+        shader_string_stream << shader_file_in_stream.rdbuf();
+        const auto shader_source = shader_string_stream.str();
+
+        // Create OpenGL shader
+        auto       shader_handle = glCreateShader(GL_COMPUTE_SHADER);
+        const auto shader_string = shader_source.c_str();
+        glShaderSource(shader_handle, 1, &shader_string, nullptr);
+        glCompileShader(shader_handle);
+
+        auto success = int(0);
+        auto log     = std::array<char, 512>();
+        glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &success);
+
+        if (!success)
+        {
+            glGetShaderInfoLog(shader_handle, 512, nullptr, log.data());
+            cr::logger::error("Compiling shader [{}], with error [{}]\n", "vertex", log.data());
+        }
+        _compute_shader_id = shader_handle;
+    }
+
+    {
+        // Create OpenGL program
+        auto program_handle = glCreateProgram();
+
+        glAttachShader(program_handle, _compute_shader_id);
+        glLinkProgram(program_handle);
+
+        auto success = int(0);
+        auto log     = std::array<char, 512>();
+        glGetProgramiv(program_handle, GL_LINK_STATUS, &success);
+
+        // If it failed, show the error message
+        if (!success)
+        {
+            glGetProgramInfoLog(program_handle, 512, nullptr, log.data());
+            cr::logger::error(
+              "Linking program [{}], with error [{}]\n",
+              program_handle,
+              log.data());
+        }
+        _compute_shader_program = program_handle;
+    }
 
     glfwSetWindowUserPointer(_glfw_window, this);
 
@@ -460,8 +509,8 @@ void cr::display::_update_camera(cr::camera *camera)
     translation *= static_cast<float>(_timer.since_last_frame()) * 5.75f;
 
     if (
-      _key_states[static_cast<int>(key_code::KEY_A)] == key_state::held ||
-      _key_states[static_cast<int>(key_code::KEY_A)] == key_state::repeat)
+      _key_states[static_cast<int>(key_code::KEY_LEFT_SHIFT)] == key_state::held ||
+      _key_states[static_cast<int>(key_code::KEY_LEFT_SHIFT)] == key_state::repeat)
         translation *= 5;
 
     camera->translate(translation);

@@ -108,23 +108,31 @@ namespace cr::ui
       GLuint              target_texture,
       GLuint              scene_texture,
       GLuint              compute_program,
-      bool in_draft_mode)
+      bool                in_draft_mode)
     {
         ImGui::Begin("Scene Preview");
         auto window_size = ImGui::GetContentRegionAvail();
 
         if (in_draft_mode)
         {
+            static auto current_resolution = window_size;
+            if (current_resolution.x != window_size.x || current_resolution.y != window_size.y)
+            {
+                draft_renderer->set_resolution(window_size.x, window_size.y);
+                current_resolution = window_size;
+            }
+
             draft_renderer->render();
             ImGui::Image((void *) draft_renderer->rendered_texture(), window_size);
         }
         else
         {
+            glUseProgram(compute_program);
             glBindTexture(GL_TEXTURE_2D, target_texture);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexImage2D(
               GL_TEXTURE_2D,
               0,
@@ -140,10 +148,10 @@ namespace cr::ui
             const auto current_progress = renderer->current_progress();
             // Upload rendered scene to GPU
             glBindTexture(GL_TEXTURE_2D, scene_texture);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
             glTexImage2D(
               GL_TEXTURE_2D,
@@ -159,7 +167,7 @@ namespace cr::ui
 
             // Set uniforms
             {
-                auto io = ImGui::GetIO();
+                auto        io                  = ImGui::GetIO();
                 static auto current_translation = glm::vec2(0.0f, 0.0f);
                 static auto current_zoom        = float(1);
                 if (ImGui::IsWindowHovered())
@@ -175,25 +183,33 @@ namespace cr::ui
                     }
                 }
 
+                glUniform1f(glGetUniformLocation(compute_program, "zoom"), current_zoom);
+
                 glUniform2fv(
                   glGetUniformLocation(compute_program, "translation"),
                   1,
                   glm::value_ptr(current_translation));
 
-                glUniform1f(glGetUniformLocation(compute_program, "zoom"), current_zoom);
+                glUniform2i(
+                  glGetUniformLocation(compute_program, "target_size"),
+                  window_size.x,
+                  window_size.y);
+
+                glUniform2i(
+                  glGetUniformLocation(compute_program, "scene_size"),
+                  current_progress->width(),
+                  current_progress->height());
             }
 
             {
-                glUseProgram(compute_program);
-
                 glDispatchCompute(
-                  static_cast<int>(window_size.x),
-                  static_cast<int>(window_size.y),
+                  static_cast<int>(glm::ceil(window_size.x / 8)),
+                  static_cast<int>(glm::ceil(window_size.y / 8)),
                   1);
 
                 glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
             }
-            ImGui::Image((void *) scene_texture, window_size);
+            ImGui::Image((void *) target_texture, window_size);
         }
         ImGui::End();
     }
@@ -327,11 +343,11 @@ namespace cr::ui
         {
             // Load skybox in
             renderer->get()->update([&scene, current_skybox = current_skybox] {
-              auto image = cr::asset_loader::load_picture(current_skybox);
+                auto image = cr::asset_loader::load_picture(current_skybox);
 
-              auto skybox = cr::image(image.colour, image.res.x, image.res.y);
+                auto skybox = cr::image(image.colour, image.res.x, image.res.y);
 
-              scene->get()->set_skybox(std::move(skybox));
+                scene->get()->set_skybox(std::move(skybox));
             });
         }
 
@@ -340,9 +356,7 @@ namespace cr::ui
 
         ImGui::SameLine();
         if (ImGui::Button("Update"))
-            renderer->get()->update([&scene](){
-              scene->get()->set_skybox_rotation(rotation);
-            });
+            renderer->get()->update([&scene]() { scene->get()->set_skybox_rotation(rotation); });
 
         ImGui::Unindent(8.f);
     }
@@ -359,7 +373,7 @@ namespace cr::ui
 
         static std::string current_directory;
         static std::string current_font;
-        bool throw_away = false;
+        bool               throw_away = false;
         ImGui::Indent(4.0f);
         if (ImGui::BeginCombo("Select Font", current_directory.c_str()))
         {
@@ -374,7 +388,7 @@ namespace cr::ui
                 if (ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
                 {
                     current_directory = entry.path().string();
-                    current_font     = font_path.value();
+                    current_font      = font_path.value();
                     break;
                 }
             }
@@ -383,11 +397,10 @@ namespace cr::ui
 
         if (current_font != std::filesystem::path() && ImGui::Button("Load Font"))
         {
-            auto io = ImGui::GetIO();
+            auto io  = ImGui::GetIO();
             new_font = current_font;
         }
         ImGui::Unindent(8.0f);
-
     }
 
     inline void settings(
@@ -399,8 +412,8 @@ namespace cr::ui
         ImGui::Begin("Misc");
 
         // List all of the different settings
-        static const auto window_settings =
-          std::array<std::string, 6>({ "Render", "Export", "Materials", "Asset Loader", "Stats", "Settyle"});
+        static const auto window_settings = std::array<std::string, 6>(
+          { "Render", "Export", "Materials", "Asset Loader", "Stats", "Settyle" });
 
         static auto selected_window = 0;
 
@@ -444,14 +457,11 @@ namespace cr::ui
 
         static auto lines_to_display = std::vector<std::string>();
         lines_to_display.reserve(lines_to_display.size() + lines.size());
-        for (const auto &string : lines)
-            lines_to_display.push_back(string);
+        for (const auto &string : lines) lines_to_display.push_back(string);
 
-        for (const auto &line : lines_to_display)
-            ImGui::Text("%s", line.c_str());
+        for (const auto &line : lines_to_display) ImGui::Text("%s", line.c_str());
 
-        if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
-            ImGui::SetScrollHereY(1.0f);
+        if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) ImGui::SetScrollHereY(1.0f);
 
         ImGui::EndChild();
 
