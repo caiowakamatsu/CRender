@@ -245,29 +245,37 @@ namespace cr::ui
     inline void setting_export(std::unique_ptr<cr::renderer> *renderer)
     {
         static auto file_string = std::array<char, 32>();
-        ImGui::InputTextWithHint("File Name (JPG)", "Max 32 chars", file_string.data(), 32);
+        ImGui::InputTextWithHint("File Name", "Max 32 chars", file_string.data(), 32);
+
+        static const auto export_types = std::array<std::string, 3>({"PNG", "JPG", "EXR"});
+
+        static auto current_type = 0;
+
+        if (ImGui::BeginCombo("Export Type", export_types[current_type].c_str()))
+        {
+            for (auto i = 0; i < 3; i++)
+                if (ImGui::Button(export_types[i].c_str()))
+                    current_type = i;
+            ImGui::EndCombo();
+        }
+
+        auto selected_type = cr::asset_loader::image_type::PNG;
+
+        switch (current_type)
+        {
+        case 0: selected_type = asset_loader::image_type::PNG; break;
+        case 1: selected_type = asset_loader::image_type::JPG; break;
+        case 2: selected_type = asset_loader::image_type::EXR; break;
+        }
 
         if (ImGui::Button("Save"))
         {
-            // Checking if the file already exists
-            auto directory      = std::string("./out/") + file_string.data() + ".jpg";
-            auto attempt_number = 1;
-            while (std::filesystem::exists(directory))
-                directory = std::string("./out/") + file_string.data() + ' ' + "(" +
-                  std::to_string(attempt_number++) + ")" + ".jpg";
+            cr::logger::info("Starting to export image [{}]", file_string.data());
+            auto timer = cr::timer();
 
             const auto data = renderer->get()->current_progress();
 
-            auto char_data = std::vector<uint8_t>(data->width() * data->height() * 4);
-            for (auto i = 0; i < char_data.size(); i++) char_data[i] = data->data()[i] * 255.f;
-
-            stbi_write_jpg(
-              directory.c_str(),
-              data->width(),
-              data->height(),
-              4,
-              char_data.data(),
-              100);
+            cr::asset_loader::export_framebuffer(*data, file_string.data(), selected_type);
         }
     }
 
@@ -307,6 +315,8 @@ namespace cr::ui
 
         if (current_model != std::filesystem::path() && ImGui::Button("Load Model"))
         {
+            cr::logger::info("Starting to load model [{}]", current_model);
+            auto timer = cr::timer();
             // Load model in
             const auto model_data = cr::asset_loader::load_model(current_model, current_directory);
 
@@ -315,6 +325,7 @@ namespace cr::ui
                   [&scene, &model_data] { scene->get()->add_model(model_data); });
             else
                 scene->get()->add_model(model_data);
+            cr::logger::info("Finished loading model in [{}s]", timer.time_since_start());
         }
 
         ImGui::Unindent(4.f);
@@ -323,8 +334,8 @@ namespace cr::ui
         ImGui::Text("Skybox Loader");
         ImGui::Indent(4.f);
 
-        static std::string current_skybox;
-        if (ImGui::BeginCombo("Select Skybox", current_skybox.c_str()))
+        static std::filesystem::path current_skybox;
+        if (ImGui::BeginCombo("Select Skybox", current_skybox.string().c_str()))
         {
             for (const auto &entry : std::filesystem::directory_iterator("./assets/skybox"))
             {
@@ -332,7 +343,7 @@ namespace cr::ui
 
                 if (ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
                 {
-                    current_skybox = entry.path().string();
+                    current_skybox = entry.path();
                     break;
                 }
             }
@@ -341,13 +352,16 @@ namespace cr::ui
 
         if (!current_skybox.empty() && ImGui::Button("Load Skybox"))
         {
+            auto timer = cr::timer();
             // Load skybox in
-            renderer->get()->update([&scene, current_skybox = current_skybox] {
-                auto image = cr::asset_loader::load_picture(current_skybox);
-
+            cr::logger::info("Started to load skybox [{}]", current_skybox.stem().string());
+            renderer->get()->update([&scene, current_skybox = current_skybox, &timer] {
+                auto image  = cr::asset_loader::load_picture(current_skybox.string());
                 auto skybox = cr::image(image.colour, image.res.x, image.res.y);
 
                 scene->get()->set_skybox(std::move(skybox));
+
+                cr::logger::info("Finished loading skybox in [{}s]", timer.time_since_start());
             });
         }
 

@@ -33,11 +33,19 @@ namespace cr::asset_loader
         glm::ivec2         res;
         std::vector<float> colour;
     };
-    [[nodiscard]] picture_data load_picture(const std::string &file);
 
+    [[nodiscard]] picture_data load_picture(const std::string &file);
     [[nodiscard]] std::optional<std::string>
       valid_directory(const std::filesystem::directory_entry &directory);
 
     [[nodiscard]] std::optional<std::string>
       valid_font(const std::filesystem::directory_entry &directory);
+
+    enum class image_type
+    {
+        PNG,
+        JPG,
+        EXR
+    };
+    void export_framebuffer(const cr::image &buffer, const std::string &path, image_type type);
 }    // namespace cr::asset_loader

@@ -194,7 +194,8 @@ void cr::display::start(
         static auto messages = std::vector<std::string>();
 
         if (current_frame == 0)
-            messages.push_back("Welcome to CRender - The discord for support / updates is ");
+            messages.push_back("Welcome to CRender - The discord for support / updates is https://discord.gg/ZjrRyKXpWg");
+
 
         cr::logger::read_messages(messages);
 
