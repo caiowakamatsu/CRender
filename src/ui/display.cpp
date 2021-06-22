@@ -145,6 +145,21 @@ void cr::display::start(
     bool draft_mode_changed = false;
     while (!glfwWindowShouldClose(_glfw_window))
     {
+        if (ui::new_theme.has_value())
+        {
+            switch (ui::new_theme.value())
+            {
+            case ImGuiThemes::theme::RED: cr::ImGuiThemes::Red(); break;
+            case ImGuiThemes::theme::CORPORATE_GREY: cr::ImGuiThemes::CorporateGrey(); break;
+            case ImGuiThemes::theme::CHERRY: cr::ImGuiThemes::CherryTheme(); break;
+            case ImGuiThemes::theme::DARK_CHARCOAL: cr::ImGuiThemes::DarkCharcoal(); break;
+            case ImGuiThemes::theme::VISUAL_STUDIO: cr::ImGuiThemes::VisualStudio(); break;
+            case ImGuiThemes::theme::GREEN: cr::ImGuiThemes::Green(); break;
+            }
+
+            ui::new_theme.reset();
+        }
+
         _timer.frame_start();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -185,7 +200,6 @@ void cr::display::start(
 
         ui::console(messages);
         messages.clear();
-
 
         ui::settings(&renderer, &scene, &thread_pool, _in_draft_mode);
 

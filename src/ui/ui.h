@@ -363,43 +363,40 @@ namespace cr::ui
 
     inline void setting_stats() { ImGui::Text("This is still under construction"); }
 
-    static auto new_font = std::string();
-
-    inline void setting_style()
+    inline std::optional<cr::ImGuiThemes::theme> new_theme;
+    inline void                                  setting_style()
     {
         ImGui::Separator();
         ImGui::Indent(4.0f);
-        ImGui::Text("Font Loader");
+        ImGui::Text("Custom Theme");
 
         static std::string current_directory;
         static std::string current_font;
         bool               throw_away = false;
         ImGui::Indent(4.0f);
-        if (ImGui::BeginCombo("Select Font", current_directory.c_str()))
-        {
-            for (const auto &entry : std::filesystem::directory_iterator("./assets/app/fonts"))
-            {
-                if (entry.is_directory()) continue;
 
-                const auto font_path = cr::asset_loader::valid_font(entry);
-                if (!font_path.has_value()) continue;
+        ImGui::BeginChild("style-child-region", { 0, ImGui::GetContentRegionAvail().y / 5 });
 
-                // Go through each file in the directory
-                if (ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
-                {
-                    current_directory = entry.path().string();
-                    current_font      = font_path.value();
-                    break;
-                }
-            }
-            ImGui::EndCombo();
-        }
+        static const auto styles =
+          std::array<std::string, 4>({ "Red", "Corporate Grey", "Cherry", "Dark Charcoal" });
 
-        if (current_font != std::filesystem::path() && ImGui::Button("Load Font"))
-        {
-            auto io  = ImGui::GetIO();
-            new_font = current_font;
-        }
+        for (auto i = 0; i < styles.size(); i++)
+            if (ImGui::Button(styles[i].c_str()))
+                if (i == 0)
+                    new_theme = cr::ImGuiThemes::theme::RED;
+                else if (i == 1)
+                    new_theme = cr::ImGuiThemes::theme::CORPORATE_GREY;
+                else if (i == 2)
+                    new_theme = cr::ImGuiThemes::theme::CHERRY;
+                else if (i == 3)
+                    new_theme = cr::ImGuiThemes::theme::DARK_CHARCOAL;
+                else if (i == 4)
+                    new_theme = cr::ImGuiThemes::theme::VISUAL_STUDIO;
+                else if (i == 5)
+                    new_theme = cr::ImGuiThemes::theme::GREEN;
+
+        ImGui::EndChild();
+
         ImGui::Unindent(8.0f);
     }
 
