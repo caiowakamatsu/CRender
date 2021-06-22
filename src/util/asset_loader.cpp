@@ -162,7 +162,6 @@ cr::asset_loader::model_data
 
     if (!reader.ParseFromFile(file, readerConfig) && !reader.Error().empty())
         cr::exit("Couldn't parse OBJ from file");
-    cr::logger::warn("Obj stuff: [{}]", reader.Warning());
 
     auto &attrib    = reader.GetAttrib();
     auto &shapes    = reader.GetShapes();
