@@ -15,6 +15,8 @@ namespace cr::asset_loader
 {
     struct model_data
     {
+        std::string name;
+
         std::vector<glm::vec3> vertices;
         std::vector<material>  materials;
         std::vector<glm::vec2> texture_coords;

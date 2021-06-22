@@ -323,7 +323,9 @@ namespace cr::ui
         }
     }
 
-    inline void setting_materials() { ImGui::Text("This is currently being worked on"); }
+    inline void setting_materials(cr::scene *scene) {
+        scene->registry()->entities
+    }
 
     inline void setting_asset_loader(
       std::unique_ptr<cr::renderer> *renderer,

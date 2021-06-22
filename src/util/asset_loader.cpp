@@ -154,6 +154,7 @@ cr::asset_loader::model_data
   cr::asset_loader::load_model(const std::string &file, const std::string &folder)
 {
     auto model_data = cr::asset_loader::model_data();
+    model_data.name = std::filesystem::path(file).filename().stem().string();
 
     tinyobj::ObjReaderConfig readerConfig;
     readerConfig.triangulate = true;

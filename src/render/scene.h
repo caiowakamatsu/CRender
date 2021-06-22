@@ -20,6 +20,13 @@ namespace cr
     class scene
     {
     public:
+        struct mesh_index
+        {
+            std::string object_name;
+            uint64_t    index_start;
+            uint64_t    index_end;
+        };
+
         scene() = default;
 
         void add_model(const cr::asset_loader::model_data &model);
@@ -34,12 +41,14 @@ namespace cr
 
         [[nodiscard]] const std::vector<cr::mesh> &meshes() const noexcept;
 
-        [[nodiscard]] cr::registry* registry();
+        [[nodiscard]] cr::registry *registry();
 
     private:
         std::optional<cr::image> _skybox;
 
         std::vector<cr::mesh> _meshes;
+
+        std::vector<mesh_index> _models;
 
         glm::vec2 _skybox_rotation;
 
