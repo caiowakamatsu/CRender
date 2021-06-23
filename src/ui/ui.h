@@ -384,11 +384,12 @@ namespace cr::ui
                   : material.info.type == material::smooth                       ? 1
                                                                                  : 2;
 
-                if (ImGui::BeginCombo(("Type##" + material.info.name).c_str(), material_types[current_type].c_str()))
+                if (ImGui::BeginCombo(
+                      ("Type##" + material.info.name).c_str(),
+                      material_types[current_type].c_str()))
                 {
                     for (auto i = 0; i < material_types.size(); i++)
-                        if (ImGui::Button(material_types[i].c_str()))
-                            current_type = i;
+                        if (ImGui::Button(material_types[i].c_str())) current_type = i;
                     ImGui::EndCombo();
                 }
 
@@ -418,9 +419,7 @@ namespace cr::ui
                       1);
                     break;
 
-                case material::smooth:
-
-                    break;
+                case material::smooth: break;
 
                 case material::glass:
                     ImGui::SliderFloat(
@@ -437,10 +436,10 @@ namespace cr::ui
                   0,
                   50);
 
-                ImGui::ColorEdit3(
-                  ("Colour##" + material.info.name).c_str(),
-                  glm::value_ptr(material.info.colour));
-
+                if (!material.info.tex.has_value())
+                    ImGui::ColorEdit3(
+                      ("Colour##" + material.info.name).c_str(),
+                      glm::value_ptr(material.info.colour));
 
                 ImGui::Unindent(8.f);
             }
