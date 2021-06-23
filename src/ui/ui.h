@@ -238,7 +238,7 @@ namespace cr::ui
             ImGui::Text("< 4 | Not suggested");
             ImGui::Text("5-12 | Good for general use");
             ImGui::Text("12-20 | Enough for near perfect lighting");
-            ImGui::Text("> 20 | Not suggest, performance to lighting tradeoff not optimal");
+            ImGui::Text("> 20 | Not suggested, performance to lighting tradeoff not optimal");
             ImGui::EndTooltip();
         }
         ImGui::InputInt("Thread Count", &thread_count);
@@ -347,7 +347,7 @@ namespace cr::ui
             ImGui::BeginChild("settings-materials-materials-list");
 
             static auto material_search_string = std::array<char, 65>();
-            material_search_string[64] = '\0';
+            material_search_string[64]         = '\0';
             ImGui::InputTextWithHint(
               "Material name",
               "Max 64 chars",
@@ -369,12 +369,86 @@ namespace cr::ui
             const auto found_material_indices = cr::algorithm::find_string_matches<cr::material>(
               std::string(material_search_string.data()),
               materials,
-              [](const cr::material &material) {
-                  return material.info.name;
-              });
+              [](const cr::material &material) { return material.info.name; });
 
             for (const auto index : found_material_indices)
-                ImGui::Text("%s", materials[index].info.name.c_str());
+            {
+                auto &material = materials[index];
+                ImGui::Separator();
+                ImGui::Indent(4.f);
+                ImGui::Text("%s", material.info.name.c_str());
+                ImGui::Indent(4.f);
+                static const auto material_types =
+                  std::array<std::string, 3>({ "Metal", "Smooth", "Glass" });
+                static auto current_type = material.info.type == material::metal ? 0
+                  : material.info.type == material::smooth                       ? 1
+                                                                                 : 2;
+
+                if (ImGui::BeginCombo(("Type##" + material.info.name).c_str(), material_types[current_type].c_str()))
+                {
+                    for (auto i = 0; i < material_types.size(); i++)
+                        if (ImGui::Button(material_types[i].c_str()))
+                            current_type = i;
+                    ImGui::EndCombo();
+                }
+
+                switch (current_type)
+                {
+                case 0: material.info.type = material::metal; break;
+                case 1: material.info.type = material::smooth; break;
+                case 2: material.info.type = material::glass; break;
+                }
+
+                ImGui::Separator();
+
+                switch (material.info.type)
+                {
+                case material::metal:
+
+                    ImGui::SliderFloat(
+                      ("Roughness##" + material.info.name).c_str(),
+                      &material.info.roughness,
+                      0,
+                      1);
+
+                    ImGui::SliderFloat(
+                      ("Roughness##" + material.info.name).c_str(),
+                      &material.info.roughness,
+                      0,
+                      1);
+                    break;
+
+                case material::smooth:
+
+                    break;
+
+                case material::glass:
+                    ImGui::SliderFloat(
+                      ("IOR##" + material.info.name).c_str(),
+                      &material.info.ior,
+                      1,
+                      2);
+                    break;
+                }
+
+                ImGui::SliderFloat(
+                  ("Emission##" + material.info.name).c_str(),
+                  &material.info.emission,
+                  0,
+                  50);
+
+                ImGui::ColorEdit3(
+                  ("Colour##" + material.info.name).c_str(),
+                  glm::value_ptr(material.info.colour));
+
+
+                ImGui::Unindent(8.f);
+            }
+
+            if (ImGui::Button("Update Materials"))
+            {
+                // Update materials here
+            }
 
             ImGui::EndChild();
         }
