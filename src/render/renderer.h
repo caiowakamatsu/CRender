@@ -16,6 +16,7 @@
 #include <render/scene.h>
 #include <objects/thread_pool.h>
 #include <util/sampling.h>
+#include <render/timer.h>
 
 namespace cr
 {
@@ -43,6 +44,14 @@ namespace cr
 
         void set_target_spp(uint64_t target);
 
+        struct renderer_stats
+        {
+            uint64_t rays_per_second;
+            uint64_t samples_per_second;
+        };
+
+        [[nodiscard]] renderer_stats current_stats();
+
         [[nodiscard]] uint64_t current_sample_count() const noexcept;
 
         [[nodiscard]] glm::ivec2 current_resolution() const noexcept;
@@ -57,6 +66,8 @@ namespace cr
         [[nodiscard]] std::vector<std::function<void()>> _get_tasks();
 
         void _sample_pixel(uint64_t x, uint64_t y);
+
+        cr::timer _timer;
 
         cr::camera *                      _camera;
         uint64_t                          _res_x;

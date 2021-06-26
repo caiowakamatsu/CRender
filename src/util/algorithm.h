@@ -17,9 +17,9 @@ namespace cr::algorithm
 
     template<typename T>
     [[nodiscard]] inline std::vector<size_t> find_string_matches(
-      const std::string &                           source,
-      const std::vector<T> &                        objects,
-      std::function<std::string (const T &)> string_fetch)
+      const std::string &                   source,
+      const std::vector<T> &                objects,
+      std::function<std::string(const T &)> string_fetch)
     {
         auto indices = std::vector<size_t>();
         indices.reserve(objects.size());
@@ -27,14 +27,13 @@ namespace cr::algorithm
         for (auto i = 0; i < objects.size(); i++)
         {
             const auto id = string_fetch(objects[i]);
-            if (id.find(source) != std::string::npos)
-                indices.push_back(i);
+            if (id.find(source) != std::string::npos) indices.push_back(i);
         }
 
         return indices;
     }
 
-    template <typename T>
+    template<typename T>
     [[nodiscard]] inline std::vector<size_t>
       find_string_matches(const std::string &source, const std::vector<T> &objects)
     {

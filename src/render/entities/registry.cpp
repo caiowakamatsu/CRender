@@ -29,7 +29,7 @@ cr::registry::registry()
     entities.emplace<std::string>(_camera_entity, "Camera");
 }
 
-cr::raster_objects cr::registry::register_model(const cr::asset_loader::model_data &data)
+cr::registry::registered_model cr::registry::register_model(const cr::asset_loader::model_data &data)
 {
     // Expand the data we have have from the indices. Why?
     // Good question - I'm waiting on Intels Embree team to reply to my github issue
@@ -95,7 +95,11 @@ cr::raster_objects cr::registry::register_model(const cr::asset_loader::model_da
       entity,
       std::string("Model - " + std::to_string(++current_model_count)));
 
-    return _get_meshes_by_material(data);
+
+    auto model = registered_model();
+    model.meshes = _get_meshes_by_material(data);
+    model.entity_handle = entity;
+    return model;
 }
 
 cr::raster_objects cr::registry::_get_meshes_by_material(const cr::asset_loader::model_data &data)

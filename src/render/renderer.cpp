@@ -255,3 +255,8 @@ uint64_t cr::renderer::current_sample_count() const noexcept
 {
     return _current_sample.load();
 }
+
+cr::renderer::renderer_stats cr::renderer::current_stats()
+{
+    return cr::renderer::renderer_stats();
+}

@@ -30,15 +30,16 @@ namespace
 
 void cr::scene::add_model(const cr::asset_loader::model_data &model)
 {
-    const auto mesh = _entities.register_model(model);
-    auto mesh_index = scene::mesh_index();
-    mesh_index.object_name = model.name;
-    mesh_index.index_start = _meshes.size();
-    mesh_index.index_end = _meshes.size() + mesh.meshes.size() - 1;
+    const auto  registered_model = _entities.register_model(model);
+    const auto &mesh             = registered_model.meshes;
+    auto        mesh_index       = scene::mesh_index();
+    mesh_index.object_name       = model.name;
+    mesh_index.index_start       = _meshes.size();
+    mesh_index.index_end         = _meshes.size() + mesh.meshes.size();
+    mesh_index.entity_handle     = registered_model.entity_handle;
     _models.push_back(std::move(mesh_index));
 
-    for (const auto inner_mesh : mesh.meshes)
-        _meshes.push_back(inner_mesh);
+    for (const auto inner_mesh : mesh.meshes) _meshes.push_back(inner_mesh);
 }
 
 void cr::scene::set_skybox(cr::image &&skybox)
@@ -97,4 +98,8 @@ cr::registry *cr::scene::registry()
 const std::vector<cr::scene::mesh_index> &cr::scene::models() const noexcept
 {
     return _models;
+}
+std::vector<cr::mesh> &cr::scene::meshes()
+{
+    return _meshes;
 }

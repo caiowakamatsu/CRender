@@ -114,38 +114,15 @@ namespace cr::ui
         ImGui::Begin("Scene Preview");
         auto window_size = ImGui::GetContentRegionAvail();
 
+        auto texture_to_display = GLuint(-1);
+
         if (in_draft_mode)
         {
-            static auto current_resolution = window_size;
-            if (current_resolution.x != window_size.x || current_resolution.y != window_size.y)
-            {
-                draft_renderer->set_resolution(window_size.x, window_size.y);
-                current_resolution = window_size;
-            }
-
             draft_renderer->render();
-            ImGui::Image((void *) draft_renderer->rendered_texture(), window_size);
+            texture_to_display = draft_renderer->rendered_texture();
         }
         else
         {
-            glUseProgram(compute_program);
-            glBindTexture(GL_TEXTURE_2D, target_texture);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexImage2D(
-              GL_TEXTURE_2D,
-              0,
-              GL_RGBA8,
-              static_cast<int>(window_size.x),
-              static_cast<int>(window_size.y),
-              0,
-              GL_RGBA,
-              GL_UNSIGNED_BYTE,
-              nullptr);
-            glBindImageTexture(0, target_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
-
             const auto current_progress = renderer->current_progress();
             // Upload rendered scene to GPU
             glBindTexture(GL_TEXTURE_2D, scene_texture);
@@ -164,58 +141,79 @@ namespace cr::ui
               GL_RGBA,
               GL_FLOAT,
               current_progress->data());
-            glActiveTexture(GL_TEXTURE1);
-
-            // Set uniforms
-            {
-                auto        io                  = ImGui::GetIO();
-                static auto current_translation = glm::vec2(0.0f, 0.0f);
-                static auto current_zoom        = float(1);
-                if (ImGui::IsWindowHovered())
-                {
-                    current_zoom += io.MouseWheel * -.05;
-
-                    if (ImGui::IsMouseDown(0))
-                    {
-                        const auto delta =
-                          glm::vec2(io.MouseDelta.x, io.MouseDelta.y) * glm::vec2(-1, -1);
-                        current_translation.x += delta.x;
-                        current_translation.y += delta.y;
-                    }
-                }
-
-                glUniform1f(glGetUniformLocation(compute_program, "zoom"), current_zoom);
-
-                glUniform2fv(
-                  glGetUniformLocation(compute_program, "translation"),
-                  1,
-                  glm::value_ptr(current_translation));
-
-                glUniform2i(
-                  glGetUniformLocation(compute_program, "target_size"),
-                  window_size.x,
-                  window_size.y);
-
-                glUniform2i(
-                  glGetUniformLocation(compute_program, "scene_size"),
-                  current_progress->width(),
-                  current_progress->height());
-            }
-
-            {
-                glDispatchCompute(
-                  static_cast<int>(glm::ceil(window_size.x / 8)),
-                  static_cast<int>(glm::ceil(window_size.y / 8)),
-                  1);
-
-                glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-            }
-            ImGui::Image((void *) target_texture, window_size);
+            texture_to_display = scene_texture;
         }
+
+        glActiveTexture(GL_TEXTURE1);
+
+        // Set uniforms
+        {
+            auto        io                  = ImGui::GetIO();
+            static auto current_translation = glm::vec2(0.0f, 0.0f);
+            static auto current_zoom        = float(1);
+            if (ImGui::IsWindowHovered())
+            {
+                current_zoom += io.MouseWheel * -.05;
+
+                if (ImGui::IsMouseDown(0))
+                {
+                    const auto delta =
+                      glm::vec2(io.MouseDelta.x, io.MouseDelta.y) * glm::vec2(-1, -1);
+                    current_translation.x += delta.x;
+                    current_translation.y += delta.y;
+                }
+            }
+
+            glUniform1f(glGetUniformLocation(compute_program, "zoom"), current_zoom);
+
+            glUniform2fv(
+              glGetUniformLocation(compute_program, "translation"),
+              1,
+              glm::value_ptr(current_translation));
+
+            glUniform2i(
+              glGetUniformLocation(compute_program, "target_size"),
+              window_size.x,
+              window_size.y);
+
+            glUniform2i(
+              glGetUniformLocation(compute_program, "scene_size"),
+              renderer->current_resolution().x,
+              renderer->current_resolution().y);
+        }
+
+        {
+            glUseProgram(compute_program);
+            glBindTexture(GL_TEXTURE_2D, target_texture);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexImage2D(
+              GL_TEXTURE_2D,
+              0,
+              GL_RGBA8,
+              static_cast<int>(window_size.x),
+              static_cast<int>(window_size.y),
+              0,
+              GL_RGBA,
+              GL_UNSIGNED_BYTE,
+              nullptr);
+            glClearTexImage(target_texture, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+            glBindImageTexture(0, target_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+
+            glDispatchCompute(
+              static_cast<int>(glm::ceil(window_size.x / 8)),
+              static_cast<int>(glm::ceil(window_size.y / 8)),
+              1);
+
+            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+        }
+        ImGui::Image((void *) target_texture, window_size);
         ImGui::End();
     }
 
-    inline void setting_render(cr::renderer *renderer, std::unique_ptr<cr::thread_pool> &pool)
+    inline void setting_render(cr::renderer *renderer, cr::draft_renderer *draft_renderer, std::unique_ptr<cr::thread_pool> &pool)
     {
         static auto resolution   = glm::ivec2();
         static auto bounces      = int(5);
@@ -245,9 +243,10 @@ namespace cr::ui
 
         if (ImGui::Button("Update"))
         {
-            renderer->update([renderer, &pool]() {
+            renderer->update([renderer, draft_renderer, &pool]() {
                 renderer->set_max_bounces(bounces);
                 renderer->set_resolution(resolution.x, resolution.y);
+                draft_renderer->set_resolution(resolution.x, resolution.y);
                 pool = std::make_unique<cr::thread_pool>(thread_count);
             });
         }
@@ -322,7 +321,7 @@ namespace cr::ui
         }
     }
 
-    inline void setting_materials(cr::scene *scene)
+    inline void setting_materials(cr::renderer *renderer, cr::scene *scene)
     {
         const auto &models = scene->models();
 
@@ -332,7 +331,7 @@ namespace cr::ui
               "setting-materials-models-child",
               { 0, ImGui::GetContentRegionAvail().y / 5 });
             static auto selected_index   = 0;
-            bool        selected_changed = true;
+            bool        selected_changed = false;
             for (auto i = 0; i < models.size(); i++)
             {
                 const auto &model = models[i];
@@ -348,17 +347,23 @@ namespace cr::ui
 
             static auto material_search_string = std::array<char, 65>();
             material_search_string[64]         = '\0';
-            ImGui::InputTextWithHint(
+            const auto changed                 = ImGui::InputTextWithHint(
               "Material name",
               "Max 64 chars",
               material_search_string.data(),
               64);
 
-            static auto materials = std::vector<cr::material>();
-            if (selected_changed)
+            static auto materials  = std::vector<cr::material>();
+            static auto first_time = true;
+            if (selected_changed || first_time)
             {
                 selected_changed = false;
                 materials.clear();
+                auto &registry_materials =
+                  scene->registry()
+                    ->entities
+                    .get<cr::entity::model_materials>(models[selected_index].entity_handle)
+                    .materials;
                 for (auto i = models[selected_index].index_start;
                      i < models[selected_index].index_end;
                      i++)
@@ -366,10 +371,13 @@ namespace cr::ui
             }
 
             // This is a cool Imgui thing im going to make (search thing)
-            const auto found_material_indices = cr::algorithm::find_string_matches<cr::material>(
-              std::string(material_search_string.data()),
-              materials,
-              [](const cr::material &material) { return material.info.name; });
+            static auto found_material_indices = std::vector<size_t>();
+
+            if (changed || first_time)
+                found_material_indices = cr::algorithm::find_string_matches<cr::material>(
+                  std::string(material_search_string.data()),
+                  materials,
+                  [](const cr::material &material) { return material.info.name; });
 
             for (const auto index : found_material_indices)
             {
@@ -380,9 +388,9 @@ namespace cr::ui
                 ImGui::Indent(4.f);
                 static const auto material_types =
                   std::array<std::string, 3>({ "Metal", "Smooth", "Glass" });
-                static auto current_type = material.info.type == material::metal ? 0
-                  : material.info.type == material::smooth                       ? 1
-                                                                                 : 2;
+                auto current_type = material.info.type == material::metal ? 0
+                  : material.info.type == material::smooth                ? 1
+                                                                          : 2;
 
                 if (ImGui::BeginCombo(
                       ("Type##" + material.info.name).c_str(),
@@ -405,13 +413,6 @@ namespace cr::ui
                 switch (material.info.type)
                 {
                 case material::metal:
-
-                    ImGui::SliderFloat(
-                      ("Roughness##" + material.info.name).c_str(),
-                      &material.info.roughness,
-                      0,
-                      1);
-
                     ImGui::SliderFloat(
                       ("Roughness##" + material.info.name).c_str(),
                       &material.info.roughness,
@@ -446,10 +447,22 @@ namespace cr::ui
 
             if (ImGui::Button("Update Materials"))
             {
-                // Update materials here
+                const auto &model = models[selected_index];
+                renderer->update([materials = materials, scene, &model] {
+                    for (auto i = model.index_start; i < model.index_end; i++)
+                    {
+                        //                        scene->meshes()[i].material = materials[i];
+                        auto &registry_materials =
+                          scene->registry()
+                            ->entities.get<cr::entity::model_materials>(model.entity_handle)
+                            .materials;
+                        registry_materials = materials;
+                    }
+                });
             }
 
             ImGui::EndChild();
+            first_time = false;
         }
     }
 
@@ -606,6 +619,7 @@ namespace cr::ui
 
     inline void settings(
       std::unique_ptr<cr::renderer> *   renderer,
+      std::unique_ptr<cr::draft_renderer> *   draft_renderer,
       std::unique_ptr<cr::scene> *      scene,
       std::unique_ptr<cr::thread_pool> *pool,
       bool                              draft_mode)
@@ -634,9 +648,9 @@ namespace cr::ui
 
         switch (selected_window)
         {
-        case 0: setting_render(renderer->get(), *pool); break;
+        case 0: setting_render(renderer->get(), draft_renderer->get(), *pool); break;
         case 1: setting_export(renderer); break;
-        case 2: setting_materials(scene->get()); break;
+        case 2: setting_materials(renderer->get(), scene->get()); break;
         case 3: setting_asset_loader(renderer, scene, draft_mode); break;
         case 4: setting_stats(); break;
         case 5: setting_style(); break;

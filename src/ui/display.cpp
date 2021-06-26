@@ -202,7 +202,7 @@ void cr::display::start(
         ui::console(messages);
         messages.clear();
 
-        ui::settings(&renderer, &scene, &thread_pool, _in_draft_mode);
+        ui::settings(&renderer, &draft_renderer, &scene, &thread_pool, _in_draft_mode);
 
         //        if (new_font != nullptr)
         ImGui::PopFont();

@@ -22,9 +22,10 @@ namespace cr
     public:
         struct mesh_index
         {
-            std::string object_name;
-            uint64_t    index_start;
+            uint32_t    entity_handle;
             uint64_t    index_end;
+            uint64_t    index_start;
+            std::string object_name;
         };
 
         scene() = default;
@@ -40,6 +41,8 @@ namespace cr
         [[nodiscard]] cr::ray::intersection_record cast_ray(const cr::ray ray);
 
         [[nodiscard]] const std::vector<cr::mesh> &meshes() const noexcept;
+
+        [[nodiscard]] std::vector<cr::mesh> &meshes();
 
         [[nodiscard]] cr::registry *registry();
 
