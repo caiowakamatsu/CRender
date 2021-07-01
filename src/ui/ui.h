@@ -656,7 +656,7 @@ namespace cr::ui
         case 1: setting_export(renderer); break;
         case 2: setting_materials(renderer->get(), scene->get()); break;
         case 3: setting_asset_loader(renderer, scene, draft_mode); break;
-        case 4: setting_stats(); break;
+        case 4: setting_stats(renderer->get()); break;
         case 5: setting_style(); break;
         }
 

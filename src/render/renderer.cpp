@@ -106,6 +106,7 @@ bool cr::renderer::start()
         _timer.reset();
         for (auto i = 0; i < _res_x * _res_y * 3; i++) _raw_buffer[i] = 0.0f;
         _current_sample = 0;
+        _total_rays = 0;
 
         auto guard = std::unique_lock(_start_mutex);
         _start_cond_var.notify_all();
