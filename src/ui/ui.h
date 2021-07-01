@@ -114,38 +114,6 @@ namespace cr::ui
         ImGui::Begin("Scene Preview");
         auto window_size = ImGui::GetContentRegionAvail();
 
-        auto texture_to_display = GLuint(-1);
-
-        if (in_draft_mode)
-        {
-            draft_renderer->render();
-            texture_to_display = draft_renderer->rendered_texture();
-        }
-        else
-        {
-            const auto current_progress = renderer->current_progress();
-            // Upload rendered scene to GPU
-            glBindTexture(GL_TEXTURE_2D, scene_texture);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-            glTexImage2D(
-              GL_TEXTURE_2D,
-              0,
-              GL_RGBA8,
-              current_progress->width(),
-              current_progress->height(),
-              0,
-              GL_RGBA,
-              GL_FLOAT,
-              current_progress->data());
-            texture_to_display = scene_texture;
-        }
-
-        glActiveTexture(GL_TEXTURE1);
-
         // Set uniforms
         {
             auto        io                  = ImGui::GetIO();
@@ -183,12 +151,7 @@ namespace cr::ui
         }
 
         {
-            glUseProgram(compute_program);
             glBindTexture(GL_TEXTURE_2D, target_texture);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexImage2D(
               GL_TEXTURE_2D,
               0,
@@ -201,6 +164,35 @@ namespace cr::ui
               nullptr);
             glClearTexImage(target_texture, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
             glBindImageTexture(0, target_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+
+            if (in_draft_mode)
+            {
+                draft_renderer->render();
+
+                glUseProgram(compute_program);
+                const auto rendered = draft_renderer->rendered_texture();
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, rendered);
+            }
+            else
+            {
+                const auto current_progress = renderer->current_progress();
+                // Upload rendered scene to GPU
+                glUseProgram(compute_program);
+                glBindTexture(GL_TEXTURE_2D, scene_texture);
+                glTexImage2D(
+                  GL_TEXTURE_2D,
+                  0,
+                  GL_RGBA8,
+                  current_progress->width(),
+                  current_progress->height(),
+                  0,
+                  GL_RGBA,
+                  GL_FLOAT,
+                  current_progress->data());
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, scene_texture);
+            }
 
             glDispatchCompute(
               static_cast<int>(glm::ceil(window_size.x / 8)),
@@ -576,7 +568,19 @@ namespace cr::ui
         ImGui::Unindent(8.f);
     }
 
-    inline void setting_stats() { ImGui::Text("This is still under construction"); }
+    inline void setting_stats(cr::renderer *renderer)
+    {
+        ImGui::Indent(4.f);
+
+        const auto stats = renderer->current_stats();
+
+        ImGui::Text("%s", fmt::format("Rays per second: [{}]", stats.rays_per_second).c_str());
+        ImGui::Text("%s", fmt::format("Samples per second: [{}]", stats.samples_per_second).c_str());
+        ImGui::Text("%s", fmt::format("Total Rays Fired: [{}]", stats.total_rays).c_str());
+        ImGui::Text("%s", fmt::format("Running Time: [{}]", stats.running_time).c_str());
+
+        ImGui::Unindent(4.f);
+    }
 
     inline std::optional<cr::ImGuiThemes::theme> new_theme;
     inline void                                  setting_style()

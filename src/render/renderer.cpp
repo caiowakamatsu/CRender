@@ -12,7 +12,6 @@ namespace
     struct processed_hit
     {
         float     emission;
-        float     reflectiveness;
         glm::vec3 albedo;
         cr::ray   ray;
     };
@@ -20,6 +19,9 @@ namespace
       process_hit(const cr::ray::intersection_record &record, const cr::ray &ray)
     {
         auto out = processed_hit();
+
+        // Calculate some "required" values
+        const auto cos_theta = glm::abs(glm::dot(out.ray.direction, record.normal));
 
         out.emission = record.material->info.emission;
         if (record.material->info.tex.has_value())
@@ -32,17 +34,13 @@ namespace
         case cr::material::metal:
             out.ray.origin    = record.intersection_point + record.normal * 0.0001f;
             out.ray.direction = glm::reflect(ray.direction, record.normal);
-
-            out.reflectiveness = 0.5;
             break;
         case cr::material::smooth:
-            auto cos_hemp_dir = cr::sampling::hemp_rand();
-            if (glm::dot(cos_hemp_dir, record.normal) < 0.0f) cos_hemp_dir *= -1.f;
+            auto cos_hemp_dir =
+              cr::sampling::hemp_cos(record.normal, glm::vec2(::randf(), ::randf()));
 
             out.ray.origin    = record.intersection_point + record.normal * 0.0001f;
             out.ray.direction = glm::normalize(cos_hemp_dir);
-
-            out.reflectiveness = std::fmaxf(0.f, glm::dot(record.normal, out.ray.direction));
             break;
         }
 
@@ -75,10 +73,11 @@ cr::renderer::renderer(
             {
                 if (_current_sample == _spp_target && _current_sample != 0)
                     cr::logger::info(
-                      "Finished rendering [{}] samples at resolution [X: {}, Y: {}]",
+                      "Finished rendering [{}] samples at resolution [X: {}, Y: {}], took: [{}]s",
                       _spp_target,
                       _res_x,
-                      _res_y);
+                      _res_y,
+                      _timer.time_since_start());
 
                 {
                     auto guard = std::unique_lock(_pause_mutex);
@@ -104,6 +103,7 @@ bool cr::renderer::start()
     {
         _pause = false;
         _buffer.clear();
+        _timer.reset();
         for (auto i = 0; i < _res_x * _res_y * 3; i++) _raw_buffer[i] = 0.0f;
         _current_sample = 0;
 
@@ -141,7 +141,7 @@ void cr::renderer::set_resolution(int x, int y)
     _res_x = x;
     _res_y = y;
 
-    _aspect_correction = static_cast<float>(_res_x) / static_cast<float>(_res_y);
+    _aspect_correction = static_cast<float>(_res_x) / _res_y;
 
     _buffer         = cr::image(x, y);
     _raw_buffer     = std::vector<float>(x * y * 3);
@@ -183,13 +183,15 @@ std::vector<std::function<void()>> cr::renderer::_get_tasks()
 
     for (auto y = 0; y < _res_y; y++)
         tasks.emplace_back([this, y] {
-            for (auto x = 0; x < _res_x; x++) this->_sample_pixel(x, y);
+            auto fired_rays = size_t(0);
+            for (auto x = 0; x < _res_x; x++) this->_sample_pixel(x, y, fired_rays);
+            _total_rays += fired_rays;
         });
 
     return std::move(tasks);
 }
 
-void cr::renderer::_sample_pixel(uint64_t x, uint64_t y)
+void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
 {
     auto ray = _camera->get_ray(
       ((static_cast<float>(x) + ::randf()) / _res_x) * _aspect_correction,
@@ -198,7 +200,8 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y)
     auto throughput = glm::vec3(1.0f, 1.0f, 1.0f);
     auto final      = glm::vec3(0.0f, 0.0f, 0.0f);
 
-    for (auto i = 0; i < _max_bounces; i++)
+    auto total_bounces = 1;
+    for (auto i = 0; i < _max_bounces; i++, total_bounces++)
     {
         auto intersection = _scene->get()->cast_ray(ray);
 
@@ -209,20 +212,22 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y)
               0.5f - asinf(ray.direction.y) / 3.1415f);
 
             const auto miss_sample = _scene->get()->sample_skybox(miss_uv.x, miss_uv.y);
-            final += throughput * miss_sample;
 
+            final += throughput * miss_sample;
             break;
         }
         else
         {
             const auto processed = ::process_hit(intersection, ray);
 
-            final += throughput * processed.emission * processed.albedo;
-            throughput *= processed.albedo * processed.reflectiveness;
+            throughput *= processed.albedo;
+            final += throughput * processed.emission;
 
             ray = processed.ray;
         }
     }
+    fired_rays += total_bounces;
+
     // flip Y
     y = _res_y - 1 - y;
 
@@ -258,5 +263,10 @@ uint64_t cr::renderer::current_sample_count() const noexcept
 
 cr::renderer::renderer_stats cr::renderer::current_stats()
 {
-    return cr::renderer::renderer_stats();
+    auto stats               = cr::renderer::renderer_stats();
+    stats.rays_per_second    = _total_rays / _timer.time_since_start();
+    stats.samples_per_second = _current_sample / _timer.time_since_start();
+    stats.total_rays         = _total_rays;
+    stats.running_time       = _timer.time_since_start();
+    return stats;
 }

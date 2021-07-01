@@ -14,6 +14,7 @@
 
 #include <render/camera.h>
 #include <render/scene.h>
+#include <render/brdf.h>
 #include <objects/thread_pool.h>
 #include <util/sampling.h>
 #include <render/timer.h>
@@ -48,6 +49,8 @@ namespace cr
         {
             uint64_t rays_per_second;
             uint64_t samples_per_second;
+            uint64_t total_rays;
+            double running_time;
         };
 
         [[nodiscard]] renderer_stats current_stats();
@@ -65,7 +68,7 @@ namespace cr
     private:
         [[nodiscard]] std::vector<std::function<void()>> _get_tasks();
 
-        void _sample_pixel(uint64_t x, uint64_t y);
+        void _sample_pixel(uint64_t x, uint64_t , size_t &fired_rays);
 
         cr::timer _timer;
 
@@ -87,6 +90,7 @@ namespace cr
         std::atomic<bool>     _run_management = true;
         std::atomic<bool>     _pause          = false;
         std::atomic<uint64_t> _max_bounces;
+        std::atomic<uint64_t> _total_rays;
         std::atomic<uint64_t> _current_sample = 0;
         std::thread           _management_thread;
 

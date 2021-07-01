@@ -13,6 +13,7 @@ namespace cr
     public:
         timer();
 
+        void reset();
         void stop();
         void frame_start();
         void frame_stop();
