@@ -27,13 +27,19 @@ namespace cr
         entt::basic_registry<uint32_t> entities;
 
         /* Load a model into the register after loading it in */
-        [[nodiscard]] cr::raster_objects register_model(const cr::asset_loader::model_data &data);
+        struct registered_model
+        {
+            uint32_t          entity_handle;
+            cr::raster_objects meshes;
+        };
+        [[nodiscard]] registered_model register_model(const cr::asset_loader::model_data &data);
 
     private:
+        [[nodiscard]] cr::raster_objects
+          _get_meshes_by_material(const cr::asset_loader::model_data &data);
 
-        [[nodiscard]] cr::raster_objects _get_meshes_by_material(const cr::asset_loader::model_data &data);
-
-        [[nodiscard]] cr::raster_objects _upload_temporary_meshes(const std::vector<cr::temporary_mesh> &meshes);
+        [[nodiscard]] cr::raster_objects
+          _upload_temporary_meshes(const std::vector<cr::temporary_mesh> &meshes);
 
         [[nodiscard]] std::vector<float> _zip_mesh_data(const cr::temporary_mesh &mesh);
 

@@ -59,6 +59,18 @@ namespace cr::sampling
             return f0 + (glm::vec3(f90, f90, f90) - f0) * glm::pow(1.0f - u, 5.0f);
         }
 
+        /**
+         * Specular F (Fresnel)
+         *
+         * F(v,h,f0,f90) = f0 + (f90 - f0) (1 - v * h) ^ 5
+         *
+         */
+        [[nodiscard]] inline glm::vec3 specular_f(float u, const float f0)
+        {
+            const auto f = glm::pow(1.0f - u, 5.0f);
+            return glm::vec3(f + f0 * (1.0f - f));
+        }
+
     }    // namespace cook_torrence
 
     [[nodiscard]] inline glm::vec3 hemp_rand()
@@ -74,6 +86,24 @@ namespace cr::sampling
 
             return glm::normalize(point);
         }
+    }
+
+    [[nodiscard]] inline glm::vec3 sphere(const glm::vec2 uv)
+    {
+        const auto cos_theta = 2.0f * uv.x - 1.0f;
+        const auto sin_theta = glm::sqrt(1.0f - cos_theta * cos_theta);
+
+        const auto phi = 2.0f * 3.1415f * uv.y;
+        const auto sin_phi = glm::sin(phi);
+        const auto cos_phi = glm::cos(phi);
+
+        return glm::vec3(sin_theta * cos_phi, cos_theta, sin_theta * sin_phi);
+    }
+
+    [[nodiscard]] inline glm::vec3 hemp_cos(const glm::vec3 normal, const glm::vec2 uv)
+    {
+        const auto p = sphere(uv);
+        return normal + p;
     }
 
     [[nodiscard]] inline glm::vec3 cos_hemp(const float x, const float y)

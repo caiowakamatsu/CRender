@@ -15,6 +15,7 @@ namespace cr
         {
             metal,
             smooth,
+            glass
         };
 
         [[nodiscard]] static std::string get_type_name(type type)

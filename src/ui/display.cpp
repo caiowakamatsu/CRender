@@ -9,7 +9,7 @@
 cr::display::display()
 {
     glfwSetErrorCallback([](int error, const char *description) {
-        fmt::print("Error [{}], Description [{}]", error, description);
+        cr::logger::error("GLFW Failed with error [{}], description [{}]", error, description);
     });
 
     const auto init_glfw = glfwInit();
@@ -31,7 +31,66 @@ cr::display::display()
     imnodes::Initialize();
 
     glGenTextures(1, &_scene_texture_handle);
+    glBindTexture(GL_TEXTURE_2D, _scene_texture_handle);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     glGenTextures(1, &_target_texture);
+    glBindTexture(GL_TEXTURE_2D, _target_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Load the compute shader into the string
+    {
+        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/compute.glsl");
+        auto shader_string_stream  = std::stringstream();
+        shader_string_stream << shader_file_in_stream.rdbuf();
+        const auto shader_source = shader_string_stream.str();
+
+        // Create OpenGL shader
+        auto       shader_handle = glCreateShader(GL_COMPUTE_SHADER);
+        const auto shader_string = shader_source.c_str();
+        glShaderSource(shader_handle, 1, &shader_string, nullptr);
+        glCompileShader(shader_handle);
+
+        auto success = int(0);
+        auto log     = std::array<char, 512>();
+        glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &success);
+
+        if (!success)
+        {
+            glGetShaderInfoLog(shader_handle, 512, nullptr, log.data());
+            cr::logger::error("Compiling shader [{}], with error [{}]\n", "vertex", log.data());
+        }
+        _compute_shader_id = shader_handle;
+    }
+
+    {
+        // Create OpenGL program
+        auto program_handle = glCreateProgram();
+
+        glAttachShader(program_handle, _compute_shader_id);
+        glLinkProgram(program_handle);
+
+        auto success = int(0);
+        auto log     = std::array<char, 512>();
+        glGetProgramiv(program_handle, GL_LINK_STATUS, &success);
+
+        // If it failed, show the error message
+        if (!success)
+        {
+            glGetProgramInfoLog(program_handle, 512, nullptr, log.data());
+            cr::logger::error(
+              "Linking program [{}], with error [{}]\n",
+              program_handle,
+              log.data());
+        }
+        _compute_shader_program = program_handle;
+    }
 
     glfwSetWindowUserPointer(_glfw_window, this);
 
@@ -64,17 +123,17 @@ cr::display::display()
 }
 
 void cr::display::start(
-  std::unique_ptr<cr::scene> *         scene,
-  std::unique_ptr<cr::renderer> *      renderer,
-  std::unique_ptr<cr::draft_renderer> *draft_renderer,
-  std::unique_ptr<cr::thread_pool> *   thread_pool)
+  std::unique_ptr<cr::scene> &         scene,
+  std::unique_ptr<cr::renderer> &      renderer,
+  std::unique_ptr<cr::thread_pool> &   thread_pool,
+  std::unique_ptr<cr::draft_renderer> &draft_renderer)
 {
     auto work_group_max = std::array<int, 3>();
 
     glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &work_group_max[0]);
     glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &work_group_max[1]);
     glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &work_group_max[2]);
-    fmt::print(
+    cr::logger::info(
       "Maximum compute work group count [x: {}, y: {}, z: {}]\n",
       work_group_max[0],
       work_group_max[1],
@@ -83,14 +142,34 @@ void cr::display::start(
     auto &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
+    const auto font = io.Fonts->AddFontFromFileTTF("./assets/app/fonts/Oxygen-Regular.ttf", 18.f);
+
     cr::ImGuiThemes::CorporateGrey();
 
     ImGui_ImplGlfw_InitForOpenGL((GLFWwindow *) _glfw_window, true);
     ImGui_ImplOpenGL3_Init("#version 450");
 
+    auto current_frame = 0;
+
+    cr::logger::info("Starting main display loop");
     bool draft_mode_changed = false;
     while (!glfwWindowShouldClose(_glfw_window))
     {
+        if (ui::new_theme.has_value())
+        {
+            switch (ui::new_theme.value())
+            {
+            case ImGuiThemes::theme::RED: cr::ImGuiThemes::Red(); break;
+            case ImGuiThemes::theme::CORPORATE_GREY: cr::ImGuiThemes::CorporateGrey(); break;
+            case ImGuiThemes::theme::CHERRY: cr::ImGuiThemes::CherryTheme(); break;
+            case ImGuiThemes::theme::DARK_CHARCOAL: cr::ImGuiThemes::DarkCharcoal(); break;
+            case ImGuiThemes::theme::VISUAL_STUDIO: cr::ImGuiThemes::VisualStudio(); break;
+            case ImGuiThemes::theme::GREEN: cr::ImGuiThemes::Green(); break;
+            }
+
+            ui::new_theme.reset();
+        }
+
         _timer.frame_start();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -101,434 +180,42 @@ void cr::display::start(
         if (!_in_draft_mode && draft_mode_changed)
         {
             draft_mode_changed = false;
-            renderer->get()->start();
+            renderer.get()->start();
         }
         else if (_in_draft_mode && draft_mode_changed)
         {
             draft_mode_changed = false;
-            renderer->get()->pause();
+            renderer.get()->pause();
         }
 
         // Root imgui node (Not visible)
         ui::root_node(ui_ctx);
 
-        ui::render_quality(renderer->get(), *thread_pool);
+        ImGui::PushFont(font);
 
-        {
-            // Render export frame
-            ImGui::Begin("Export");
+        ui::scene_preview(
+          renderer.get(),
+          draft_renderer.get(),
+          _target_texture,
+          _scene_texture_handle,
+          _compute_shader_program,
+          _in_draft_mode);
 
-            static auto file_string = std::array<char, 32>();
-            ImGui::InputTextWithHint("File Name (JPG)", "Max 32 chars", file_string.data(), 32);
+        static auto messages = std::vector<std::string>();
 
-            if (ImGui::Button("Save"))
-            {
-                // Checking if the file already exists
-                auto directory      = std::string("./out/") + file_string.data() + ".jpg";
-                auto attempt_number = 1;
-                while (std::filesystem::exists(directory))
-                    directory = std::string("./out/") + file_string.data() + ' ' + "(" +
-                      std::to_string(attempt_number++) + ")" + ".jpg";
+        if (current_frame == 0)
+            messages.push_back("Welcome to CRender - The discord for support / updates is https://discord.gg/ZjrRyKXpWg");
 
-                const auto data = renderer->get()->current_progress();
 
-                auto char_data = std::vector<uint8_t>(data->width() * data->height() * 4);
-                for (auto i = 0; i < char_data.size(); i++)
-                    char_data[i] = data->data()[i] * 255.f;
+        cr::logger::read_messages(messages);
 
-                stbi_write_jpg(
-                  directory.c_str(),
-                  data->width(),
-                  data->height(),
-                  4,
-                  char_data.data(),
-                  100);
-            }
+        ui::console(messages);
+        messages.clear();
 
-            ImGui::End();
-        }
+        ui::settings(&renderer, &draft_renderer, &scene, &thread_pool, _in_draft_mode);
 
-        {
-            ImGui::Begin("Skybox");
-
-            static std::string current_skybox;
-            bool               throw_away = false;
-
-            if (ImGui::BeginCombo("Select Skybox", current_skybox.c_str()))
-            {
-                for (const auto &entry : std::filesystem::directory_iterator("./assets/skybox"))
-                {
-                    if (entry.is_directory()) continue;
-
-                    if (ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
-                    {
-                        current_skybox = entry.path().string();
-                        break;
-                    }
-                }
-                ImGui::EndCombo();
-            }
-
-            if (!current_skybox.empty() && ImGui::Button("Load Skybox"))
-            {
-                // Load skybox in
-                renderer->get()->update([&scene, current_skybox = current_skybox] {
-                    auto image = cr::asset_loader::load_picture(current_skybox);
-
-                    auto skybox = cr::image(image.colour, image.res.x, image.res.y);
-
-                    scene->get()->set_skybox(std::move(skybox));
-                });
-            }
-
-            static auto rotation = glm::vec2();
-            ImGui::DragFloat2("Rotation", glm::value_ptr(rotation), 0.f, 1.f);
-
-            ImGui::SameLine();
-            if (ImGui::Button("Update"))
-                renderer->get()->update([&scene](){
-                    scene->get()->set_skybox_rotation(rotation);
-                });
-
-            ImGui::End();
-        }
-
-        {
-            // Render model loader
-            ImGui::Begin("Model Loader");
-
-            static std::string current_directory;
-            static std::string current_model;
-            bool               throw_away = false;
-
-            if (ImGui::BeginCombo("Select Model", current_directory.c_str()))
-            {
-                for (const auto &entry : std::filesystem::directory_iterator("./assets/models"))
-                {
-                    if (!entry.is_directory()) continue;
-
-                    const auto model_path = cr::asset_loader::valid_directory(entry);
-                    if (!model_path.has_value()) continue;
-
-                    // Go through each file in the directory
-                    if (ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
-                    {
-                        current_directory = entry.path().string();
-                        current_model     = model_path.value();
-                        break;
-                    }
-                }
-                ImGui::EndCombo();
-            }
-
-            if (current_model != std::filesystem::path() && ImGui::Button("Load Model"))
-            {
-                // Load model in
-                const auto model_data = cr::asset_loader::load_model(current_model, current_directory);
-
-                if (!_in_draft_mode)
-                    renderer->get()->update(
-                      [&scene, &model_data] { scene->get()->add_model(model_data); });
-                else
-                    scene->get()->add_model(model_data);
-            }
-
-            ImGui::End();
-        }
-
-        {
-            // Render bottom left thing
-            ImGui::Begin("Scene Objects");
-
-            auto &registry = scene->get()->registry()->entities;
-
-            static auto index = 0;
-            registry.each([&registry, &index = index, this](auto entity) {
-                static auto selected = 0;
-                if (ImGui::RadioButton(registry.get<std::string>(entity).c_str(), &selected, index))
-                    _current_entity = entity;
-                index++;
-            });
-            index = 0;
-
-            ImGui::End();
-        }
-
-        {
-            // Render middle thing
-            ImGui::Begin("Scene Preview");
-
-            auto window_size = ImGui::GetContentRegionAvail();
-
-            if (_in_draft_mode)
-            {
-                draft_renderer->get()->render();
-                ImGui::Image((void *) draft_renderer->get()->rendered_texture(), window_size);
-            }
-            else
-            {
-                glBindTexture(GL_TEXTURE_2D, _target_texture);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexImage2D(
-                  GL_TEXTURE_2D,
-                  0,
-                  GL_RGBA8,
-                  static_cast<int>(window_size.x),
-                  static_cast<int>(window_size.y),
-                  0,
-                  GL_RGBA,
-                  GL_UNSIGNED_BYTE,
-                  nullptr);
-                glBindImageTexture(0, _target_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
-
-                const auto current_progress = renderer->get()->current_progress();
-                // Upload rendered scene to GPU
-                glBindTexture(GL_TEXTURE_2D, _scene_texture_handle);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-                glTexImage2D(
-                  GL_TEXTURE_2D,
-                  0,
-                  GL_RGBA8,
-                  current_progress->width(),
-                  current_progress->height(),
-                  0,
-                  GL_RGBA,
-                  GL_FLOAT,
-                  current_progress->data());
-                glActiveTexture(GL_TEXTURE1);
-
-                // Set uniforms
-                {
-                    static auto current_translation = glm::vec2(0.0f, 0.0f);
-                    static auto current_zoom        = float(1);
-                    if (ImGui::IsWindowHovered())
-                    {
-                        current_zoom += io.MouseWheel * -.05;
-
-                        if (ImGui::IsMouseDown(0))
-                        {
-                            const auto delta =
-                              glm::vec2(io.MouseDelta.x, io.MouseDelta.y) * glm::vec2(-1, -1);
-                            current_translation.x += delta.x;
-                            current_translation.y += delta.y;
-                        }
-                    }
-
-                    glUniform2fv(
-                      glGetUniformLocation(_compute_shader_program, "translation"),
-                      1,
-                      glm::value_ptr(current_translation));
-
-                    glUniform1f(
-                      glGetUniformLocation(_compute_shader_program, "zoom"),
-                      current_zoom);
-                }
-
-                {
-                    glUseProgram(_compute_shader_program);
-
-                    glDispatchCompute(
-                      static_cast<int>(window_size.x),
-                      static_cast<int>(window_size.y),
-                      1);
-
-                    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-                }
-                ImGui::Image((void *) _scene_texture_handle, window_size);
-            }
-
-            ImGui::End();
-        }
-
-        {
-            // Render right thing
-            ImGui::Begin("Property Editor");
-
-            if (_current_entity.has_value())
-            {
-                auto       should_update = false;
-                auto &     registry      = scene->get()->registry()->entities;
-                const auto current_type  = registry.get<cr::entity::type>(_current_entity.value());
-                auto       should_reset  = false;
-                {
-                    static auto current_entity = std::optional<uint64_t>();
-                    if (
-                      !current_entity.has_value() ||
-                      current_entity.value() != _current_entity.value())
-                    {
-                        should_reset   = true;
-                        current_entity = _current_entity.value();
-                    }
-                }
-
-                if (ImGui::Button("Update"))
-                {
-                    renderer->get()->pause();
-                    should_update = true;
-                }
-
-                ImGui::Indent(16.f);
-
-                if (current_type == cr::entity::type::CAMERA)
-                {
-                    const auto &camera = registry.get<cr::camera>(_current_entity.value());
-
-                    static auto position = std::optional<glm::vec3>();
-                    if (!position.has_value()) position = camera.position;
-                    static auto look_at = std::optional<glm::vec3>();
-                    //                    if (!look_at.has_value()) look_at = camera.look_at;
-                    static auto fov = std::optional<float>();
-                    if (!fov.has_value()) fov = camera.fov;
-
-                    ImGui::InputFloat3("Position", glm::value_ptr(position.value()));
-                    //                    ImGui::InputFloat3("Look At",
-                    //                    glm::value_ptr(look_at.value()));
-                    ImGui::SliderFloat("FOV", &fov.value(), 10, 120);
-
-                    if (should_update)
-                    {
-                        //                        registry.get<cr::camera>(_current_entity.value())
-                        //                        =
-                        //                          cr::camera(position.value(), look_at.value(),
-                        //                          fov.value());
-
-                        position.reset();
-                        look_at.reset();
-                        fov.reset();
-                    }
-                }
-                else if (current_type == cr::entity::type::MODEL)
-                {
-                    // This code initializes the value only once with the current model
-                    // Transformations
-                    static auto transforms = std::optional<std::vector<glm::mat4>>();
-                    if (!transforms.has_value() || should_reset)
-                    {
-                        transforms =
-                          registry.get<cr::entity::transforms>(_current_entity.value()).data;
-                    }
-
-                    // Materials
-                    static auto materials = std::optional<cr::entity::model_materials>();
-                    if (!materials.has_value() || should_reset)
-                    {
-                        materials =
-                          registry.get<cr::entity::model_materials>(_current_entity.value());
-                    }
-
-                    // Editor
-                    if (ImGui::CollapsingHeader("Transformations"))
-                    {
-                        ImGui::Indent(16.f);
-                        for (auto &transform : transforms.value())
-                        {
-                            static auto position = glm::vec3(0, 0, 0);
-                            static auto scale    = glm::vec3(1, 1, 1);
-                            ImGui::InputFloat3("Position##Camera", glm::value_ptr(position));
-                            ImGui::InputFloat3("Scale##Camera", glm::value_ptr(scale));
-
-                            transform = glm::translate(transform, -position);
-                            transform = glm::scale(transform, scale);
-                        }
-                        ImGui::Unindent(16.f);
-                    }
-
-                    if (ImGui::CollapsingHeader("Materials"))
-                    {
-                        ImGui::Indent(16.f);
-                        for (auto &material : materials.value().materials)
-                        {
-                            ImGui::Text("%s", material.info.name.c_str());
-                            ImGui::Indent(16.f);
-
-                            // Light type
-                            const char *       items[]      = { "Metal", "Smooth" };
-                            static const char *current_item = nullptr;
-
-                            switch (material.info.type)
-                            {
-                            case cr::material::type::metal: current_item = items[0]; break;
-
-                            case cr::material::type::smooth: current_item = items[1]; break;
-                            }
-
-                            if (ImGui::BeginCombo(
-                                  (std::string("Type") + "##" + material.info.name).c_str(),
-                                  current_item))    // The second parameter is the label
-                                                    // previewed before opening the combo.
-                            {
-                                for (auto &item : items)
-                                {
-                                    bool is_selected =
-                                      (current_item ==
-                                       item);    // You can store your selection however you
-                                                 // want, outside or inside your objects
-                                    if (ImGui::Selectable(item, is_selected)) current_item = item;
-                                    if (is_selected)
-                                        ImGui::SetItemDefaultFocus();    // You may set the
-                                                                         // initial focus when
-                                                                         // opening the combo
-                                                                         // (scrolling + for
-                                                                         // keyboard navigation
-                                                                         // support)
-                                }
-                                ImGui::EndCombo();
-                            }
-
-                            if (current_item == items[0])
-                                material.info.type = cr::material::type::metal;
-                            else if (current_item == items[1])
-                                material.info.type = cr::material::type::smooth;
-
-                            ImGui::SliderFloat(
-                              (std::string("IOR") + "##" + material.info.name).c_str(),
-                              &material.info.ior,
-                              0,
-                              1);
-                            ImGui::SliderFloat(
-                              (std::string("Roughness") + "##" + material.info.name).c_str(),
-                              &material.info.roughness,
-                              0,
-                              1);
-                            ImGui::SliderFloat(
-                              (std::string("Emission") + "##" + material.info.name).c_str(),
-                              &material.info.emission,
-                              0,
-                              50);
-                            ImGui::ColorEdit3(
-                              (std::string("Colour") + "##" + material.info.name).c_str(),
-                              glm::value_ptr(material.info.colour));
-                            ImGui::Unindent(16.f);
-                        }
-                        ImGui::Unindent(16.f);
-                    }
-
-                    if (should_update)
-                    {
-                        // Update the value
-                        registry.get<cr::entity::transforms>(_current_entity.value()).data =
-                          transforms.value();
-                        registry.get<cr::entity::model_materials>(_current_entity.value()) =
-                          materials.value();
-
-                        transforms.reset();
-                        materials.reset();
-                    }
-                }
-
-                ImGui::Unindent(16.f);
-                if (should_update) renderer->get()->start();
-            }
-
-            ImGui::End();
-        }
+        //        if (new_font != nullptr)
+        ImGui::PopFont();
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         ImGui::Render();
@@ -538,11 +225,16 @@ void cr::display::start(
         _timer.frame_stop();
         glfwSwapBuffers(_glfw_window);
 
-        if (_key_states[static_cast<int>(key_code::KEY_R)] == key_state::pressed &&
-            !io.WantCaptureKeyboard)
+        if (
+          _key_states[static_cast<int>(key_code::KEY_R)] == key_state::pressed &&
+          !io.WantCaptureKeyboard)
         {
             _in_draft_mode     = !_in_draft_mode;
             draft_mode_changed = true;
+            if (_in_draft_mode)
+                cr::logger::info("Switched to draft mode");
+            else
+                cr::logger::info("Switched to path tracing mode");
         }
 
         glfwSetInputMode(
@@ -550,8 +242,10 @@ void cr::display::start(
           GLFW_CURSOR,
           _in_draft_mode ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 
-        if (_in_draft_mode) _update_camera(scene->get()->registry()->camera());
+        if (_in_draft_mode) _update_camera(scene.get()->registry()->camera());
         _poll_events();
+
+        current_frame++;
     }
     glDeleteTextures(1, &_scene_texture_handle);
     stop();
@@ -618,8 +312,8 @@ void cr::display::_update_camera(cr::camera *camera)
     translation *= static_cast<float>(_timer.since_last_frame()) * 5.75f;
 
     if (
-      _key_states[static_cast<int>(key_code::KEY_A)] == key_state::held ||
-      _key_states[static_cast<int>(key_code::KEY_A)] == key_state::repeat)
+      _key_states[static_cast<int>(key_code::KEY_LEFT_SHIFT)] == key_state::held ||
+      _key_states[static_cast<int>(key_code::KEY_LEFT_SHIFT)] == key_state::repeat)
         translation *= 5;
 
     camera->translate(translation);

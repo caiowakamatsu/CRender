@@ -15,6 +15,7 @@
 #include <render/entities/components.h>
 #include <util/asset_loader.h>
 #include <util/exception.h>
+#include <util/logger.h>
 
 namespace cr
 {

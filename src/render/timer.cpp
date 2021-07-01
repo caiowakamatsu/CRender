@@ -2,6 +2,8 @@
 
 cr::timer::timer() { start_time = std::chrono::high_resolution_clock::now(); }
 
+void cr::timer::reset() { start_time = std::chrono::high_resolution_clock::now(); }
+
 void cr::timer::stop() { end_time = std::chrono::high_resolution_clock::now(); }
 
 void cr::timer::frame_start() { frame_start_time = std::chrono::high_resolution_clock::now(); }

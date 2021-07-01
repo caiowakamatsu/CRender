@@ -17,6 +17,7 @@
 #include <render/scene.h>
 #include <objects/thread_pool.h>
 #include <util/sampling.h>
+#include <util/logger.h>
 
 #include <glad/glad.h>
 
@@ -34,7 +35,11 @@ namespace cr
 
         void render();
 
+        void set_resolution(uint64_t res_x, uint64_t res_y);
+
     private:
+        void _setup_required();
+
         std::unique_ptr<cr::scene> *_scene = nullptr;
 
         GLuint _framebuffer = -1;

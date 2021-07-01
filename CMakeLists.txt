@@ -5,7 +5,6 @@ set_property(GLOBAL PROPERTY ALLOW_DUPLICATE_CUSTOM_TARGETS 1)
 project(CRender)
 
 set(EMBREE_ISA_AVX512 OFF)
-set(EMBREE_ISA_AVX2 NONE)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR- /arch:AVX /MT /W4 /EHa /EHs")
 
@@ -53,7 +52,7 @@ add_executable(CRender src/main.cpp
         src/render/entities/entity_type.h
         src/render/entities/components.h
         src/render/entities/registry.cpp
-        src/render/entities/registry.h src/render/draft/draft_renderer.cpp src/render/draft/draft_renderer.h src/render/mesh.h src/render/timer.cpp src/render/timer.h)
+        src/render/entities/registry.h src/render/draft/draft_renderer.cpp src/render/draft/draft_renderer.h src/render/mesh.h src/render/timer.cpp src/render/timer.h src/util/logger.h src/util/logger.cpp src/util/numbers.h src/render/brdf.h)
 
 target_include_directories(CRender PRIVATE src)
 target_include_directories(CRender PRIVATE external)

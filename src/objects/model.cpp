@@ -56,7 +56,7 @@ cr::entity::model_geometry cr::model::instance_geometry(
   const std::vector<uint32_t> &tex_indices)
 {
     auto instance = cr::entity::model_geometry();
-    fmt::print("Building model\n\tVertex Count: {}\n", vertices.size());
+    cr::logger::info("Vertex Count: {}\n", vertices.size());
 
     rtcSetSharedGeometryBuffer(
       instance.geometry,

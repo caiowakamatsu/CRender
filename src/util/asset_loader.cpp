@@ -6,9 +6,12 @@
 #include <obj_loader/OBJ_Loader.h>
 
 #include <stb/stb_image.h>
+#include <stb/stbi_image_write.h>
 
 #define TINYEXR_IMPLEMENTATION
 #include <tinyexr/tinyexr.h>
+
+#include <util/logger.h>
 
 namespace
 {
@@ -61,12 +64,97 @@ namespace
         return { dim, std::move(output) };
     }
 
+    void export_png(const cr::image &buffer, const std::string &path)
+    {
+        auto data = std::vector<uint8_t>(buffer.width() * buffer.height() * 4);
+        for (auto i = 0; i < data.size(); i++)
+            data[i] = buffer.data()[i] * 255.f;
+
+        stbi_write_png(
+          path.c_str(),
+          buffer.width(),
+          buffer.height(),
+          4,
+          data.data(),
+          buffer.width() * 4);
+    }
+
+    void export_jpg(const cr::image &buffer, const std::string &path)
+    {
+        auto data = std::vector<uint8_t>(buffer.width() * buffer.height() * 4);
+        for (auto i = 0; i < data.size(); i++) data[i] = buffer.data()[i] * 255.f;
+
+        stbi_write_jpg(path.c_str(), buffer.width(), buffer.height(), 4, data.data(), 100);
+    }
+
+    void export_exr(const cr::image &buffer, const std::string &path)
+    {
+        EXRHeader header;
+        InitEXRHeader(&header);
+
+        EXRImage image;
+        InitEXRImage(&image);
+
+        image.num_channels = 3;
+
+        std::vector<float> images[3];
+        const auto         element_count = buffer.width() * buffer.height();
+        images[0].resize(element_count);
+        images[1].resize(element_count);
+        images[2].resize(element_count);
+
+        // Split RGBRGBRGB... into R, G and B layer
+        for (int i = 0; i < element_count; i++)
+        {
+            images[0][i] = buffer.data()[4 * i + 0];
+            images[1][i] = buffer.data()[4 * i + 1];
+            images[2][i] = buffer.data()[4 * i + 2];
+        }
+
+        float *image_ptr[3];
+        image_ptr[0] = &(images[2].at(0));    // B
+        image_ptr[1] = &(images[1].at(0));    // G
+        image_ptr[2] = &(images[0].at(0));    // R
+
+        image.images = (unsigned char **) image_ptr;
+        image.width  = buffer.width();
+        image.height = buffer.height();
+
+        header.num_channels = 3;
+        header.channels = (EXRChannelInfo *) malloc(sizeof(EXRChannelInfo) * header.num_channels);
+        // Must be (A)BGR order, since most of EXR viewers expect this channel order.
+        strncpy(header.channels[0].name, "B", 255);
+        header.channels[0].name[strlen("B")] = '\0';
+        strncpy(header.channels[1].name, "G", 255);
+        header.channels[1].name[strlen("G")] = '\0';
+        strncpy(header.channels[2].name, "R", 255);
+        header.channels[2].name[strlen("R")] = '\0';
+
+        header.pixel_types           = (int *) malloc(sizeof(int) * header.num_channels);
+        header.requested_pixel_types = (int *) malloc(sizeof(int) * header.num_channels);
+        for (int i = 0; i < header.num_channels; i++)
+        {
+            header.pixel_types[i] = TINYEXR_PIXELTYPE_FLOAT;    // pixel type of input image
+            header.requested_pixel_types[i] =
+              TINYEXR_PIXELTYPE_HALF;    // pixel type of output image to be stored in .EXR
+        }
+
+        const char *err = NULL;    // or nullptr in C++11 or later.
+        int         ret = SaveEXRImageToFile(&image, &header, path.c_str(), &err);
+        if (ret != TINYEXR_SUCCESS) cr::logger::error("EXR export failed with error [{}]", err);
+
+        free(header.channels);
+        free(header.pixel_types);
+        free(header.requested_pixel_types);
+    }
+
 }    // namespace
 
 cr::asset_loader::model_data
   cr::asset_loader::load_model(const std::string &file, const std::string &folder)
 {
     auto model_data = cr::asset_loader::model_data();
+    model_data.name = std::filesystem::path(file).filename().stem().string();
 
     tinyobj::ObjReaderConfig readerConfig;
     readerConfig.triangulate = true;
@@ -75,7 +163,6 @@ cr::asset_loader::model_data
 
     if (!reader.ParseFromFile(file, readerConfig) && !reader.Error().empty())
         cr::exit("Couldn't parse OBJ from file");
-    fmt::print("Obj stuff: [{}]", reader.Warning());
 
     auto &attrib    = reader.GetAttrib();
     auto &shapes    = reader.GetShapes();
@@ -211,4 +298,41 @@ std::optional<std::string>
         }
     }
     return {};
+}
+
+std::optional<std::string>
+  cr::asset_loader::valid_font(const std::filesystem::directory_entry &directory)
+{
+    if (ends_with(directory.path().filename().extension().string(), ".ttf"))
+        return directory.path().string();
+    return {};
+}
+
+void cr::asset_loader::export_framebuffer(
+  const cr::image &            buffer,
+  const std::string &          path,
+  cr::asset_loader::image_type type)
+{
+    auto extension = std::string(
+      type == image_type::JPG     ? ".jpg"
+        : type == image_type::PNG ? ".png"
+        : type == image_type::EXR ? ".exr"
+                                  : "");
+
+    if (!extension.empty())
+    {
+        // Checking if the file already exists
+        auto directory      = std::string("./out/") + path.data() + extension;
+        auto attempt_number = 1;
+        while (std::filesystem::exists(directory))
+            directory = std::string("./out/") + path.data() + ' ' + "(" +
+              std::to_string(attempt_number++) + ")" + extension;
+
+        switch (type)
+        {
+        case image_type::PNG: ::export_png(buffer, directory); break;
+        case image_type::JPG: ::export_jpg(buffer, directory); break;
+        case image_type::EXR: ::export_exr(buffer, directory); break;
+        }
+    }
 }
