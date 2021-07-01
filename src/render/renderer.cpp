@@ -189,7 +189,7 @@ std::vector<std::function<void()>> cr::renderer::_get_tasks()
             _total_rays += fired_rays;
         });
 
-    return std::move(tasks);
+    return tasks;
 }
 
 void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
