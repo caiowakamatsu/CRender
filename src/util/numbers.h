@@ -10,6 +10,7 @@ namespace cr
     template<>
     class numbers<float>
     {
+    public:
         inline constexpr static float e   = 2.71828182845f;
         inline constexpr static float pi  = 3.14159265359f;
         inline constexpr static float tau = 6.28318530717f;
@@ -22,6 +23,7 @@ namespace cr
     template<>
     class numbers<double>
     {
+    public:
         inline constexpr static double e   = 2.71828182845;
         inline constexpr static double pi  = 3.14159265359;
         inline constexpr static double tau = 6.28318530717;

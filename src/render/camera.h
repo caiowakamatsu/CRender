@@ -5,13 +5,20 @@
 #include <glm/gtx/euler_angles.hpp>
 
 #include <render/ray.h>
+#include <util/numbers.h>
 
 namespace cr
 {
     class camera
     {
     public:
-        camera(glm::vec3 position = glm::vec3(5, 5, 0), float fov = 75);
+        enum class mode
+        {
+            perspective,
+            orthographic,
+        };
+
+        camera(glm::vec3 position = glm::vec3(5, 5, 0), float fov = 75, mode camera_mode = mode::perspective);
 
         void translate(const glm::vec3 &translation);
 
@@ -22,6 +29,8 @@ namespace cr
         [[nodiscard]] cr::ray get_ray(float x, float y);
 
         float fov;
+
+        mode current_mode;
         glm::vec3 position {};
         glm::vec3 rotation {};
     private:

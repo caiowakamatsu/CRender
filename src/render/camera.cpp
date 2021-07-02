@@ -1,7 +1,7 @@
 #include "camera.h"
 
-cr::camera::camera(glm::vec3 position, float fov) :
-position(position), fov(fov), _cached_matrix(1)
+cr::camera::camera(glm::vec3 position, float fov, mode camera_mode) :
+position(position), fov(fov), _cached_matrix(1), current_mode(camera_mode)
 {
 
 }
@@ -13,15 +13,31 @@ glm::mat4 cr::camera::mat4() const noexcept
 
 cr::ray cr::camera::get_ray(float x, float y)
 {
-    x *= -1;
-    x += 1;
-    const auto u = 2.0f * x - 1.0f;
-    const auto v = 2.0f * y - 1.0f;
-    const auto w = 1.0f / glm::tan(0.5f * fov);
+    switch (current_mode)
+    {
+    case mode::perspective:
+    {
+        x *= -1;
+        x += 1;
+        const auto u = 2.0f * x - 1.0f;
+        const auto v = 2.0f * y - 1.0f;
+        const auto w = 1.0f / glm::tan(0.5f * fov);
 
-    const auto direction = glm::vec3((_cached_matrix * glm::vec4(u, v, w, 0.0f)));
+        const auto direction = glm::vec3((_cached_matrix * glm::vec4(u, v, w, 0.0f)));
 
-    return cr::ray(position, glm::normalize(direction));
+        return cr::ray(position, glm::normalize(direction));
+    }
+    case mode::orthographic:
+    {
+        const auto u = 2.0f * x - 1.0f;
+        const auto v = 2.0f * y - 1.0f;
+
+        const auto origin    = glm::vec3(_cached_matrix * glm::vec4(4.f * u, 4.f * v, 0.0, 1.0));
+        const auto direction = glm::vec3(glm::row(_cached_matrix, 2));
+
+        return cr::ray(origin, glm::normalize(direction));
+    }
+    }
 }
 
 void cr::camera::translate(const glm::vec3 &translation)

@@ -31,10 +31,50 @@ namespace
 
         switch (record.material->info.type)
         {
+        case cr::material::glass:
+        {
+            auto refracted  = glm::vec3();
+            auto out_normal = record.normal;
+            auto reflected  = glm::reflect(ray.direction, record.normal);
+
+            auto ni_over_nt = 1.0f / record.material->info.ior;
+
+            if (glm::dot(ray.direction, record.normal) > 0)
+            {
+                out_normal = -record.normal, ni_over_nt = record.material->info.ior;
+            }
+
+            const auto uv   = glm::normalize(ray.direction);
+            const auto dt   = glm::dot(uv, out_normal);
+            const auto disc = 1.0f - ni_over_nt * ni_over_nt * (1 - dt * dt);
+
+            auto refract = false;
+            if (disc > 0)
+            {
+                refracted = ni_over_nt * (uv - out_normal * dt) - out_normal * glm::sqrt(disc);
+                refract   = true;
+            }
+
+            out.ray.origin = record.intersection_point + out_normal * -0.0001f;
+            if (refract)
+                out.ray.direction = refracted;
+            else
+                out.ray.direction = reflected;
+        }
+        break;
         case cr::material::metal:
-            out.ray.origin    = record.intersection_point + record.normal * 0.0001f;
+        {
+            out.ray.origin   = record.intersection_point + record.normal * 0.0001f;
+            auto hemp_samp = cr::sampling::hemp_cos(record.normal, glm::vec2(::randf(), ::randf()));
+
             out.ray.direction = glm::reflect(ray.direction, record.normal);
+//            out.ray.direction = glm::normalize(
+//              (out.ray.direction + record.material->info.roughness * hemp_samp) - out.ray.origin);
+
+            out.albedo *= record.material->info.reflectiveness;
+            // throughput *= brdf(out_dir, surface_properties, in_dir) * cos_theta / pdf
             break;
+        }
         case cr::material::smooth:
             auto cos_hemp_dir =
               cr::sampling::hemp_cos(record.normal, glm::vec2(::randf(), ::randf()));
@@ -56,7 +96,7 @@ cr::renderer::renderer(
   std::unique_ptr<cr::thread_pool> *pool,
   std::unique_ptr<cr::scene> *      scene)
     : _camera(scene->get()->registry()->camera()), _buffer(res_x, res_y), _normals(res_x, res_y),
-      _albedo(res_x, res_y), _res_x(res_x), _res_y(res_y), _max_bounces(bounces),
+      _albedo(res_x, res_y), _depth(res_x, res_y), _res_x(res_x), _res_y(res_y), _max_bounces(bounces),
       _thread_pool(pool), _scene(scene), _raw_buffer(res_x * res_y * 3)
 {
     _management_thread = std::thread([this]() {
@@ -106,7 +146,7 @@ bool cr::renderer::start()
         _timer.reset();
         for (auto i = 0; i < _res_x * _res_y * 3; i++) _raw_buffer[i] = 0.0f;
         _current_sample = 0;
-        _total_rays = 0;
+        _total_rays     = 0;
 
         auto guard = std::unique_lock(_start_mutex);
         _start_cond_var.notify_all();
@@ -174,6 +214,11 @@ cr::image *cr::renderer::current_albedos() noexcept
     return &_albedo;
 }
 
+cr::image *cr::renderer::current_depths() noexcept
+{
+    return &_depth;
+}
+
 std::vector<std::function<void()>> cr::renderer::_get_tasks()
 {
     auto tasks = std::vector<std::function<void()>>();
@@ -200,6 +245,9 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
 
     auto throughput = glm::vec3(1.0f, 1.0f, 1.0f);
     auto final      = glm::vec3(0.0f, 0.0f, 0.0f);
+    auto albedo     = glm::vec3(0.0f, 0.0f, 0.0f);
+    auto normal     = glm::vec3(0.0f, 0.0f, 0.0f);
+    auto depth      = 0.0f;
 
     auto total_bounces = 1;
     for (auto i = 0; i < _max_bounces; i++, total_bounces++)
@@ -214,12 +262,20 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
 
             const auto miss_sample = _scene->get()->sample_skybox(miss_uv.x, miss_uv.y);
 
+            if (i == 0) albedo = miss_sample;
+
             final += throughput * miss_sample;
             break;
         }
         else
         {
             const auto processed = ::process_hit(intersection, ray);
+            if (i == 0)
+            {
+                albedo = processed.albedo;
+                normal = intersection.normal;
+                depth  = intersection.distance;
+            }
 
             throughput *= processed.albedo;
             final += throughput * processed.emission;
@@ -236,6 +292,10 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
     _raw_buffer[base_index + 0] += final.x;
     _raw_buffer[base_index + 1] += final.y;
     _raw_buffer[base_index + 2] += final.z;
+
+    _albedo.set(x, y, albedo);
+    _normals.set(x, y, normal * .5f + .5f);
+    _depth.set(x, y, glm::vec3(glm::min(depth, 200.0f) / 200.f)); // 200.f is the "far" plane.
 
     _buffer.set(
       x,

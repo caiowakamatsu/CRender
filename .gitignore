@@ -6,3 +6,4 @@ cmake-build-*
 
 # Files
 /out/*
+imgui.ini
