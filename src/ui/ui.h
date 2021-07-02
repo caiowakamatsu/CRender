@@ -636,7 +636,7 @@ namespace cr::ui
 
         ImGui::SameLine();
         if (ImGui::Button("Update"))
-            renderer->get()->update([&scene]() { scene->get()->set_skybox_rotation(rotation); });
+            renderer->get()->update([&scene]() { scene->get()->set_skybox_rotation(rotation / 360.f); });
 
         ImGui::Unindent(8.f);
     }
