@@ -287,7 +287,7 @@ namespace cr::ui
 
         if (ImGui::BeginCombo("Export Type", export_types[current_type].c_str()))
         {
-            for (auto i = 0; i < 3; i++)
+            for (auto i = 0; i < export_types.size(); i++)
                 if (ImGui::Button(export_types[i].c_str())) current_type = i;
             ImGui::EndCombo();
         }
@@ -311,6 +311,45 @@ namespace cr::ui
             cr::asset_loader::export_framebuffer(*data, file_string.data(), selected_type);
             cr::logger::info("Finished exporting image in [{}s]", timer.time_since_start());
         }
+    }
+
+    inline void setting_camera(cr::renderer *renderer, cr::scene *scene)
+    {
+        static auto camera = std::optional<cr::camera>();
+
+        if (!camera.has_value())
+            camera = *scene->registry()->camera();
+
+        static const auto camera_modes = std::array<std::string, 2>({ "Perspective", "Orthographic" });
+
+        static auto current_type = 0;
+
+        if (ImGui::BeginCombo("Camera Mode", camera_modes[current_type].c_str()))
+        {
+            for (auto i = 0; i < camera_modes.size(); i++)
+                if (ImGui::Button(camera_modes[i].c_str())) current_type = i;
+            ImGui::EndCombo();
+        }
+
+        auto selected_type = cr::camera::mode::perspective;
+
+        switch (current_type)
+        {
+        case 0: selected_type = cr::camera::mode::perspective; break;
+        case 1: selected_type = cr::camera::mode::orthographic; break;
+        }
+
+        camera->current_mode = selected_type;
+
+        if (ImGui::Button("Update"))
+        {
+            renderer->update([scene, camera = camera]{
+              *scene->registry()->camera() = camera.value();
+            });
+            camera.reset();
+        }
+
+
     }
 
     inline void setting_materials(cr::renderer *renderer, cr::scene *scene)
@@ -631,8 +670,8 @@ namespace cr::ui
         ImGui::Begin("Misc");
 
         // List all of the different settings
-        static const auto window_settings = std::array<std::string, 6>(
-          { "Render", "Export", "Materials", "Asset Loader", "Stats", "Settyle" });
+        static const auto window_settings = std::array<std::string, 7>(
+          { "Render", "Export", "Materials", "Asset Loader", "Stats", "Style", "Camera" });
 
         static auto selected_window = 0;
 
@@ -658,6 +697,7 @@ namespace cr::ui
         case 3: setting_asset_loader(renderer, scene, draft_mode); break;
         case 4: setting_stats(renderer->get()); break;
         case 5: setting_style(); break;
+        case 6: setting_camera(renderer->get(), scene->get()); break;
         }
 
         ImGui::EndChild();
