@@ -306,6 +306,7 @@ namespace cr::ui
         static auto export_depth = false;
         ImGui::Checkbox("Export Albedo", &export_albedo);
         ImGui::Checkbox("Export Normal", &export_normal);
+        ImGui::Checkbox("Export Depth", &export_depth);
 
         if (ImGui::Button("Save"))
         {
@@ -332,6 +333,9 @@ namespace cr::ui
             if (export_normal)
                 cr::asset_loader::export_framebuffer(*renderer->get()->current_normals(), (file_str + "-normals").data(), asset_loader::image_type::JPG);
 
+            if (export_depth)
+                cr::asset_loader::export_framebuffer(*renderer->get()->current_depths(), (file_str + "-depth").data(), asset_loader::image_type::JPG);
+
             cr::logger::info("Finished exporting image in [{}s]", timer.time_since_start());
         }
     }
@@ -353,6 +357,8 @@ namespace cr::ui
                 if (ImGui::Button(camera_modes[i].c_str())) current_type = i;
             ImGui::EndCombo();
         }
+
+        ImGui::SliderFloat("FOV", &camera.value().fov, 5, 180);
 
         auto selected_type = cr::camera::mode::perspective;
 
@@ -467,9 +473,14 @@ namespace cr::ui
                 switch (material.info.type)
                 {
                 case material::metal:
+//                    ImGui::SliderFloat(
+//                      ("Roughness##" + material.info.name).c_str(),
+//                      &material.info.roughness,
+//                      0,
+//                      1);
                     ImGui::SliderFloat(
-                      ("Roughness##" + material.info.name).c_str(),
-                      &material.info.roughness,
+                      ("Reflectiveness##" + material.info.name).c_str(),
+                      &material.info.reflectiveness,
                       0,
                       1);
                     break;

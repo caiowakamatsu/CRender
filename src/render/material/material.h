@@ -30,9 +30,9 @@ namespace cr
         struct information
         {
             type                     type           = smooth;
-            float                    ior            = 0;
-            float                    roughness      = 0;
-            float                    reflectiveness = 0;
+            float                    ior            = 1.5;
+            float                    roughness      = 0.5;
+            float                    reflectiveness = 1;
             float                    emission       = 0;
             glm::vec3                colour         = glm::vec3(1, 1, 1);
             std::string              name           = "ERROR - Report";
