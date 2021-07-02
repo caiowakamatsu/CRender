@@ -85,6 +85,7 @@ namespace cr
         cr::image _buffer;
 
         cr::image _normals;
+//        cr::image _depth;
         cr::image _albedo;
 
         std::atomic<bool>     _run_management = true;

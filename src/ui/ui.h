@@ -279,7 +279,7 @@ namespace cr::ui
     inline void setting_export(std::unique_ptr<cr::renderer> *renderer)
     {
         static auto file_string = std::array<char, 32>();
-        ImGui::InputTextWithHint("File Name", "Max 32 chars", file_string.data(), 32);
+        ImGui::InputTextWithHint("File Name", "Max 32 chars", file_string.data(), 64);
 
         static const auto export_types = std::array<std::string, 3>({ "PNG", "JPG", "EXR" });
 
@@ -301,14 +301,37 @@ namespace cr::ui
         case 2: selected_type = asset_loader::image_type::EXR; break;
         }
 
+        static auto export_albedo = false;
+        static auto export_normal = false;
+        static auto export_depth = false;
+        ImGui::Checkbox("Export Albedo", &export_albedo);
+        ImGui::Checkbox("Export Normal", &export_normal);
+
         if (ImGui::Button("Save"))
         {
             cr::logger::info("Starting to export image [{}]", file_string.data());
             auto timer = cr::timer();
 
+            auto file_str = std::string(file_string.data());
+
             const auto data = renderer->get()->current_progress();
 
-            cr::asset_loader::export_framebuffer(*data, file_string.data(), selected_type);
+            auto folder = export_albedo || export_normal || export_depth;
+
+            if (folder)
+            {
+                std::filesystem::create_directories("./out/" + file_str);
+                file_str = file_str + "\\sample";
+            }
+
+            cr::asset_loader::export_framebuffer(*data, file_str.data(), selected_type);
+
+            if (export_albedo)
+                cr::asset_loader::export_framebuffer(*renderer->get()->current_albedos(), (file_str + "-albedos").data(), asset_loader::image_type::JPG);
+
+            if (export_normal)
+                cr::asset_loader::export_framebuffer(*renderer->get()->current_normals(), (file_str + "-normals").data(), asset_loader::image_type::JPG);
+
             cr::logger::info("Finished exporting image in [{}s]", timer.time_since_start());
         }
     }

@@ -106,7 +106,7 @@ bool cr::renderer::start()
         _timer.reset();
         for (auto i = 0; i < _res_x * _res_y * 3; i++) _raw_buffer[i] = 0.0f;
         _current_sample = 0;
-        _total_rays = 0;
+        _total_rays     = 0;
 
         auto guard = std::unique_lock(_start_mutex);
         _start_cond_var.notify_all();
@@ -200,6 +200,8 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
 
     auto throughput = glm::vec3(1.0f, 1.0f, 1.0f);
     auto final      = glm::vec3(0.0f, 0.0f, 0.0f);
+    auto albedo     = glm::vec3(0.0f, 0.0f, 0.0f);
+    auto normal     = glm::vec3(0.0f, 0.0f, 0.0f);
 
     auto total_bounces = 1;
     for (auto i = 0; i < _max_bounces; i++, total_bounces++)
@@ -214,12 +216,20 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
 
             const auto miss_sample = _scene->get()->sample_skybox(miss_uv.x, miss_uv.y);
 
+            if (i == 0) albedo = miss_sample;
+
             final += throughput * miss_sample;
             break;
         }
         else
         {
             const auto processed = ::process_hit(intersection, ray);
+            if (i == 0)
+            {
+                albedo = processed.albedo;
+                normal = intersection.normal;
+            }
+
 
             throughput *= processed.albedo;
             final += throughput * processed.emission;
@@ -236,6 +246,9 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
     _raw_buffer[base_index + 0] += final.x;
     _raw_buffer[base_index + 1] += final.y;
     _raw_buffer[base_index + 2] += final.z;
+
+    _albedo.set(x, y, albedo);
+    _normals.set(x, y, normal * .5f + .5f);
 
     _buffer.set(
       x,
