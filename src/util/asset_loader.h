@@ -47,7 +47,8 @@ namespace cr::asset_loader
     {
         PNG,
         JPG,
-        EXR
+        EXR,
+        HDR,
     };
     void export_framebuffer(const cr::image &buffer, const std::string &path, image_type type);
 }    // namespace cr::asset_loader

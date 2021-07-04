@@ -281,7 +281,7 @@ namespace cr::ui
         static auto file_string = std::array<char, 32>();
         ImGui::InputTextWithHint("File Name", "Max 32 chars", file_string.data(), 64);
 
-        static const auto export_types = std::array<std::string, 3>({ "PNG", "JPG", "EXR" });
+        static const auto export_types = std::array<std::string, 4>({ "PNG", "JPG", "EXR", "HDR" });
 
         static auto current_type = 0;
 
@@ -299,6 +299,7 @@ namespace cr::ui
         case 0: selected_type = asset_loader::image_type::PNG; break;
         case 1: selected_type = asset_loader::image_type::JPG; break;
         case 2: selected_type = asset_loader::image_type::EXR; break;
+        case 3: selected_type = asset_loader::image_type::HDR; break;
         }
 
         static auto export_albedo = false;

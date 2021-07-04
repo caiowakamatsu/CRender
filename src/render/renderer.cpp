@@ -64,12 +64,13 @@ namespace
         break;
         case cr::material::metal:
         {
-            out.ray.origin   = record.intersection_point + record.normal * 0.0001f;
+            out.ray.origin = record.intersection_point + record.normal * 0.0001f;
             auto hemp_samp = cr::sampling::hemp_cos(record.normal, glm::vec2(::randf(), ::randf()));
 
             out.ray.direction = glm::reflect(ray.direction, record.normal);
-//            out.ray.direction = glm::normalize(
-//              (out.ray.direction + record.material->info.roughness * hemp_samp) - out.ray.origin);
+            //            out.ray.direction = glm::normalize(
+            //              (out.ray.direction + record.material->info.roughness * hemp_samp) -
+            //              out.ray.origin);
 
             out.albedo *= record.material->info.reflectiveness;
             // throughput *= brdf(out_dir, surface_properties, in_dir) * cos_theta / pdf
@@ -96,8 +97,8 @@ cr::renderer::renderer(
   std::unique_ptr<cr::thread_pool> *pool,
   std::unique_ptr<cr::scene> *      scene)
     : _camera(scene->get()->registry()->camera()), _buffer(res_x, res_y), _normals(res_x, res_y),
-      _albedo(res_x, res_y), _depth(res_x, res_y), _res_x(res_x), _res_y(res_y), _max_bounces(bounces),
-      _thread_pool(pool), _scene(scene), _raw_buffer(res_x * res_y * 3)
+      _albedo(res_x, res_y), _depth(res_x, res_y), _res_x(res_x), _res_y(res_y),
+      _max_bounces(bounces), _thread_pool(pool), _scene(scene), _raw_buffer(res_x * res_y * 3)
 {
     _management_thread = std::thread([this]() {
         while (_run_management)
@@ -184,7 +185,11 @@ void cr::renderer::set_resolution(int x, int y)
 
     _aspect_correction = static_cast<float>(_res_x) / _res_y;
 
-    _buffer         = cr::image(x, y);
+    _buffer  = cr::image(x, y);
+    _normals = cr::image(x, y);
+    _depth   = cr::image(x, y);
+    _albedo  = cr::image(x, y);
+
     _raw_buffer     = std::vector<float>(x * y * 3);
     _current_sample = 0;
 }
@@ -295,7 +300,7 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
 
     _albedo.set(x, y, albedo);
     _normals.set(x, y, normal * .5f + .5f);
-    _depth.set(x, y, glm::vec3(glm::min(depth, 200.0f) / 200.f)); // 200.f is the "far" plane.
+    _depth.set(x, y, glm::vec3(glm::min(depth, 200.0f) / 200.f));    // 200.f is the "far" plane.
 
     _buffer.set(
       x,
