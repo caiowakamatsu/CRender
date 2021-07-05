@@ -18,6 +18,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL
 endif ()
 
 find_package(embree 3.0 REQUIRED)
+find_package(OpenImageDenoise 1.4.0 REQUIRED)
 
 add_subdirectory(external)
 
@@ -61,11 +62,11 @@ add_executable(CRender src/main.cpp
         src/render/entities/entity_type.h
         src/render/entities/components.h
         src/render/entities/registry.cpp
-        src/render/entities/registry.h src/render/draft/draft_renderer.cpp src/render/draft/draft_renderer.h src/render/mesh.h src/render/timer.cpp src/render/timer.h src/util/logger.h src/util/logger.cpp src/util/numbers.h src/render/brdf.h)
+        src/render/entities/registry.h src/render/draft/draft_renderer.cpp src/render/draft/draft_renderer.h src/render/mesh.h src/render/timer.cpp src/render/timer.h src/util/logger.h src/util/logger.cpp src/util/numbers.h src/render/brdf.h src/util/denoise.h)
 
 target_include_directories(CRender PRIVATE src)
 target_include_directories(CRender PRIVATE external)
 
-target_link_libraries(CRender glfw fmt glm embree)
+target_link_libraries(CRender glfw fmt glm embree OpenImageDenoise)
 
 target_compile_definitions(CRender PUBLIC -DGLFW_INCLUDE_NONE -D__STDC_CONSTANT_MACROS)

@@ -63,6 +63,44 @@ namespace cr
             return _height;
         }
 
+        [[nodiscard]] static cr::image from_float3_buffer(const std::vector<float> &buffer, size_t width, size_t height)
+        {
+            auto image = cr::image(width, height);
+
+            for (auto i = 0; i < width * height; i++)
+            {
+                image._image_data[i * 4 + 0] = buffer[i * 3 + 0];
+                image._image_data[i * 4 + 1] = buffer[i * 3 + 1];
+                image._image_data[i * 4 + 2] = buffer[i * 3 + 2];
+                image._image_data[i * 4 + 3] = 1;
+            }
+
+            return image;
+        }
+
+        [[nodiscard]] std::vector<float> as_float3_buffer() const noexcept
+        {
+            auto output = std::vector<float>(_width * _height * 3);
+
+            for (auto i = 0; i < _width * _height; i++)
+            {
+                output[i * 3 + 0] = _image_data[i * 4 + 0];
+                output[i * 3 + 1] = _image_data[i * 4 + 1];
+                output[i * 3 + 2] = _image_data[i * 4 + 2];
+            }
+
+            return output;
+        }
+
+        [[nodiscard]] std::vector<float> as_float4_buffer() const noexcept
+        {
+            auto output = std::vector<float>(_width * _height * 4);
+
+            std::memcpy(output.data(), _image_data.data(), sizeof(float) * _width * _height * 4);
+
+            return output;
+        }
+
         [[nodiscard]] glm::vec3 get_uv(float u, float v) const noexcept
         {
             return get(

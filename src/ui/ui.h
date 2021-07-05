@@ -8,6 +8,7 @@
 #include <render/draft/draft_renderer.h>
 #include <util/asset_loader.h>
 #include <util/algorithm.h>
+#include <util/denoise.h>
 #include <stb/stbi_image_write.h>
 #include <stb/stb_image.h>
 #include "display.h"
@@ -305,9 +306,11 @@ namespace cr::ui
         static auto export_albedo = false;
         static auto export_normal = false;
         static auto export_depth = false;
+        static auto denoise = false;
         ImGui::Checkbox("Export Albedo", &export_albedo);
         ImGui::Checkbox("Export Normal", &export_normal);
         ImGui::Checkbox("Export Depth", &export_depth);
+        ImGui::Checkbox("Denoise", &denoise);
 
         if (ImGui::Button("Save"))
         {
@@ -318,7 +321,7 @@ namespace cr::ui
 
             const auto data = renderer->get()->current_progress();
 
-            auto folder = export_albedo || export_normal || export_depth;
+            auto folder = export_albedo || export_normal || export_depth || denoise;
 
             if (folder)
             {
@@ -336,6 +339,16 @@ namespace cr::ui
 
             if (export_depth)
                 cr::asset_loader::export_framebuffer(*renderer->get()->current_depths(), (file_str + "-depth").data(), asset_loader::image_type::JPG);
+
+            if (denoise)
+            {
+                const auto denoised = cr::denoise(
+                  renderer->get()->current_progress(),
+                  renderer->get()->current_normals(),
+                  renderer->get()->current_albedos(),
+                  selected_type);
+                cr::asset_loader::export_framebuffer(denoised, (file_str + "-denoised").data(), selected_type);
+            }
 
             cr::logger::info("Finished exporting image in [{}s]", timer.time_since_start());
         }
