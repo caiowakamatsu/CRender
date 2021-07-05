@@ -24,6 +24,7 @@ namespace cr
             {
             case metal: return "Metal";
             case smooth: return "Smooth";
+            case glass: return "Glass"; break;
             }
         }
 

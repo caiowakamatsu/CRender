@@ -26,7 +26,7 @@ namespace cr
 
         [[nodiscard]] glm::mat4 mat4() const noexcept;
 
-        [[nodiscard]] cr::ray get_ray(float x, float y);
+        [[nodiscard]] cr::ray get_ray(float x, float y, float aspect);
 
         float fov;
 
