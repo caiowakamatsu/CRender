@@ -13,6 +13,7 @@ namespace
     {
         float     emission;
         glm::vec3 albedo;
+        glm::vec4 colour;
         cr::ray   ray;
     };
     [[nodiscard]] processed_hit
@@ -25,9 +26,11 @@ namespace
 
         out.emission = record.material->info.emission;
         if (record.material->info.tex.has_value())
-            out.albedo = record.material->info.tex->get_uv(record.uv.x, record.uv.y);
+            out.colour = record.material->info.tex->get_uv(record.uv.x, record.uv.y);
         else
-            out.albedo = record.material->info.colour;
+            out.colour = record.material->info.colour;
+
+        out.albedo = glm::vec3(out.colour);
 
         switch (record.material->info.type)
         {
@@ -258,7 +261,8 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
     auto total_bounces = 1;
     for (auto i = 0; i < _max_bounces; i++, total_bounces++)
     {
-        auto intersection = _scene->get()->cast_ray(ray);
+        auto intersection  = _scene->get()->cast_ray(ray);
+        auto processed_hit = ::processed_hit();
 
         if (intersection.distance == std::numeric_limits<float>::infinity())
         {
@@ -275,18 +279,39 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
         }
         else
         {
-            const auto processed = ::process_hit(intersection, ray);
+            processed_hit = ::process_hit(intersection, ray);
+
             if (i == 0)
             {
-                albedo = processed.albedo;
+                albedo = processed_hit.albedo;
                 normal = intersection.normal;
                 depth  = intersection.distance;
             }
 
-            throughput *= processed.albedo;
-            final += throughput * processed.emission;
+            throughput *= processed_hit.albedo;
+            final += throughput * processed_hit.emission;
+            ray = processed_hit.ray;
+        }
 
-            ray = processed.ray;
+        // Sun NEE
+        {
+            auto out_ray = cr::ray(
+              intersection.intersection_point + intersection.normal * 0.001f,
+              glm::vec3(0.0f));
+
+            auto sample          = cr::sampling::sun::incoming();
+            sample.pos           = out_ray.origin;
+            sample.normal        = intersection.normal;
+            sample.sun_transform = _scene->get()->registry()->sun_transform();
+            sample.sun           = _scene->get()->registry()->sun();
+
+            const auto pdf_cos = cr::sampling::sun::sample(sample);
+            out_ray.direction  = pdf_cos.dir;
+
+            auto sun_intersection = _scene->get()->cast_ray(out_ray);
+            if (sun_intersection.distance == std::numeric_limits<float>::infinity())
+                final += throughput * glm::vec3(processed_hit.colour) * pdf_cos.cosine *
+                  cr::sampling::sun::sky_colour(out_ray.direction, _scene->get()->registry()->sun()) / pdf_cos.pdf;
         }
     }
     fired_rays += total_bounces;

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <util/numbers.h>
+#include <render/entities/components.h>
 
 namespace
 {
@@ -9,6 +11,75 @@ namespace
 
 namespace cr::sampling
 {
+    struct local_coords
+    {
+        glm::vec3 normal;
+        glm::vec3 tangent;
+        glm::vec3 bi_tangent;
+    };
+
+    [[nodiscard]] inline local_coords build_local(const glm::vec3 &normal)
+    {
+        auto       coords = local_coords();
+        const auto s      = (normal.z < 0.0) ? -1.0f : 1.0f;
+        const auto a      = -1.0f / (s + normal.z);
+        const auto b      = normal.x * normal.y * a;
+
+        coords.normal     = normal;
+        coords.tangent    = glm::vec3(1.0f + s * normal.x * normal.x * a, s * b, -s * normal.x);
+        coords.bi_tangent = glm::vec3(b, s + normal.y * normal.y * a, -normal.y);
+
+        return coords;
+    }
+
+    [[nodiscard]] inline glm::vec3 map_to_solid_angle(const glm::vec2 uv, float theta_max)
+    {
+        const auto phi       = cr::numbers<float>::tau * uv.x;
+        const auto cos_theta = 1.0f - uv.y * (1.0f - glm::cos(theta_max));
+        const auto sin_theta = glm::sqrt(1.0f - cos_theta * cos_theta);
+
+        return glm::vec3(glm::cos(phi) * sin_theta, cos_theta, glm::sin(phi) * sin_theta);
+    }
+
+    [[nodiscard]] inline float solid_angle_mapping_pdf(float theta_max)
+    {
+        return 1.0f / (cr::numbers<float>::tau * (1.0f - glm::cos(theta_max)));
+    }
+
+    [[nodiscard]] inline float hemp_cos_pdf(float cos_theta) { return cos_theta / cr::numbers<float>::pi; }
+
+    namespace sun
+    {
+        [[nodiscard]] inline glm::vec3 sky_colour(const glm::vec3 &direction, const cr::entity::sun &sun)
+        {
+            const auto sun_angle = glm::acos(glm::dot(direction, -sun.direction));
+            return (sun_angle < sun.size) ? (sun.colour * sun.intensity) : glm::vec3(0.0f);
+        }
+
+        struct incoming
+        {
+            glm::vec3       pos;
+            glm::vec3       normal;
+            glm::mat3       sun_transform;
+            cr::entity::sun sun;
+        };
+        struct pdf_cos
+        {
+            float     pdf;
+            float     cosine;
+            glm::vec3 dir;
+        };
+        [[nodiscard]] inline pdf_cos sample(const incoming& sample)
+        {
+            auto out = pdf_cos();
+            out.dir  = sample.sun_transform *
+              map_to_solid_angle(glm::vec2(::randf(), ::randf()), sample.sun.size);
+            out.pdf = solid_angle_mapping_pdf(sample.sun.size);
+            out.cosine = glm::clamp(glm::dot(sample.normal, out.dir), 0.0f, 1.0f);
+            return out;
+        }
+    }    // namespace sun
+
     namespace cook_torrence
     {
         /**
@@ -19,13 +90,12 @@ namespace cr::sampling
          *          pi((n * h) ^ 2 (a ^ 2 - 1) + 1) ^ 2
          *
          */
-        [[nodiscard]] inline float
-          specular_d(float NoH, float roughness)
+        [[nodiscard]] inline float specular_d(float NoH, float roughness)
         {
             constexpr auto pi = 3.141592f;
 
             const auto a2 = roughness * roughness;
-            const auto d = ((NoH * a2 - NoH) * NoH + 1.0f);
+            const auto d  = ((NoH * a2 - NoH) * NoH + 1.0f);
 
             return a2 / (d * d * pi);
         }
@@ -34,8 +104,10 @@ namespace cr::sampling
          * Specular G (Geometric Shadowing)
          *
          *                                                          0.5
-         * V(v,l,a) = -----------------------------------------------------------------------------------------
-         *            n * l sqrt((n * v) ^ 2 (1 - a ^ 2) + a ^ 2) + n * v sqrt((n * l) ^ 2 (1 - a ^ 2) + a ^ 2)
+         * V(v,l,a) =
+         * -----------------------------------------------------------------------------------------
+         *            n * l sqrt((n * v) ^ 2 (1 - a ^ 2) + a ^ 2) + n * v sqrt((n * l) ^ 2 (1 - a ^
+         * 2) + a ^ 2)
          *
          */
         [[nodiscard]] inline float specular_g(float NoV, float NoL, float roughness)
@@ -77,12 +149,9 @@ namespace cr::sampling
     {
         while (true)
         {
-            auto point = glm::vec3(
-              ::randf() * 2 - 1,
-              ::randf() * 2 - 1,
-              ::randf() * 2 - 1);
+            auto point = glm::vec3(::randf() * 2 - 1, ::randf() * 2 - 1, ::randf() * 2 - 1);
 
-            if (glm::length2(point) >= 1) continue;
+            if (glm::length(point) >= 1) continue;
 
             return glm::normalize(point);
         }
@@ -93,7 +162,7 @@ namespace cr::sampling
         const auto cos_theta = 2.0f * uv.x - 1.0f;
         const auto sin_theta = glm::sqrt(1.0f - cos_theta * cos_theta);
 
-        const auto phi = 2.0f * 3.1415f * uv.y;
+        const auto phi     = 2.0f * 3.1415f * uv.y;
         const auto sin_phi = glm::sin(phi);
         const auto cos_phi = glm::cos(phi);
 

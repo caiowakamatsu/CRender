@@ -101,7 +101,7 @@ namespace cr
             return output;
         }
 
-        [[nodiscard]] glm::vec3 get_uv(float u, float v) const noexcept
+        [[nodiscard]] glm::vec4 get_uv(float u, float v) const noexcept
         {
             return get(
               static_cast<uint64_t>(u * _width) % _width,

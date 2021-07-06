@@ -24,7 +24,7 @@ namespace cr
             {
             case metal: return "Metal";
             case smooth: return "Smooth";
-            case glass: return "Glass"; break;
+            case glass: return "Glass";
             }
         }
 
@@ -35,7 +35,7 @@ namespace cr
             float                    roughness      = 0.5;
             float                    reflectiveness = 1;
             float                    emission       = 0;
-            glm::vec3                colour         = glm::vec3(1, 1, 1);
+            glm::vec4                colour         = glm::vec4(1, 1, 1, 1);
             std::string              name           = "ERROR - Report";
             std::optional<cr::image> tex;
         };

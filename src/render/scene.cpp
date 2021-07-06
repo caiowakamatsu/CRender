@@ -134,3 +134,13 @@ glm::vec2 cr::scene::skybox_rotation() const noexcept
 {
     return _skybox_rotation;
 }
+
+void cr::scene::set_sun_enabled(bool value)
+{
+    _sun_enabled = value;
+}
+
+bool cr::scene::is_sun_enabled() const noexcept
+{
+    return _sun_enabled;
+}

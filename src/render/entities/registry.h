@@ -8,6 +8,7 @@
 #include <render/mesh.h>
 #include <objects/model.h>
 #include <util/asset_loader.h>
+#include <util/sampling.h>
 #include <variant>
 
 namespace cr
@@ -22,7 +23,13 @@ namespace cr
     public:
         registry();
 
+        void set_sun(const cr::entity::sun &sun);
+
         [[nodiscard]] cr::camera *camera();
+
+        [[nodiscard]] cr::entity::sun sun();
+
+        [[nodiscard]] glm::mat3 sun_transform();
 
         entt::basic_registry<uint32_t> entities;
 
@@ -44,5 +51,8 @@ namespace cr
         [[nodiscard]] std::vector<float> _zip_mesh_data(const cr::temporary_mesh &mesh);
 
         uint64_t _camera_entity;
+
+        cr::entity::sun _sun {};
+        glm::mat3 _sun_transform;
     };
 }    // namespace cr

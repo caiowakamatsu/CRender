@@ -161,8 +161,7 @@ namespace cr::ui
         }
 
         {
-            if (in_draft_mode)
-                draft_renderer->render();
+            if (in_draft_mode) draft_renderer->render();
             glUseProgram(compute_program);
 
             glBindTexture(GL_TEXTURE_2D, target_texture);
@@ -218,6 +217,7 @@ namespace cr::ui
     inline void setting_render(
       cr::renderer *                    renderer,
       cr::draft_renderer *              draft_renderer,
+      cr::scene *                       scene,
       std::unique_ptr<cr::thread_pool> &pool)
     {
         static auto resolution   = glm::ivec2();
@@ -287,6 +287,34 @@ namespace cr::ui
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Set amount of samples per pixel you want to render, 0 for no limit");
         if (ImGui::Button("Set target sample count")) renderer->set_target_spp(target_spp);
+
+
+
+        {
+            ImGui::Text("Sun");
+            ImGui::Indent(4.f);
+
+            static auto sun_enabled = true;
+            static auto sun         = cr::entity::sun();
+            ImGui::InputFloat("Sun Size", &sun.size);
+            sun.size = glm::max(sun.size, 0.1f);
+
+            ImGui::InputFloat("Intensity", &sun.intensity);
+            ImGui::Checkbox("Sun enabled", &sun_enabled);
+            ImGui::ColorEdit3("Colour", glm::value_ptr(sun.colour));
+            ImGui::InputFloat3("Sun Direction", glm::value_ptr(sun.direction));
+
+            if (ImGui::Button("Update Camera"))
+            {
+                renderer->update([sun_enabled = sun_enabled, sun = sun, scene ] {
+                    scene->registry()->set_sun(sun);
+                    scene->set_sun_enabled(sun_enabled);
+                });
+            }
+
+            ImGui::Unindent(4.f);
+        }
+
     }
 
     inline void setting_export(std::unique_ptr<cr::renderer> *renderer)
@@ -763,7 +791,7 @@ namespace cr::ui
 
         switch (selected_window)
         {
-        case 0: setting_render(renderer->get(), draft_renderer->get(), *pool); break;
+        case 0: setting_render(renderer->get(), draft_renderer->get(), scene->get(), *pool); break;
         case 1: setting_export(renderer); break;
         case 2: setting_materials(renderer->get(), scene->get()); break;
         case 3: setting_asset_loader(renderer, scene, draft_mode); break;

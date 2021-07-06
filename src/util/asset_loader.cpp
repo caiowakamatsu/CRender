@@ -228,7 +228,7 @@ cr::asset_loader::model_data
         auto material_data = cr::material::information();
         material_data.name = material.name;
         material_data.colour =
-          glm::vec3(material.diffuse[0], material.diffuse[1], material.diffuse[2]);
+          glm::vec4(material.diffuse[0], material.diffuse[1], material.diffuse[2], 1.0f);
         material_data.type     = cr::material::type::smooth;
         material_data.emission = 0.0f;
 
