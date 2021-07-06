@@ -46,7 +46,7 @@ cr::display::display()
 
     // Load the compute shader into the string
     {
-        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/compute.glsl");
+        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/scene_zoom.comp");
         auto shader_string_stream  = std::stringstream();
         shader_string_stream << shader_file_in_stream.rdbuf();
         const auto shader_source = shader_string_stream.str();
@@ -199,6 +199,7 @@ void cr::display::start(
         ui::scene_preview(
           renderer.get(),
           draft_renderer.get(),
+          scene.get(),
           _target_texture,
           _scene_texture_handle,
           _compute_shader_program,

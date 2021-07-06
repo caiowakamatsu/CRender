@@ -125,6 +125,8 @@ namespace cr
             set(x, y, glm::vec4(colour, 1.0f));
         }
 
+        [[nodiscard]] cr::image operator +(const cr::image &image) const noexcept;
+
         void set(uint64_t x, uint64_t y, const glm::vec4 &colour) noexcept
         {
             const auto base_index = (x + y * _width) * 4;

@@ -48,8 +48,13 @@ namespace cr
 
         [[nodiscard]] const std::vector<mesh_index> &models() const noexcept;
 
+        [[nodiscard]] std::optional<GLuint> skybox_handle() const noexcept;
+
+        [[nodiscard]] glm::vec2 skybox_rotation() const noexcept;
+
     private:
         std::optional<cr::image> _skybox;
+        std::optional<GLuint>    _skybox_texture;
 
         std::vector<cr::mesh> _meshes;
 

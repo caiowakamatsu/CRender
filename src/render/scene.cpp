@@ -44,6 +44,27 @@ void cr::scene::add_model(const cr::asset_loader::model_data &model)
 
 void cr::scene::set_skybox(cr::image &&skybox)
 {
+    if (!_skybox.has_value())
+    {
+        _skybox_texture = 0;
+        glGenTextures(1, &_skybox_texture.value());
+        glBindTexture(GL_TEXTURE_2D, _skybox_texture.value());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+    glBindTexture(GL_TEXTURE_2D, _skybox_texture.value());
+    glTexImage2D(
+      GL_TEXTURE_2D,
+      0,
+      GL_RGBA8,
+      skybox.width(),
+      skybox.height(),
+      0,
+      GL_RGBA,
+      GL_FLOAT,
+      skybox.data());
     _skybox = skybox;
 }
 
@@ -102,4 +123,14 @@ const std::vector<cr::scene::mesh_index> &cr::scene::models() const noexcept
 std::vector<cr::mesh> &cr::scene::meshes()
 {
     return _meshes;
+}
+
+std::optional<GLuint> cr::scene::skybox_handle() const noexcept
+{
+    return _skybox_texture;
+}
+
+glm::vec2 cr::scene::skybox_rotation() const noexcept
+{
+    return _skybox_rotation;
 }

@@ -4,7 +4,7 @@ set_property(GLOBAL PROPERTY ALLOW_DUPLICATE_CUSTOM_TARGETS 1)
 
 project(CRender)
 
-set(EMBREE_ISA_AVX512 OFF)
+set(EMBREE_ISA_AVX256 ON)
 
 if (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC" AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     message(STATUS "Using clang-cl options (MSVC interface)")
