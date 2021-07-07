@@ -7,10 +7,12 @@ layout (binding = 0) uniform sampler2D rendered_scene;
 #define TARGET_PIXEL gl_GlobalInvocationID
 
 uniform float zoom;
-
 uniform vec2 translation;
+
 uniform ivec2 target_size;
 uniform ivec2 scene_size;
+
+uniform mat4 camera;
 
 void main ()
 {
@@ -18,9 +20,9 @@ void main ()
     ivec2 img_size = target_size;
     vec2 target = (translated_target_pixel * zoom) / vec2(scene_size);
 
-//    imageStore(img_output, ivec2(TARGET_PIXEL), vec4(1, 0));
-
     if (0 <= target.x && target.x <= 1 && 0 <= target.y && target.y <= 1)
-        imageStore(img_output, ivec2(TARGET_PIXEL), vec4(texture(rendered_scene, target).xyz, 1.0f));
-
+    {
+        vec4 output_colour = texture(rendered_scene, target);
+        imageStore(img_output, ivec2(TARGET_PIXEL), output_colour);
+    }
 }
