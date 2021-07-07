@@ -21,7 +21,7 @@ cr::draft_renderer::draft_renderer(
     // Load shaders in
     // Load the shader into the string
     {
-        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/shader.vert");
+        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/draft_mode.vert");
         auto shader_string_stream  = std::stringstream();
         shader_string_stream << shader_file_in_stream.rdbuf();
         const auto shader_source = shader_string_stream.str();
@@ -45,7 +45,7 @@ cr::draft_renderer::draft_renderer(
     }
 
     {
-        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/shader.frag");
+        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/draft_mode.frag");
         auto shader_string_stream  = std::stringstream();
         shader_string_stream << shader_file_in_stream.rdbuf();
         const auto shader_source = shader_string_stream.str();
@@ -93,6 +93,56 @@ cr::draft_renderer::draft_renderer(
         }
         _program_handle = program_handle;
     }
+
+    {
+        auto shader_file_in_stream =
+          std::ifstream("./assets/app/shaders/draft_mode_background.comp");
+        auto shader_string_stream = std::stringstream();
+        shader_string_stream << shader_file_in_stream.rdbuf();
+        const auto shader_source = shader_string_stream.str();
+
+        // Create OpenGL shader type
+        auto       shader_handle = glCreateShader(GL_COMPUTE_SHADER);
+        const auto shader_string = shader_source.c_str();
+        glShaderSource(shader_handle, 1, &shader_string, nullptr);
+        glCompileShader(shader_handle);
+
+        // Check if the shader compiled
+        auto success = int(0);
+        auto log     = std::array<char, 512>();
+        glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &success);
+
+        // If it failed, show the error message
+        if (!success)
+        {
+            glGetShaderInfoLog(shader_handle, 512, nullptr, log.data());
+            cr::logger::error("Compiling shader [{}], with error [{}]\n", "comp", log.data());
+        }
+        _background_shader_handle = shader_handle;
+    }
+
+    {
+        // Create OpenGL program
+        auto program_handle = glCreateProgram();
+
+        glAttachShader(program_handle, _background_shader_handle);
+        glLinkProgram(program_handle);
+
+        auto success = int(0);
+        auto log     = std::array<char, 512>();
+        glGetProgramiv(program_handle, GL_LINK_STATUS, &success);
+
+        // If it failed, show the error message
+        if (!success)
+        {
+            glGetProgramInfoLog(program_handle, 512, nullptr, log.data());
+            cr::logger::error(
+              "Linking program [{}], with error [{}]\n",
+              program_handle,
+              log.data());
+        }
+        _background_program_handle = program_handle;
+    }
 }
 
 GLuint cr::draft_renderer::rendered_texture() const
@@ -106,10 +156,42 @@ void cr::draft_renderer::render()
     glEnable(GL_DEPTH_TEST);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glViewport(0, 0, _res_x, _res_y);
-    glUseProgram(_program_handle);
 
-    // Update uniforms
+    glUseProgram(_background_program_handle);
+    // Run the compute background program to setup the background for the image
+    glUniformMatrix4fv(
+      glGetUniformLocation(_background_program_handle, "camera"),
+      1,
+      GL_FALSE,
+      glm::value_ptr(_scene->get()->registry()->camera()->mat4()));
+
+    glUniform2i(glGetUniformLocation(_background_program_handle, "scene_size"), _res_x, _res_y);
+
+    glUniform1f(
+      glGetUniformLocation(_background_program_handle, "aspect_correction"),
+      static_cast<float>(_res_x) / _res_y);
+
+    glUniform1f(
+      glGetUniformLocation(_background_program_handle, "fov"),
+      _scene->get()->registry()->camera()->fov);
+
+    glBindTexture(GL_TEXTURE_2D, _texture);
+    glClearTexImage(_texture, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glBindImageTexture(0, _texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, _scene->get()->skybox_handle().value());
+
+    glDispatchCompute(
+      static_cast<int>(glm::ceil(_res_x / 8)),
+      static_cast<int>(glm::ceil(_res_y / 8)),
+      1);
+
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+    glViewport(0, 0, _res_x, _res_y);
+
+    glUseProgram(_program_handle);
     _update_uniforms();
 
     for (const auto &mesh : _scene->get()->meshes())
@@ -127,25 +209,19 @@ void cr::draft_renderer::render()
 
 void cr::draft_renderer::_update_uniforms()
 {
-    const auto translation_location = glGetUniformLocation(_program_handle, "mvp");
+    const auto mvp_location = glGetUniformLocation(_program_handle, "mvp");
 
-    const auto camera_location = glGetUniformLocation(_program_handle, "camera_pos");
-
-    const auto projection =
-      glm::perspective(
-        _scene->get()->registry()->camera()->fov,
-        static_cast<float>(_res_x) / _res_y,
-        0.10f,
-        1000.f
-        );
+    const auto projection = glm::perspective(
+      _scene->get()->registry()->camera()->fov,
+      static_cast<float>(_res_x) / _res_y,
+      0.10f,
+      1000.f);
     const auto view = glm::inverse(_scene->get()->registry()->camera()->mat4());
 
     // No model matrix *yet*
     const auto mvp = projection * view;
 
-    glUniformMatrix4fv(translation_location, 1, GL_FALSE, glm::value_ptr(mvp));
-
-    glUniform3fv(translation_location, 1, glm::value_ptr(_scene->get()->registry()->camera()->position));
+    glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(mvp));
 }
 
 void cr::draft_renderer::set_resolution(uint64_t res_x, uint64_t res_y)
@@ -161,17 +237,13 @@ void cr::draft_renderer::_setup_required()
     glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
 
     glBindTexture(GL_TEXTURE_2D, _texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _res_x, _res_y, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, _res_x, _res_y, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, _rbo);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, _res_x, _res_y);
 
-    glFramebufferRenderbuffer(
-      GL_FRAMEBUFFER,
-      GL_DEPTH_STENCIL_ATTACHMENT,
-      GL_RENDERBUFFER,
-      _rbo);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, _rbo);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         cr::logger::error("Framebuffer is not complete");

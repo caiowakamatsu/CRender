@@ -8,6 +8,7 @@
 #include <render/draft/draft_renderer.h>
 #include <util/asset_loader.h>
 #include <util/algorithm.h>
+#include <util/denoise.h>
 #include <stb/stbi_image_write.h>
 #include <stb/stb_image.h>
 #include "display.h"
@@ -106,6 +107,7 @@ namespace cr::ui
     inline void scene_preview(
       cr::renderer *      renderer,
       cr::draft_renderer *draft_renderer,
+      cr::scene *         scene,
       GLuint              target_texture,
       GLuint              scene_texture,
       GLuint              compute_program,
@@ -132,6 +134,8 @@ namespace cr::ui
                 }
             }
 
+            glUseProgram(compute_program);
+
             glUniform1f(glGetUniformLocation(compute_program, "zoom"), current_zoom);
 
             glUniform2fv(
@@ -148,9 +152,18 @@ namespace cr::ui
               glGetUniformLocation(compute_program, "scene_size"),
               renderer->current_resolution().x,
               renderer->current_resolution().y);
+
+            glUniformMatrix4fv(
+              glGetUniformLocation(compute_program, "camera"),
+              1,
+              GL_FALSE,
+              glm::value_ptr(scene->registry()->camera()->mat4()));
         }
 
         {
+            if (in_draft_mode) draft_renderer->render();
+            glUseProgram(compute_program);
+
             glBindTexture(GL_TEXTURE_2D, target_texture);
             glTexImage2D(
               GL_TEXTURE_2D,
@@ -167,9 +180,6 @@ namespace cr::ui
 
             if (in_draft_mode)
             {
-                draft_renderer->render();
-
-                glUseProgram(compute_program);
                 const auto rendered = draft_renderer->rendered_texture();
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, rendered);
@@ -178,7 +188,6 @@ namespace cr::ui
             {
                 const auto current_progress = renderer->current_progress();
                 // Upload rendered scene to GPU
-                glUseProgram(compute_program);
                 glBindTexture(GL_TEXTURE_2D, scene_texture);
                 glTexImage2D(
                   GL_TEXTURE_2D,
@@ -205,7 +214,11 @@ namespace cr::ui
         ImGui::End();
     }
 
-    inline void setting_render(cr::renderer *renderer, cr::draft_renderer *draft_renderer, std::unique_ptr<cr::thread_pool> &pool)
+    inline void setting_render(
+      cr::renderer *                    renderer,
+      cr::draft_renderer *              draft_renderer,
+      cr::scene *                       scene,
+      std::unique_ptr<cr::thread_pool> &pool)
     {
         static auto resolution   = glm::ivec2();
         static auto bounces      = int(5);
@@ -274,6 +287,34 @@ namespace cr::ui
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Set amount of samples per pixel you want to render, 0 for no limit");
         if (ImGui::Button("Set target sample count")) renderer->set_target_spp(target_spp);
+
+
+
+        {
+            ImGui::Text("Sun");
+            ImGui::Indent(4.f);
+
+            static auto sun_enabled = true;
+            static auto sun         = cr::entity::sun();
+            ImGui::InputFloat("Sun Size", &sun.size);
+            sun.size = glm::max(sun.size, 0.1f);
+
+            ImGui::InputFloat("Intensity", &sun.intensity);
+            ImGui::Checkbox("Sun enabled", &sun_enabled);
+            ImGui::ColorEdit3("Colour", glm::value_ptr(sun.colour));
+            ImGui::InputFloat3("Sun Direction", glm::value_ptr(sun.direction));
+
+            if (ImGui::Button("Update Camera"))
+            {
+                renderer->update([sun_enabled = sun_enabled, sun = sun, scene ] {
+                    scene->registry()->set_sun(sun);
+                    scene->set_sun_enabled(sun_enabled);
+                });
+            }
+
+            ImGui::Unindent(4.f);
+        }
+
     }
 
     inline void setting_export(std::unique_ptr<cr::renderer> *renderer)
@@ -281,7 +322,7 @@ namespace cr::ui
         static auto file_string = std::array<char, 32>();
         ImGui::InputTextWithHint("File Name", "Max 32 chars", file_string.data(), 64);
 
-        static const auto export_types = std::array<std::string, 3>({ "PNG", "JPG", "EXR" });
+        static const auto export_types = std::array<std::string, 4>({ "PNG", "JPG", "EXR", "HDR" });
 
         static auto current_type = 0;
 
@@ -299,14 +340,17 @@ namespace cr::ui
         case 0: selected_type = asset_loader::image_type::PNG; break;
         case 1: selected_type = asset_loader::image_type::JPG; break;
         case 2: selected_type = asset_loader::image_type::EXR; break;
+        case 3: selected_type = asset_loader::image_type::HDR; break;
         }
 
         static auto export_albedo = false;
         static auto export_normal = false;
-        static auto export_depth = false;
+        static auto export_depth  = false;
+        static auto denoise       = false;
         ImGui::Checkbox("Export Albedo", &export_albedo);
         ImGui::Checkbox("Export Normal", &export_normal);
         ImGui::Checkbox("Export Depth", &export_depth);
+        ImGui::Checkbox("Denoise", &denoise);
 
         if (ImGui::Button("Save"))
         {
@@ -317,7 +361,7 @@ namespace cr::ui
 
             const auto data = renderer->get()->current_progress();
 
-            auto folder = export_albedo || export_normal || export_depth;
+            auto folder = export_albedo || export_normal || export_depth || denoise;
 
             if (folder)
             {
@@ -328,13 +372,35 @@ namespace cr::ui
             cr::asset_loader::export_framebuffer(*data, file_str.data(), selected_type);
 
             if (export_albedo)
-                cr::asset_loader::export_framebuffer(*renderer->get()->current_albedos(), (file_str + "-albedos").data(), asset_loader::image_type::JPG);
+                cr::asset_loader::export_framebuffer(
+                  *renderer->get()->current_albedos(),
+                  (file_str + "-albedos").data(),
+                  asset_loader::image_type::JPG);
 
             if (export_normal)
-                cr::asset_loader::export_framebuffer(*renderer->get()->current_normals(), (file_str + "-normals").data(), asset_loader::image_type::JPG);
+                cr::asset_loader::export_framebuffer(
+                  *renderer->get()->current_normals(),
+                  (file_str + "-normals").data(),
+                  asset_loader::image_type::JPG);
 
             if (export_depth)
-                cr::asset_loader::export_framebuffer(*renderer->get()->current_depths(), (file_str + "-depth").data(), asset_loader::image_type::JPG);
+                cr::asset_loader::export_framebuffer(
+                  *renderer->get()->current_depths(),
+                  (file_str + "-depth").data(),
+                  asset_loader::image_type::JPG);
+
+            if (denoise)
+            {
+                const auto denoised = cr::denoise(
+                  renderer->get()->current_progress(),
+                  renderer->get()->current_normals(),
+                  renderer->get()->current_albedos(),
+                  selected_type);
+                cr::asset_loader::export_framebuffer(
+                  denoised,
+                  (file_str + "-denoised").data(),
+                  selected_type);
+            }
 
             cr::logger::info("Finished exporting image in [{}s]", timer.time_since_start());
         }
@@ -344,10 +410,10 @@ namespace cr::ui
     {
         static auto camera = std::optional<cr::camera>();
 
-        if (!camera.has_value())
-            camera = *scene->registry()->camera();
+        if (!camera.has_value()) camera = *scene->registry()->camera();
 
-        static const auto camera_modes = std::array<std::string, 2>({ "Perspective", "Orthographic" });
+        static const auto camera_modes =
+          std::array<std::string, 2>({ "Perspective", "Orthographic" });
 
         static auto current_type = 0;
 
@@ -372,13 +438,10 @@ namespace cr::ui
 
         if (ImGui::Button("Update"))
         {
-            renderer->update([scene, camera = camera]{
-              *scene->registry()->camera() = camera.value();
-            });
+            renderer->update(
+              [scene, camera = camera] { *scene->registry()->camera() = camera.value(); });
             camera.reset();
         }
-
-
     }
 
     inline void setting_materials(cr::renderer *renderer, cr::scene *scene)
@@ -473,11 +536,11 @@ namespace cr::ui
                 switch (material.info.type)
                 {
                 case material::metal:
-//                    ImGui::SliderFloat(
-//                      ("Roughness##" + material.info.name).c_str(),
-//                      &material.info.roughness,
-//                      0,
-//                      1);
+                    //                    ImGui::SliderFloat(
+                    //                      ("Roughness##" + material.info.name).c_str(),
+                    //                      &material.info.roughness,
+                    //                      0,
+                    //                      1);
                     ImGui::SliderFloat(
                       ("Reflectiveness##" + material.info.name).c_str(),
                       &material.info.reflectiveness,
@@ -636,7 +699,8 @@ namespace cr::ui
 
         ImGui::SameLine();
         if (ImGui::Button("Update"))
-            renderer->get()->update([&scene]() { scene->get()->set_skybox_rotation(rotation / 360.f); });
+            renderer->get()->update(
+              [&scene]() { scene->get()->set_skybox_rotation(rotation / 360.f); });
 
         ImGui::Unindent(8.f);
     }
@@ -648,7 +712,9 @@ namespace cr::ui
         const auto stats = renderer->current_stats();
 
         ImGui::Text("%s", fmt::format("Rays per second: [{}]", stats.rays_per_second).c_str());
-        ImGui::Text("%s", fmt::format("Samples per second: [{}]", stats.samples_per_second).c_str());
+        ImGui::Text(
+          "%s",
+          fmt::format("Samples per second: [{}]", stats.samples_per_second).c_str());
         ImGui::Text("%s", fmt::format("Total Rays Fired: [{}]", stats.total_rays).c_str());
         ImGui::Text("%s", fmt::format("Running Time: [{}]", stats.running_time).c_str());
 
@@ -695,11 +761,11 @@ namespace cr::ui
     }
 
     inline void settings(
-      std::unique_ptr<cr::renderer> *   renderer,
-      std::unique_ptr<cr::draft_renderer> *   draft_renderer,
-      std::unique_ptr<cr::scene> *      scene,
-      std::unique_ptr<cr::thread_pool> *pool,
-      bool                              draft_mode)
+      std::unique_ptr<cr::renderer> *      renderer,
+      std::unique_ptr<cr::draft_renderer> *draft_renderer,
+      std::unique_ptr<cr::scene> *         scene,
+      std::unique_ptr<cr::thread_pool> *   pool,
+      bool                                 draft_mode)
     {
         ImGui::Begin("Misc");
 
@@ -725,7 +791,7 @@ namespace cr::ui
 
         switch (selected_window)
         {
-        case 0: setting_render(renderer->get(), draft_renderer->get(), *pool); break;
+        case 0: setting_render(renderer->get(), draft_renderer->get(), scene->get(), *pool); break;
         case 1: setting_export(renderer); break;
         case 2: setting_materials(renderer->get(), scene->get()); break;
         case 3: setting_asset_loader(renderer, scene, draft_mode); break;

@@ -11,15 +11,15 @@ glm::mat4 cr::camera::mat4() const noexcept
     return _cached_matrix;
 }
 
-cr::ray cr::camera::get_ray(float x, float y)
+cr::ray cr::camera::get_ray(float x, float y, float aspect)
 {
     switch (current_mode)
     {
     case mode::perspective:
     {
-        x *= -1;
-        x += 1;
-        const auto u = 2.0f * x - 1.0f;
+        x *= -1.f;
+        x += 1.f;
+        const auto u = (2.0f * x - 1.0f) * aspect;
         const auto v = 2.0f * y - 1.0f;
         const auto w = 1.0f / glm::tan(0.5f * fov);
 

@@ -44,6 +44,27 @@ namespace
         return { dimension, std::move(data) };
     }
 
+    [[nodiscard]] cr::asset_loader::picture_data load_hdr(const std::filesystem::path &path)
+    {
+        auto image_dimensions = glm::ivec3();
+        auto data             = stbi_loadf(
+          path.string().c_str(),
+          &image_dimensions.x,
+          &image_dimensions.y,
+          &image_dimensions.z,
+          4);
+
+        auto output = std::vector<float>(image_dimensions.x * image_dimensions.y * 4);
+        std::memcpy(
+          output.data(),
+          data,
+          image_dimensions.x * image_dimensions.y * 4 * sizeof(float));
+
+        stbi_image_free(data);
+        auto dim = glm::vec2(image_dimensions.x, image_dimensions.y);
+        return { dim, std::move(output) };
+    }
+
     [[nodiscard]] cr::asset_loader::picture_data load_jpg_png(const std::filesystem::path &path)
     {
         auto image_dimensions = glm::ivec3();
@@ -58,6 +79,7 @@ namespace
 
         for (auto i = 0; i < image_dimensions.x * image_dimensions.y * 4; i++)
             output[i] = data[i] / 255.f;
+        stbi_image_free(data);
 
         auto dim = glm::vec2(image_dimensions.x, image_dimensions.y);
 
@@ -67,8 +89,7 @@ namespace
     void export_png(const cr::image &buffer, const std::string &path)
     {
         auto data = std::vector<uint8_t>(buffer.width() * buffer.height() * 4);
-        for (auto i = 0; i < data.size(); i++)
-            data[i] = buffer.data()[i] * 255.f;
+        for (auto i = 0; i < data.size(); i++) data[i] = buffer.data()[i] * 255.f;
 
         stbi_write_png(
           path.c_str(),
@@ -148,6 +169,14 @@ namespace
         free(header.requested_pixel_types);
     }
 
+    void export_hdr(const cr::image &buffer, const std::string &path)
+    {
+        auto data = std::vector<float>(buffer.width() * buffer.height() * 4);
+        for (auto i = 0; i < data.size(); i++) data[i] = glm::pow(buffer.data()[i], 2.2f);
+
+        stbi_write_hdr(path.c_str(), buffer.width(), buffer.height(), 4, data.data());
+    }
+
 }    // namespace
 
 cr::asset_loader::model_data
@@ -199,7 +228,7 @@ cr::asset_loader::model_data
         auto material_data = cr::material::information();
         material_data.name = material.name;
         material_data.colour =
-          glm::vec3(material.diffuse[0], material.diffuse[1], material.diffuse[2]);
+          glm::vec4(material.diffuse[0], material.diffuse[1], material.diffuse[2], 1.0f);
         material_data.type     = cr::material::type::smooth;
         material_data.emission = 0.0f;
 
@@ -277,6 +306,8 @@ cr::asset_loader::picture_data cr::asset_loader::load_picture(const std::string 
         return load_exr(path);
     else if (extension == ".jpg" || extension == ".png")
         return load_jpg_png(path);
+    else if (extension == ".hdr" || extension == ".hdri")
+        return load_hdr(path);
 
     return {};
 }
@@ -317,6 +348,7 @@ void cr::asset_loader::export_framebuffer(
       type == image_type::JPG     ? ".jpg"
         : type == image_type::PNG ? ".png"
         : type == image_type::EXR ? ".exr"
+        : type == image_type::HDR ? ".hdr"
                                   : "");
 
     if (!extension.empty())
@@ -333,6 +365,7 @@ void cr::asset_loader::export_framebuffer(
         case image_type::PNG: ::export_png(buffer, directory); break;
         case image_type::JPG: ::export_jpg(buffer, directory); break;
         case image_type::EXR: ::export_exr(buffer, directory); break;
+        case image_type::HDR: ::export_hdr(buffer, directory); break;
         }
     }
 }

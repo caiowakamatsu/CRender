@@ -46,7 +46,7 @@ cr::display::display()
 
     // Load the compute shader into the string
     {
-        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/compute.glsl");
+        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/scene_zoom.comp");
         auto shader_string_stream  = std::stringstream();
         shader_string_stream << shader_file_in_stream.rdbuf();
         const auto shader_source = shader_string_stream.str();
@@ -113,12 +113,15 @@ cr::display::display()
       [](GLFWwindow *window, int key, int scancode, int action, int mods) {
           auto ptr = reinterpret_cast<display *>(glfwGetWindowUserPointer(window));
 
-          if (action == GLFW_RELEASE)
-              ptr->_key_states[key] = key_state::released;
-          else if (action == GLFW_REPEAT)
-              ptr->_key_states[key] = key_state::repeat;
-          else if (action == GLFW_PRESS)
-              ptr->_key_states[key] = key_state::pressed;
+          if (key < ptr->_key_states.size())
+          {
+              if (action == GLFW_RELEASE)
+                  ptr->_key_states[key] = key_state::released;
+              else if (action == GLFW_REPEAT)
+                  ptr->_key_states[key] = key_state::repeat;
+              else if (action == GLFW_PRESS)
+                  ptr->_key_states[key] = key_state::pressed;
+          }
       });
 }
 
@@ -196,6 +199,7 @@ void cr::display::start(
         ui::scene_preview(
           renderer.get(),
           draft_renderer.get(),
+          scene.get(),
           _target_texture,
           _scene_texture_handle,
           _compute_shader_program,
@@ -214,7 +218,6 @@ void cr::display::start(
 
         ui::settings(&renderer, &draft_renderer, &scene, &thread_pool, _in_draft_mode);
 
-        //        if (new_font != nullptr)
         ImGui::PopFont();
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);

@@ -10,11 +10,21 @@
 #include <render/material/material.h>
 #include <render/entities/entity_type.h>
 
+#include <util/numbers.h>
+
 namespace cr::entity
 {
     struct transforms
     {
         std::vector<glm::mat4> data = {};
+    };
+
+    struct sun
+    {
+        float size = cr::numbers<float>::pi / 48.0f;
+        float intensity = 100.0f;
+        glm::vec3 direction = glm::normalize(glm::vec3(0.8, -1, 0.0));
+        glm::vec3 colour = glm::vec3(1.0, 0.9, 0.7);
     };
 
     struct model_materials

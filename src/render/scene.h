@@ -36,6 +36,8 @@ namespace cr
 
         void set_skybox_rotation(const glm::vec2 &rotation);
 
+        void set_sun_enabled(bool value);
+
         [[nodiscard]] glm::vec3 sample_skybox(float x, float y) const noexcept;
 
         [[nodiscard]] cr::ray::intersection_record cast_ray(const cr::ray ray);
@@ -48,8 +50,17 @@ namespace cr
 
         [[nodiscard]] const std::vector<mesh_index> &models() const noexcept;
 
+        [[nodiscard]] std::optional<GLuint> skybox_handle() const noexcept;
+
+        [[nodiscard]] glm::vec2 skybox_rotation() const noexcept;
+
+        [[nodiscard]] bool is_sun_enabled() const noexcept;
+
     private:
+        bool _sun_enabled = true;
+
         std::optional<cr::image> _skybox;
+        std::optional<GLuint>    _skybox_texture;
 
         std::vector<cr::mesh> _meshes;
 

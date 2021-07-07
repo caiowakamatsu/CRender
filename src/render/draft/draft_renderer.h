@@ -47,6 +47,9 @@ namespace cr
         GLuint _depth_buffer = -1;
         GLuint _rbo;
 
+        GLuint _background_program_handle;
+        GLuint _background_shader_handle;
+
         GLuint _vertex_handle;
         GLuint _fragment_handle;
         GLuint _program_handle;

@@ -27,6 +27,11 @@ cr::registry::registry()
     entities.emplace<cr::entity::type>(_camera_entity, cr::entity::type::CAMERA);
     entities.emplace<cr::camera>(_camera_entity);
     entities.emplace<std::string>(_camera_entity, "Camera");
+    auto sun_dir_local_coords = cr::sampling::build_local(-_sun.direction);
+    _sun_transform        = glm::mat3(
+      sun_dir_local_coords.tangent,
+      sun_dir_local_coords.normal,
+      sun_dir_local_coords.bi_tangent);
 }
 
 cr::registry::registered_model cr::registry::register_model(const cr::asset_loader::model_data &data)
@@ -201,4 +206,23 @@ std::vector<float> cr::registry::_zip_mesh_data(const cr::temporary_mesh &mesh)
 cr::camera *cr::registry::camera()
 {
     return &entities.get<cr::camera>(_camera_entity);
+}
+cr::entity::sun cr::registry::sun()
+{
+    return _sun;
+}
+
+glm::mat3 cr::registry::sun_transform()
+{
+    return _sun_transform;
+}
+
+void cr::registry::set_sun(const cr::entity::sun &sun)
+{
+    _sun = sun;
+    auto sun_dir_local_coords = cr::sampling::build_local(-sun.direction);
+    _sun_transform        = glm::mat3(
+      sun_dir_local_coords.tangent,
+      sun_dir_local_coords.normal,
+      sun_dir_local_coords.bi_tangent);
 }
