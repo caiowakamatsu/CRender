@@ -34,6 +34,11 @@ namespace cr::asset_loader
     {
         glm::ivec2         res;
         std::vector<float> colour;
+
+        [[nodiscard]] inline cr::image as_image()
+        {
+            return cr::image(colour, res.x, res.y);
+        }
     };
 
     [[nodiscard]] picture_data load_picture(const std::string &file);

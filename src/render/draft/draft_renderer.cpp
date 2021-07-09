@@ -215,7 +215,7 @@ void cr::draft_renderer::_update_uniforms()
       _scene->get()->registry()->camera()->fov,
       static_cast<float>(_res_x) / _res_y,
       0.10f,
-      1000.f);
+      10000.f);
     const auto view = glm::inverse(_scene->get()->registry()->camera()->mat4());
 
     // No model matrix *yet*

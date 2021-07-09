@@ -27,6 +27,20 @@ namespace cr::entity
         glm::vec3 colour = glm::vec3(1.0, 0.9, 0.7);
     };
 
+    typedef std::unique_ptr<cr::image> texture;
+
+    struct model_handle
+    {
+        uint32_t material;
+        uint32_t geometry;
+        uint32_t gpu_data;
+    };
+
+    struct geometry
+    {
+
+    };
+
     struct model_materials
     {
         model_materials() = default;
@@ -50,18 +64,16 @@ namespace cr::entity
         explicit model_data(
           std::unique_ptr<std::vector<glm::vec3>> vert_coords,
           std::unique_ptr<std::vector<uint32_t>> vert_indices,
-          std::unique_ptr<std::vector<glm::vec2>> tex_coords,
-          std::unique_ptr<std::vector<uint32_t>> tex_indices)
+          std::unique_ptr<std::vector<glm::vec2>> tex_coords)
         :
         vert_coords(std::move(vert_coords)), vert_indices(std::move(vert_indices)),
-            tex_coords(std::move(tex_coords)), tex_indices(std::move(tex_indices))
+            tex_coords(std::move(tex_coords))
         {
         }
 
         std::unique_ptr<std::vector<glm::vec3>> vert_coords;
         std::unique_ptr<std::vector<uint32_t>> vert_indices;
         std::unique_ptr<std::vector<glm::vec2>> tex_coords;
-        std::unique_ptr<std::vector<uint32_t>> tex_indices;
     };
 
     struct model_geometry

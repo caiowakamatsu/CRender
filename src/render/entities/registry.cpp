@@ -6,9 +6,23 @@ namespace
     [[nodiscard]] std::unique_ptr<std::vector<T>> persist(const std::vector<T> &data)
     {
         auto on_heap = std::make_unique<std::vector<T>>(data.size());
-        std::memcpy(on_heap.get()->data(), data.data(), sizeof(T) * data.size());
+        std::memcpy(on_heap->data(), data.data(), sizeof(T) * data.size());
         return std::move(on_heap);
     }
+
+    template<typename T>
+    [[nodiscard]] std::unique_ptr<std::vector<T>>
+      persist_and_expand(const std::vector<T> &data, const std::vector<uint32_t> &indices)
+    {
+        assert(indices.size > 0 && "Cannot expand data with 0 indices");
+
+        auto on_heap = std::make_unique<std::vector<T>>(indices.size());
+
+        for (auto i = 0; i < indices.size(); i++) (*on_heap)[i] = data[indices[i]];
+
+        return on_heap;
+    }
+
 }    // namespace
 
 cr::registry::registry()
@@ -34,48 +48,35 @@ cr::registry::registry()
       sun_dir_local_coords.bi_tangent);
 }
 
-cr::registry::registered_model cr::registry::register_model(const cr::asset_loader::model_data &data)
+cr::registry::registered_model
+  cr::registry::register_model(const cr::asset_loader::model_data &data)
 {
+    auto entity = entities.create();
+
+    auto model          = registered_model();
+    model.meshes        = _get_meshes_by_material(data);
+    model.entity_handle = entity;
+
     // Expand the data we have have from the indices. Why?
     // Good question - I'm waiting on Intels Embree team to reply to my github issue
     // https://github.com/embree/embree/issues/325
-
-    auto expanded_vertices = std::vector<glm::vec3>();
-    expanded_vertices.reserve(data.vertex_indices.size());
-    for (const auto index : data.vertex_indices) expanded_vertices.push_back(data.vertices[index]);
-
-    auto expanded_tex_coords = std::vector<glm::vec2>();
-    expanded_tex_coords.reserve(data.texture_coords.size());
-    for (const auto index : data.texture_indices)
-        expanded_tex_coords.push_back(data.texture_coords[index]);
-
-    auto expanded_normals = std::vector<glm::vec3>();
-    expanded_normals.reserve(data.normals.size());
-    for (const auto index : data.normal_indices) expanded_normals.push_back(data.normals[index]);
-
     assert(
       expanded_vertices.size() == expanded_tex_coords.size() &&
       "Expanded Vertex Size and Expanded Tex Coord size mismatch");
 
-    auto indices = std::vector<uint32_t>();
-    indices.reserve(expanded_vertices.size());
-    for (auto i = 0; i < expanded_vertices.size(); i++) indices.push_back(i);
+    auto indices = std::make_unique<std::vector<uint32_t>>(data.vertex_indices.size());
+    std::generate(indices->begin(), indices->end(), [n = 0]() mutable { return n++; });
 
-    auto persist_vertices        = ::persist(expanded_vertices);
-    auto persist_vertex_indices  = ::persist(indices);
-    auto persist_texture_coords  = ::persist(expanded_tex_coords);
-    auto persist_texture_indices = ::persist(indices);
+    auto vertices       = ::persist_and_expand(data.vertices, data.vertex_indices);
+    auto texture_coords = ::persist_and_expand(data.texture_coords, data.texture_indices);
 
     // Create the model embree instance
     auto model_instance = cr::model::instance_geometry(
-      *persist_vertices,
-      *persist_vertex_indices,
-      *persist_texture_coords,
-      *persist_texture_indices);
+      *vertices,
+      *indices,
+      *texture_coords);
 
     static auto current_model_count = uint32_t(0);
-
-    auto entity = entities.create();
 
     entities.emplace<cr::entity::type>(entity, cr::entity::type::MODEL);
 
@@ -86,10 +87,9 @@ cr::registry::registered_model cr::registry::register_model(const cr::asset_load
 
     entities.emplace<cr::entity::model_data>(
       entity,
-      std::move(persist_vertices),
-      std::move(persist_vertex_indices),
-      std::move(persist_texture_coords),
-      std::move(persist_texture_indices));
+      std::move(vertices),
+      std::move(indices),
+      std::move(texture_coords));
 
     entities.emplace<cr::entity::model_geometry>(
       entity,
@@ -99,11 +99,6 @@ cr::registry::registered_model cr::registry::register_model(const cr::asset_load
     entities.emplace<std::string>(
       entity,
       std::string("Model - " + std::to_string(++current_model_count)));
-
-
-    auto model = registered_model();
-    model.meshes = _get_meshes_by_material(data);
-    model.entity_handle = entity;
     return model;
 }
 
@@ -111,8 +106,7 @@ cr::raster_objects cr::registry::_get_meshes_by_material(const cr::asset_loader:
 {
     auto objects = std::vector<cr::temporary_mesh>(data.materials.size());
 
-    for (auto i = 0; i < objects.size(); i++)
-        objects[i].material = data.materials[i];
+    for (auto i = 0; i < objects.size(); i++) objects[i].material = data.materials[i];
 
     for (auto i = 0; i < data.vertex_indices.size(); i++)
     {
@@ -123,8 +117,7 @@ cr::raster_objects cr::registry::_get_meshes_by_material(const cr::asset_loader:
         objects[object_index].texture_coords.push_back(
           data.texture_coords[data.texture_indices[i]]);
 
-        objects[object_index].normals.push_back(
-          data.normals[data.normal_indices[i]]);
+        objects[object_index].normals.push_back(data.normals[data.normal_indices[i]]);
     }
 
     return _upload_temporary_meshes(objects);
@@ -153,7 +146,16 @@ cr::raster_objects
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
             const auto &texture = mesh.material.info.tex.value();
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width(), texture.height(), 0, GL_RGBA, GL_FLOAT, texture.data());
+            glTexImage2D(
+              GL_TEXTURE_2D,
+              0,
+              GL_RGBA,
+              texture.width(),
+              texture.height(),
+              0,
+              GL_RGBA,
+              GL_FLOAT,
+              texture.data());
         }
 
         glGenVertexArrays(1, &new_mesh.vao);
@@ -163,17 +165,33 @@ cr::raster_objects
         glBindVertexArray(new_mesh.vao);
         glBindBuffer(GL_ARRAY_BUFFER, new_mesh.vbo);
 
-        glBufferData(GL_ARRAY_BUFFER, vertex_data.size() * sizeof(float), vertex_data.data(), GL_STATIC_DRAW);
+        glBufferData(
+          GL_ARRAY_BUFFER,
+          vertex_data.size() * sizeof(float),
+          vertex_data.data(),
+          GL_STATIC_DRAW);
 
         // vertex positions
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0);
         // vertex tex coords
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
+        glVertexAttribPointer(
+          1,
+          2,
+          GL_FLOAT,
+          GL_FALSE,
+          8 * sizeof(float),
+          (void *) (3 * sizeof(float)));
         // vertex normals
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (5 * sizeof(float)));
+        glVertexAttribPointer(
+          2,
+          3,
+          GL_FLOAT,
+          GL_FALSE,
+          8 * sizeof(float),
+          (void *) (5 * sizeof(float)));
 
         glBindVertexArray(0);
 

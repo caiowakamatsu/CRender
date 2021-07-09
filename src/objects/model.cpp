@@ -52,8 +52,7 @@ namespace
 cr::entity::model_geometry cr::model::instance_geometry(
   const std::vector<glm::vec3> &vertices,
   const std::vector<uint32_t> & indices,
-  const std::vector<glm::vec2> &tex_coords,
-  const std::vector<uint32_t> &tex_indices)
+  const std::vector<glm::vec2> &tex_coords)
 {
     auto instance = cr::entity::model_geometry();
     cr::logger::info("Vertex Count: {}\n", vertices.size());

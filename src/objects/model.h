@@ -24,8 +24,7 @@ namespace cr
         [[nodiscard]] cr::entity::model_geometry instance_geometry(
           const std::vector<glm::vec3> &vertices,
           const std::vector<uint32_t> & indices,
-          const std::vector<glm::vec2> &tex_coords,
-          const std::vector<uint32_t> &tex_indices);
+          const std::vector<glm::vec2> &tex_coords);
 
         [[nodiscard]] cr::ray::intersection_record intersect(
           const cr::ray &                    ray,
