@@ -296,7 +296,7 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
         }
 
         // Sun NEE
-        {
+        if (_scene->get()->is_sun_enabled()) {
             auto out_ray = cr::ray(
               intersection.intersection_point + intersection.normal * 0.001f,
               glm::vec3(0.0f));

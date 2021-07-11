@@ -302,7 +302,7 @@ namespace cr::ui
             ImGui::ColorEdit3("Colour", glm::value_ptr(sun.colour));
             ImGui::InputFloat3("Sun Direction", glm::value_ptr(sun.direction));
 
-            if (ImGui::Button("Update Camera"))
+            if (ImGui::Button("Update Sun"))
             {
                 renderer->update([sun_enabled = sun_enabled, sun = sun, scene] {
                     scene->registry()->set_sun(sun);
