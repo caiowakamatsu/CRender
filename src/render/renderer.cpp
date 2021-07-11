@@ -26,7 +26,9 @@ namespace
 
         out.emission = record.material->info.emission;
         if (record.material->info.tex.has_value())
-            out.colour = record.material->info.tex.value().get_uv(record.uv.x, record.uv.y);
+            out.colour = scene->registry()
+                           ->entities.get<cr::image>(record.material->info.tex.value())
+                           .get_uv(record.uv.x, record.uv.y);
         else
             out.colour = record.material->info.colour;
 

@@ -28,8 +28,6 @@ namespace cr::entity
         glm::vec3 colour    = glm::vec3(1.0, 0.9, 0.7);
     };
 
-    typedef std::unique_ptr<cr::image> texture;
-
     struct gpu_data
     {
         GLuint vbo;

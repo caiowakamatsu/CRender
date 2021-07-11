@@ -199,76 +199,105 @@ cr::asset_loader::model_data
 
     // Copy the vertices into our buffer
     model_data.vertices.resize(attrib.vertices.size() / 3);
-    std::memcpy(
-      model_data.vertices.data(),
-      attrib.vertices.data(),
-      attrib.vertices.size() * sizeof(float));
+    for (auto i = 0; i < model_data.vertices.size(); i++)
+    {
+        model_data.vertices[i] = glm::vec3(
+          attrib.vertices[i * 3 + 0],
+          attrib.vertices[i * 3 + 1],
+          attrib.vertices[i * 3 + 2]);
+    }
 
     model_data.texture_coords.resize(attrib.texcoords.size() / 2);
-    std::memcpy(
-      model_data.texture_coords.data(),
-      attrib.texcoords.data(),
-      attrib.texcoords.size() * sizeof(float));
+    for (auto i = 0; i < model_data.texture_coords.size(); i++)
+    {
+        model_data.texture_coords[i] =
+          glm::vec2(attrib.texcoords[i * 2 + 0], attrib.texcoords[i * 2 + 1]);
+    }
 
     model_data.normals.resize(attrib.normals.size() / 3);
-    std::memcpy(
-      model_data.normals.data(),
-      attrib.normals.data(),
-      attrib.normals.size() * sizeof(float));
-
-    model_data.materials.resize(materials.size());
-    for (auto i = 0; i < materials.size(); i++)
+    for (auto i = 0; i < model_data.normals.size(); i++)
     {
-        const auto &in_mat = materials[i];
-        auto material = cr::material();
-
-        material.info.name = in_mat.name;
-        material.info.colour =
-          glm::vec4(in_mat.diffuse[0], in_mat.diffuse[1], in_mat.diffuse[2], 1.0f);
-        material.info.type = material::smooth;
-
-        if (!in_mat.diffuse_texname.empty())
-        {
-            const auto texture_path = folder + '\\' + in_mat.diffuse_texname;
-            material.info.tex = model_data.textures.emplace_back(
-              std::move(cr::asset_loader::load_picture(texture_path).as_image()));
-        }
-
-        model_data.materials[i] = std::move(material);
+        model_data.normals[i] = glm::vec3(
+          attrib.normals[i * 3 + 0],
+          attrib.normals[i * 3 + 1],
+          attrib.normals[i * 3 + 2]);
     }
 
-    for (auto i = size_t(0), current_count = size_t(0); i < shapes.size(); i++)
+    auto already_loaded = std::unordered_map<std::string, uint32_t>();
+
+    for (const auto &material : materials)
     {
-        const auto &shape = shapes[i];
+        auto material_data = cr::material::information();
+        material_data.name = material.name;
+        material_data.colour =
+          glm::vec4(material.diffuse[0], material.diffuse[1], material.diffuse[2], 1.0f);
+        material_data.type     = cr::material::type::smooth;
+        material_data.emission = 0.0f;
 
-        model_data.vertex_indices.resize(current_count + shape.mesh.indices.size());
-        model_data.normal_indices.resize(current_count + shape.mesh.indices.size());
-        model_data.texture_indices.resize(current_count + shape.mesh.indices.size());
-
-        for (auto j = current_count; j < shape.mesh.indices.size(); j++)
+        // Texture stuff!
+        if (!material.diffuse_texname.empty())
         {
-            const auto idx = shape.mesh.indices[j];
+            if (const auto &it = already_loaded.find(material.diffuse_texname);
+                it == already_loaded.end())
+            {
+                const auto texture_name = folder + '\\' + material.diffuse_texname;
 
-            model_data.vertex_indices[current_count + j]  = idx.vertex_index;
-            model_data.normal_indices[current_count + j]  = idx.normal_index;
-            model_data.texture_indices[current_count + j] = idx.texcoord_index;
+                auto image_dimensions = glm::ivec3();
+                stbi_set_flip_vertically_on_load(true);
+                auto data = stbi_load(
+                  texture_name.c_str(),
+                  &image_dimensions.x,
+                  &image_dimensions.y,
+                  &image_dimensions.z,
+                  4);
+                stbi_set_flip_vertically_on_load(false);
+
+                auto texture_image = cr::image(image_dimensions.x, image_dimensions.y);
+
+                for (auto x = 0; x < image_dimensions.x; x++)
+                    for (auto y = 0; y < image_dimensions.y; y++)
+                    {
+                        const auto base_index = (x + y * image_dimensions.x) * 4;
+
+                        const auto r = data[base_index + 0] / 255.f;
+                        const auto g = data[base_index + 1] / 255.f;
+                        const auto b = data[base_index + 2] / 255.f;
+                        const auto a = data[base_index + 3] / 255.f;
+
+                        texture_image.set(x, y, glm::vec4(r, g, b, a));
+                    }
+
+                stbi_image_free(data);
+                model_data.textures.push_back(std::move(texture_image));
+                material_data.tex = model_data.textures.size() - 1;
+                already_loaded.insert({ material.diffuse_texname, material_data.tex.value() });
+            } else
+                material_data.tex = it->second;
         }
-        current_count += shape.mesh.indices.size();
 
-        model_data.material_indices.reserve(
-          model_data.material_indices.size() + shape.mesh.material_ids.size());
+        model_data.materials.emplace_back(material_data);
+    }
+
+    for (const auto &shape : shapes)
+    {
+        for (const auto idx : shape.mesh.indices)
+        {
+            if (idx.vertex_index == -1) cr::exit("Vertex index was -1");
+            if (idx.texcoord_index == -1) cr::exit("Tex coord index was -1");
+            if (idx.normal_index == -1) cr::exit("Normal index was -1");
+
+            model_data.vertex_indices.push_back(idx.vertex_index);
+
+            model_data.texture_indices.push_back(idx.texcoord_index);
+
+            model_data.normal_indices.push_back(idx.normal_index);
+        }
+
         for (auto material_id : shape.mesh.material_ids)
+        {
             model_data.material_indices.push_back(material_id);
+        }
     }
-
-    if (
-      std::find(model_data.vertex_indices.begin(), model_data.vertex_indices.end(), -1) !=
-        model_data.vertex_indices.end() ||
-      std::find(model_data.normal_indices.begin(), model_data.normal_indices.end(), -1) !=
-        model_data.normal_indices.end() ||
-      std::find(model_data.texture_indices.begin(), model_data.texture_indices.end(), -1) !=
-        model_data.texture_indices.end())
-        cr::exit("Error loading model - An index was not 0");
 
     return model_data;
 }

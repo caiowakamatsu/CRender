@@ -30,14 +30,14 @@ namespace cr
 
         struct information
         {
-            type                     type           = smooth;
-            float                    ior            = 1.5;
-            float                    roughness      = 0.5;
-            float                    reflectiveness = 1;
-            float                    emission       = 0;
-            glm::vec4                colour         = glm::vec4(1, 1, 1, 1);
-            std::string              name           = "ERROR - Report";
-            std::optional<cr::image> tex;
+            type                    type           = smooth;
+            float                   ior            = 1.5;
+            float                   roughness      = 0.5;
+            float                   reflectiveness = 1;
+            float                   emission       = 0;
+            glm::vec4               colour         = glm::vec4(1, 1, 1, 1);
+            std::string             name           = "ERROR - Report";
+            std::optional<uint32_t> tex;
         };
 
         material() { info = information(); }

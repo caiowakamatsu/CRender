@@ -29,8 +29,8 @@ cr::registry::registry()
 {
     entities.prepare<std::string>();
 
+    entities.prepare<cr::image>();
     entities.prepare<cr::entity::instances>();
-    entities.prepare<cr::entity::texture>();
     entities.prepare<cr::entity::gpu_data>();
     entities.prepare<cr::entity::geometry>();
     entities.prepare<cr::entity::embree_ctx>();
@@ -71,7 +71,22 @@ void cr::registry::register_model(const cr::asset_loader::model_data &data)
     auto instances = std::vector<glm::mat4>(1);
     instances[0]   = glm::mat4(1);
 
-    entities.emplace<cr::entity::model_materials>(entity, data.materials, data.material_indices);
+    // Translate the materials texture handle from model data to the ECS entity
+    auto ecs_handles = std::vector<uint32_t>(data.textures.size());
+    for(auto i = 0; i < data.textures.size(); i++)
+    {
+        ecs_handles[i] = entities.create();
+        entities.emplace<cr::image>(ecs_handles[i], data.textures[i]);
+    }
+
+    auto updated_materials = std::vector<cr::material>(data.materials.size());
+    for (auto i = 0; i < data.materials.size(); i++)
+    {
+        updated_materials[i] = data.materials[i];
+        updated_materials[i].info.tex = ecs_handles[data.materials[i].info.tex.value()];
+    }
+
+    entities.emplace<cr::entity::model_materials>(entity, updated_materials, data.material_indices);
     entities.emplace<cr::entity::geometry>(entity, std::move(vertices), std::move(indices), std::move(texture_coords));
     entities.emplace<cr::entity::embree_ctx>(entity, model_instance);
     entities.emplace<cr::entity::instances>(entity, instances);
@@ -118,7 +133,7 @@ void cr::registry::_upload_gpu_meshes(const cr::asset_loader::model_data &data)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-            const auto &texture = mesh.material.info.tex.value();
+            const auto &texture = data.textures[mesh.material.info.tex.value()];
             glTexImage2D(
               GL_TEXTURE_2D,
               0,
@@ -167,6 +182,8 @@ void cr::registry::_upload_gpu_meshes(const cr::asset_loader::model_data &data)
           (void *) (5 * sizeof(float)));
 
         glBindVertexArray(0);
+
+        gpu.material = std::move(mesh.material);
 
         auto entity = entities.create();
         entities.emplace<cr::entity::gpu_data>(entity, gpu);
