@@ -216,11 +216,27 @@ void cr::draft_renderer::_update_uniforms()
 {
     const auto mvp_location = glGetUniformLocation(_program_handle, "mvp");
 
-    const auto projection = glm::perspective(
-      _scene->get()->registry()->camera()->fov,
-      static_cast<float>(_res_x) / _res_y,
-      0.10f,
-      10000.f);
+    const auto camera = _scene->get()->registry()->camera();
+
+    auto projection = glm::mat4();
+    switch (camera->current_mode)
+    {
+    case camera::mode::perspective:
+        projection = glm::perspectiveLH(
+          glm::radians(_scene->get()->registry()->camera()->fov),
+          static_cast<float>(_res_x) / _res_y,
+          0.10f,
+          10000.f);
+        break;
+
+    case camera::mode::orthographic:
+    {
+        const auto scale = camera->scale;
+
+        projection = glm::orthoLH(-scale, scale, -scale, scale, 0.01f, 10000.f);
+    }
+    break;
+    }
     const auto view = glm::inverse(_scene->get()->registry()->camera()->mat4());
 
     // No model matrix *yet*

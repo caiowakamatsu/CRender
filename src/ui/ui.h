@@ -158,6 +158,10 @@ namespace cr::ui
               1,
               GL_FALSE,
               glm::value_ptr(scene->registry()->camera()->mat4()));
+
+            glUniform1i(
+              glGetUniformLocation(compute_program, "flip"),
+              in_draft_mode);
         }
 
         {
@@ -421,15 +425,26 @@ namespace cr::ui
             ImGui::EndCombo();
         }
 
-        ImGui::SliderFloat("FOV", &camera.value().fov, 5, 180);
-
         auto selected_type = cr::camera::mode::perspective;
 
         switch (current_type)
         {
-        case 0: selected_type = cr::camera::mode::perspective; break;
-        case 1: selected_type = cr::camera::mode::orthographic; break;
+        case 0:
+        {
+            selected_type = cr::camera::mode::perspective;
+            ImGui::SliderFloat("FOV", &camera.value().fov, 5, 180);
+            break;
         }
+        case 1:
+        {
+            selected_type = cr::camera::mode::orthographic;
+            ImGui::InputFloat("Scale", &camera.value().scale, 1, 10);
+            break;
+        }
+        }
+
+
+
 
         camera->current_mode = selected_type;
 
