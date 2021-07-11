@@ -4,8 +4,8 @@ namespace
 {
     [[nodiscard]] float randf() noexcept
     {
-        thread_local std::mt19937                          gen;
-        thread_local std::uniform_real_distribution<float> dist(0.f, 1.f);
+        thread_local std::mt19937             gen;
+        std::uniform_real_distribution<float> dist(0.f, 1.f);
         return dist(gen);
     }
 
@@ -17,7 +17,7 @@ namespace
         cr::ray   ray;
     };
     [[nodiscard]] processed_hit
-      process_hit(const cr::ray::intersection_record &record, const cr::ray &ray)
+      process_hit(const cr::ray::intersection_record &record, const cr::ray &ray, cr::scene *scene)
     {
         auto out = processed_hit();
 
@@ -26,7 +26,9 @@ namespace
 
         out.emission = record.material->info.emission;
         if (record.material->info.tex.has_value())
-            out.colour = record.material->info.tex->get_uv(record.uv.x, record.uv.y);
+            out.colour = scene->registry()
+                           ->entities.get<cr::image>(record.material->info.tex.value())
+                           .get_uv(record.uv.x, record.uv.y);
         else
             out.colour = record.material->info.colour;
 
@@ -279,7 +281,7 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
         }
         else
         {
-            processed_hit = ::process_hit(intersection, ray);
+            processed_hit = ::process_hit(intersection, ray, _scene->get());
 
             if (i == 0)
             {
@@ -294,7 +296,7 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
         }
 
         // Sun NEE
-        {
+        if (_scene->get()->is_sun_enabled()) {
             auto out_ray = cr::ray(
               intersection.intersection_point + intersection.normal * 0.001f,
               glm::vec3(0.0f));
@@ -311,7 +313,10 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
             auto sun_intersection = _scene->get()->cast_ray(out_ray);
             if (sun_intersection.distance == std::numeric_limits<float>::infinity())
                 final += throughput * glm::vec3(processed_hit.colour) * pdf_cos.cosine *
-                  cr::sampling::sun::sky_colour(out_ray.direction, _scene->get()->registry()->sun()) / pdf_cos.pdf;
+                  cr::sampling::sun::sky_colour(
+                           out_ray.direction,
+                           _scene->get()->registry()->sun()) /
+                  pdf_cos.pdf;
         }
     }
     fired_rays += total_bounces;

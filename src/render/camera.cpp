@@ -17,11 +17,9 @@ cr::ray cr::camera::get_ray(float x, float y, float aspect)
     {
     case mode::perspective:
     {
-        x *= -1.f;
-        x += 1.f;
         const auto u = (2.0f * x - 1.0f) * aspect;
         const auto v = 2.0f * y - 1.0f;
-        const auto w = 1.0f / glm::tan(0.5f * fov);
+        const auto w = 1.0f / glm::tan(0.5f * glm::radians(fov));
 
         const auto direction = glm::vec3((_cached_matrix * glm::vec4(u, v, w, 0.0f)));
 
@@ -32,8 +30,8 @@ cr::ray cr::camera::get_ray(float x, float y, float aspect)
         const auto u = 2.0f * x - 1.0f;
         const auto v = 2.0f * y - 1.0f;
 
-        const auto origin    = glm::vec3(_cached_matrix * glm::vec4(4.f * u, 4.f * v, 0.0, 1.0));
-        const auto direction = glm::vec3(glm::row(_cached_matrix, 2));
+        const auto origin    = glm::vec3(_cached_matrix * glm::vec4(scale * u, scale * v, 0.0, 1.0));
+        const auto direction = glm::vec3(_cached_matrix[2]);
 
         return cr::ray(origin, glm::normalize(direction));
     }

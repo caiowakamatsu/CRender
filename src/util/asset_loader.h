@@ -21,6 +21,7 @@ namespace cr::asset_loader
         std::vector<material>  materials;
         std::vector<glm::vec2> texture_coords;
         std::vector<glm::vec3> normals;
+        std::vector<cr::image> textures;
 
         std::vector<uint32_t> vertex_indices;
         std::vector<uint32_t> material_indices;
@@ -34,6 +35,11 @@ namespace cr::asset_loader
     {
         glm::ivec2         res;
         std::vector<float> colour;
+
+        [[nodiscard]] inline cr::image as_image()
+        {
+            return cr::image(colour, res.x, res.y);
+        }
     };
 
     [[nodiscard]] picture_data load_picture(const std::string &file);

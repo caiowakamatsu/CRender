@@ -8,73 +8,64 @@
 #include <embree3/rtcore.h>
 
 #include <render/material/material.h>
-#include <render/entities/entity_type.h>
+
+#include <glad/glad.h>
 
 #include <util/numbers.h>
 
 namespace cr::entity
 {
-    struct transforms
+    struct instances
     {
-        std::vector<glm::mat4> data = {};
+        std::vector<glm::mat4> transforms;
     };
 
     struct sun
     {
-        float size = cr::numbers<float>::pi / 48.0f;
-        float intensity = 100.0f;
+        float     size      = cr::numbers<float>::pi / 48.0f;
+        float     intensity = 100.0f;
         glm::vec3 direction = glm::normalize(glm::vec3(0.8, -1, 0.0));
-        glm::vec3 colour = glm::vec3(1.0, 0.9, 0.7);
+        glm::vec3 colour    = glm::vec3(1.0, 0.9, 0.7);
     };
 
-    struct model_materials
+    struct gpu_data
     {
-        model_materials() = default;
-        model_materials(
-          const std::vector<cr::material> &       materials,
-          const std::vector<uint32_t> &           indices)
-            : materials(materials), indices(indices)
-        {
-        }
+        GLuint vbo;
+        GLuint vao;
+        GLuint texture;
 
-        std::vector<cr::material> materials = {};
-        std::vector<uint32_t>     indices   = {};
-
-        std::vector<glm::vec2> tex_coords;
-        std::vector<uint32_t> tex_indices;
+        cr::material  material;
+        std::uint32_t indices;
     };
 
-    struct model_data
+    struct geometry
     {
-        model_data() = default;
-        explicit model_data(
+        geometry() = default;
+        explicit geometry(
           std::unique_ptr<std::vector<glm::vec3>> vert_coords,
-          std::unique_ptr<std::vector<uint32_t>> vert_indices,
-          std::unique_ptr<std::vector<glm::vec2>> tex_coords,
-          std::unique_ptr<std::vector<uint32_t>> tex_indices)
-        :
-        vert_coords(std::move(vert_coords)), vert_indices(std::move(vert_indices)),
-            tex_coords(std::move(tex_coords)), tex_indices(std::move(tex_indices))
+          std::unique_ptr<std::vector<uint32_t>>  vert_indices,
+          std::unique_ptr<std::vector<glm::vec2>> tex_coords)
+            : vert_coords(std::move(vert_coords)), vert_indices(std::move(vert_indices)),
+              tex_coords(std::move(tex_coords))
         {
         }
 
         std::unique_ptr<std::vector<glm::vec3>> vert_coords;
-        std::unique_ptr<std::vector<uint32_t>> vert_indices;
+        std::unique_ptr<std::vector<uint32_t>>  vert_indices;
         std::unique_ptr<std::vector<glm::vec2>> tex_coords;
-        std::unique_ptr<std::vector<uint32_t>> tex_indices;
     };
 
-    struct model_geometry
+    struct embree_ctx
     {
-        model_geometry()
+        embree_ctx()
         {
             device   = rtcNewDevice(nullptr);
             scene    = rtcNewScene(device);
             geometry = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
         }
 
-        model_geometry(RTCDevice device, RTCScene scene, RTCGeometry geometry)
-            : device(device), scene(scene), geometry(geometry)
+        embree_ctx(RTCDevice device, RTCScene scene, RTCGeometry geometry)
+        : device(device), scene(scene), geometry(geometry)
         {
         }
 
@@ -83,53 +74,20 @@ namespace cr::entity
         RTCGeometry geometry = nullptr;
     };
 
-    namespace light
+    struct model_materials
     {
-        struct point
+        model_materials() = default;
+        model_materials(
+          const std::vector<cr::material> &materials,
+          const std::vector<uint32_t> &    indices)
+            : materials(materials), indices(indices)
         {
-            float     intensity;
-            glm::vec3 colour;
-            glm::vec3 position;
-        };
+        }
 
-        struct directional
-        {
-            directional(const glm::vec3 &colour, const glm::vec3 &direction, float intensity)
-                : colour(colour), direction(direction), intensity(intensity)
-            {
-            }
+        std::vector<cr::material> materials = {};
+        std::vector<uint32_t>     indices   = {};
 
-            glm::vec3 colour;
-            glm::vec3 direction;
-            float     intensity;
-        };
-
-        struct area
-        {
-            area(
-              const glm::vec3 &colour,
-              const glm::vec3 &position,
-              const glm::vec2 &size,
-              float            intensity)
-                : colour(colour), position(position), size(size), matrix(1), intensity(intensity)
-            {
-            }
-
-            void recalc_mat()
-            {
-                matrix = glm::mat4(1);
-
-                matrix = glm::translate(matrix, position);
-                matrix = glm::scale(matrix, glm::vec3(size.x, 0, size.y));
-            }
-
-            glm::vec2 size;
-            glm::vec3 colour;
-            glm::vec3 position;
-            glm::mat4 matrix;
-            float     intensity;
-        };
-
-    }    // namespace light
-
+        std::vector<glm::vec2> tex_coords;
+        std::vector<uint32_t>  tex_indices;
+    };
 }    // namespace cr::entity

@@ -223,6 +223,8 @@ cr::asset_loader::model_data
           attrib.normals[i * 3 + 2]);
     }
 
+    auto already_loaded = std::unordered_map<std::string, uint32_t>();
+
     for (const auto &material : materials)
     {
         auto material_data = cr::material::information();
@@ -235,35 +237,42 @@ cr::asset_loader::model_data
         // Texture stuff!
         if (!material.diffuse_texname.empty())
         {
-            const auto texture_name = folder + '\\' + material.diffuse_texname;
+            if (const auto &it = already_loaded.find(material.diffuse_texname);
+                it == already_loaded.end())
+            {
+                const auto texture_name = folder + '\\' + material.diffuse_texname;
 
-            auto image_dimensions = glm::ivec3();
-            stbi_set_flip_vertically_on_load(true);
-            auto data = stbi_load(
-              texture_name.c_str(),
-              &image_dimensions.x,
-              &image_dimensions.y,
-              &image_dimensions.z,
-              4);
-            stbi_set_flip_vertically_on_load(false);
+                auto image_dimensions = glm::ivec3();
+                stbi_set_flip_vertically_on_load(true);
+                auto data = stbi_load(
+                  texture_name.c_str(),
+                  &image_dimensions.x,
+                  &image_dimensions.y,
+                  &image_dimensions.z,
+                  4);
+                stbi_set_flip_vertically_on_load(false);
 
-            auto texture_image = cr::image(image_dimensions.x, image_dimensions.y);
+                auto texture_image = cr::image(image_dimensions.x, image_dimensions.y);
 
-            for (auto x = 0; x < image_dimensions.x; x++)
-                for (auto y = 0; y < image_dimensions.y; y++)
-                {
-                    const auto base_index = (x + y * image_dimensions.x) * 4;
+                for (auto x = 0; x < image_dimensions.x; x++)
+                    for (auto y = 0; y < image_dimensions.y; y++)
+                    {
+                        const auto base_index = (x + y * image_dimensions.x) * 4;
 
-                    const auto r = data[base_index + 0] / 255.f;
-                    const auto g = data[base_index + 1] / 255.f;
-                    const auto b = data[base_index + 2] / 255.f;
-                    const auto a = data[base_index + 3] / 255.f;
+                        const auto r = data[base_index + 0] / 255.f;
+                        const auto g = data[base_index + 1] / 255.f;
+                        const auto b = data[base_index + 2] / 255.f;
+                        const auto a = data[base_index + 3] / 255.f;
 
-                    texture_image.set(x, y, glm::vec4(r, g, b, a));
-                }
+                        texture_image.set(x, y, glm::vec4(r, g, b, a));
+                    }
 
-            stbi_image_free(data);
-            material_data.tex = std::move(texture_image);
+                stbi_image_free(data);
+                model_data.textures.push_back(std::move(texture_image));
+                material_data.tex = model_data.textures.size() - 1;
+                already_loaded.insert({ material.diffuse_texname, material_data.tex.value() });
+            } else
+                material_data.tex = it->second;
         }
 
         model_data.materials.emplace_back(material_data);
@@ -289,9 +298,6 @@ cr::asset_loader::model_data
             model_data.material_indices.push_back(material_id);
         }
     }
-
-    //    model_data.texture_coords =
-    //      ::fix(model_data.texture_coords, model_data.vertex_indices, model_data.texture_indices);
 
     return model_data;
 }

@@ -4,7 +4,7 @@ namespace
 {
     [[nodiscard]] cr::ray::intersection_record _intersect(
       const cr::ray &                    ray,
-      const cr::entity::model_geometry & geometry,
+      const cr::entity::embree_ctx &     geometry,
       const cr::entity::model_materials &materials)
     {
         auto ctx = RTCIntersectContext();
@@ -32,7 +32,8 @@ namespace
 
         record.distance           = ray_hit.ray.tfar;
         record.intersection_point = ray.at(ray_hit.ray.tfar);
-        record.normal = glm::normalize(glm::vec3(ray_hit.hit.Ng_x, ray_hit.hit.Ng_y, ray_hit.hit.Ng_z));
+        record.normal =
+          glm::normalize(glm::vec3(ray_hit.hit.Ng_x, ray_hit.hit.Ng_y, ray_hit.hit.Ng_z));
         record.material = &materials.materials[materials.indices[ray_hit.hit.primID]];
 
         rtcInterpolate0(
@@ -44,18 +45,17 @@ namespace
           0,
           &record.uv.x,
           2);
-// -50 40 50
+        // -50 40 50
         return record;
     }
-}
+}    // namespace
 
-cr::entity::model_geometry cr::model::instance_geometry(
+cr::entity::embree_ctx cr::model::instance_geometry(
   const std::vector<glm::vec3> &vertices,
   const std::vector<uint32_t> & indices,
-  const std::vector<glm::vec2> &tex_coords,
-  const std::vector<uint32_t> &tex_indices)
+  const std::vector<glm::vec2> &tex_coords)
 {
-    auto instance = cr::entity::model_geometry();
+    auto instance = cr::entity::embree_ctx();
     cr::logger::info("Vertex Count: {}\n", vertices.size());
 
     rtcSetSharedGeometryBuffer(
@@ -99,19 +99,19 @@ cr::entity::model_geometry cr::model::instance_geometry(
 
 cr::ray::intersection_record cr::model::intersect(
   const cr::ray &                    ray,
-  const cr::entity::transforms &     transforms,
-  const cr::entity::model_geometry & geometry,
+  const cr::entity::instances &      instances,
+  const cr::entity::embree_ctx &       geometry,
   const cr::entity::model_materials &materials)
 {
     auto intersection = cr::ray::intersection_record();
 
-    for (const auto &transform : transforms.data)
+    for (const auto &transform : instances.transforms)
     {
-        const auto transformed = cr::ray(transform * glm::vec4(ray.origin, 1), transform * glm::vec4(ray.direction, 0));
+        const auto transformed =
+          cr::ray(transform * glm::vec4(ray.origin, 1), transform * glm::vec4(ray.direction, 0));
 
         const auto current = _intersect(transformed, geometry, materials);
-        if (current.distance < intersection.distance)
-            intersection = current;
+        if (current.distance < intersection.distance) intersection = current;
     }
 
     return intersection;
