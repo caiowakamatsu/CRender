@@ -157,37 +157,40 @@ void cr::draft_renderer::render()
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glUseProgram(_background_program_handle);
-    // Run the compute background program to setup the background for the image
-    glUniformMatrix4fv(
-      glGetUniformLocation(_background_program_handle, "camera"),
-      1,
-      GL_FALSE,
-      glm::value_ptr(_scene->get()->registry()->camera()->mat4()));
+    if (_scene->get()->skybox_handle().has_value())
+    {
+        glUseProgram(_background_program_handle);
+        // Run the compute background program to setup the background for the image
+        glUniformMatrix4fv(
+          glGetUniformLocation(_background_program_handle, "camera"),
+          1,
+          GL_FALSE,
+          glm::value_ptr(_scene->get()->registry()->camera()->mat4()));
 
-    glUniform2i(glGetUniformLocation(_background_program_handle, "scene_size"), _res_x, _res_y);
+        glUniform2i(glGetUniformLocation(_background_program_handle, "scene_size"), _res_x, _res_y);
 
-    glUniform1f(
-      glGetUniformLocation(_background_program_handle, "aspect_correction"),
-      static_cast<float>(_res_x) / _res_y);
+        glUniform1f(
+          glGetUniformLocation(_background_program_handle, "aspect_correction"),
+          static_cast<float>(_res_x) / _res_y);
 
-    glUniform1f(
-      glGetUniformLocation(_background_program_handle, "fov"),
-      _scene->get()->registry()->camera()->fov);
+        glUniform1f(
+          glGetUniformLocation(_background_program_handle, "fov"),
+          _scene->get()->registry()->camera()->fov);
 
-    glBindTexture(GL_TEXTURE_2D, _texture);
-    glClearTexImage(_texture, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    glBindImageTexture(0, _texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+        glBindTexture(GL_TEXTURE_2D, _texture);
+        glClearTexImage(_texture, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glBindImageTexture(0, _texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, _scene->get()->skybox_handle().value());
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, _scene->get()->skybox_handle().value());
 
-    glDispatchCompute(
-      static_cast<int>(glm::ceil(_res_x / 8)),
-      static_cast<int>(glm::ceil(_res_y / 8)),
-      1);
+        glDispatchCompute(
+          static_cast<int>(glm::ceil(_res_x / 8)),
+          static_cast<int>(glm::ceil(_res_y / 8)),
+          1);
 
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    }
 
     glViewport(0, 0, _res_x, _res_y);
 

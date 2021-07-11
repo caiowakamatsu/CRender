@@ -73,7 +73,7 @@ void cr::registry::register_model(const cr::asset_loader::model_data &data)
 
     // Translate the materials texture handle from model data to the ECS entity
     auto ecs_handles = std::vector<uint32_t>(data.textures.size());
-    for(auto i = 0; i < data.textures.size(); i++)
+    for (auto i = 0; i < data.textures.size(); i++)
     {
         ecs_handles[i] = entities.create();
         entities.emplace<cr::image>(ecs_handles[i], data.textures[i]);
