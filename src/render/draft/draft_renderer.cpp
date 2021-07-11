@@ -194,8 +194,10 @@ void cr::draft_renderer::render()
     glUseProgram(_program_handle);
     _update_uniforms();
 
-    for (const auto &mesh : _scene->get()->meshes())
+    for (const auto entity : _scene->get()->registry()->entities.view<cr::entity::gpu_data>())
     {
+        const auto mesh = _scene->get()->registry()->entities.get<cr::entity::gpu_data>(entity);
+
         if (mesh.material.info.tex.has_value())
         {
             glActiveTexture(GL_TEXTURE0);

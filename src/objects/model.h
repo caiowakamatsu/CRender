@@ -21,15 +21,15 @@ namespace cr
 {
     namespace model
     {
-        [[nodiscard]] cr::entity::model_geometry instance_geometry(
+        [[nodiscard]] cr::entity::embree_ctx instance_geometry(
           const std::vector<glm::vec3> &vertices,
           const std::vector<uint32_t> & indices,
           const std::vector<glm::vec2> &tex_coords);
 
         [[nodiscard]] cr::ray::intersection_record intersect(
           const cr::ray &                    ray,
-          const cr::entity::transforms &     transforms,
-          const cr::entity::model_geometry & geometry,
+          const cr::entity::instances &      instances,
+          const cr::entity::embree_ctx & geometry,
           const cr::entity::model_materials &u);
 
     }    // namespace model

@@ -37,7 +37,7 @@ namespace cr
             float                    emission       = 0;
             glm::vec4                colour         = glm::vec4(1, 1, 1, 1);
             std::string              name           = "ERROR - Report";
-            std::optional<uint32_t> tex;
+            std::optional<cr::image> tex;
         };
 
         material() { info = information(); }

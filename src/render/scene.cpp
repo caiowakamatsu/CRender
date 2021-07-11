@@ -30,16 +30,7 @@ namespace
 
 void cr::scene::add_model(const cr::asset_loader::model_data &model)
 {
-    const auto  registered_model = _entities.register_model(model);
-    const auto &mesh             = registered_model.meshes;
-    auto        mesh_index       = scene::mesh_index();
-    mesh_index.object_name       = model.name;
-    mesh_index.index_start       = _meshes.size();
-    mesh_index.index_end         = _meshes.size() + mesh.meshes.size();
-    mesh_index.entity_handle     = registered_model.entity_handle;
-    _models.push_back(std::move(mesh_index));
-
-    for (const auto inner_mesh : mesh.meshes) _meshes.push_back(inner_mesh);
+    _entities.register_model(model);
 }
 
 void cr::scene::set_skybox(cr::image &&skybox)
@@ -91,38 +82,24 @@ cr::ray::intersection_record cr::scene::cast_ray(const cr::ray ray)
 
     const auto &view =
       _entities.entities
-        .view<cr::entity::transforms, cr::entity::model_geometry, cr::entity::model_materials>();
+        .view<cr::entity::instances, cr::entity::embree_ctx, cr::entity::model_materials>();
 
     for (const auto &entity : view)
     {
-        const auto &transform = _entities.entities.get<cr::entity::transforms>(entity);
-        const auto &geometry  = _entities.entities.get<cr::entity::model_geometry>(entity);
-        const auto &materials = _entities.entities.get<cr::entity::model_materials>(entity);
+        const auto &instances  = _entities.entities.get<cr::entity::instances>(entity);
+        const auto &embree_ctx = _entities.entities.get<cr::entity::embree_ctx>(entity);
+        const auto &materials  = _entities.entities.get<cr::entity::model_materials>(entity);
 
-        const auto current = cr::model::intersect(ray, transform, geometry, materials);
+        const auto current = cr::model::intersect(ray, instances, embree_ctx, materials);
         if (current.distance < intersection.distance) intersection = current;
     }
 
     return intersection;
 }
 
-const std::vector<cr::mesh> &cr::scene::meshes() const noexcept
-{
-    return _meshes;
-}
-
 cr::registry *cr::scene::registry()
 {
     return &_entities;
-}
-
-const std::vector<cr::scene::mesh_index> &cr::scene::models() const noexcept
-{
-    return _models;
-}
-std::vector<cr::mesh> &cr::scene::meshes()
-{
-    return _meshes;
 }
 
 std::optional<GLuint> cr::scene::skybox_handle() const noexcept
