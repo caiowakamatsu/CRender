@@ -45,7 +45,6 @@ namespace
           0,
           &record.uv.x,
           2);
-        // -50 40 50
         return record;
     }
 }    // namespace
@@ -100,17 +99,26 @@ cr::entity::embree_ctx cr::model::instance_geometry(
 cr::ray::intersection_record cr::model::intersect(
   const cr::ray &                    ray,
   const cr::entity::instances &      instances,
-  const cr::entity::embree_ctx &       geometry,
+  const cr::entity::embree_ctx &     geometry,
   const cr::entity::model_materials &materials)
 {
     auto intersection = cr::ray::intersection_record();
 
     for (const auto &transform : instances.transforms)
     {
-        const auto transformed =
-          cr::ray(transform * glm::vec4(ray.origin, 1), transform * glm::vec4(ray.direction, 0));
+        const auto inv         = glm::inverse(transform);
+        const auto transformed = cr::ray(
+          inv * glm::vec4(ray.origin, 1),
+          glm::normalize(inv * glm::vec4(ray.direction, 0)));
 
-        const auto current = _intersect(transformed, geometry, materials);
+        auto current = _intersect(transformed, geometry, materials);
+
+        current.intersection_point =
+          glm::vec3(transform * glm::vec4(current.intersection_point, 1.0f));
+
+        if (current.distance != std::numeric_limits<float>::infinity())
+            current.distance = glm::distance(current.intersection_point, ray.origin);
+
         if (current.distance < intersection.distance) intersection = current;
     }
 

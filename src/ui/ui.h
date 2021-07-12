@@ -159,9 +159,7 @@ namespace cr::ui
               GL_FALSE,
               glm::value_ptr(scene->registry()->camera()->mat4()));
 
-            glUniform1i(
-              glGetUniformLocation(compute_program, "flip"),
-              in_draft_mode);
+            glUniform1i(glGetUniformLocation(compute_program, "flip"), in_draft_mode);
         }
 
         {
@@ -443,9 +441,6 @@ namespace cr::ui
         }
         }
 
-
-
-
         camera->current_mode = selected_type;
 
         if (ImGui::Button("Update"))
@@ -458,156 +453,140 @@ namespace cr::ui
 
     inline void setting_materials(cr::renderer *renderer, cr::scene *scene)
     {
-        const auto materials = scene->registry()->entities.view<std::string, cr::material>();
+        const auto models =
+          scene->registry()->entities.view<std::string, cr::entity::model_materials>();
 
-        static auto selected_entity   = uint32_t(0);
+        static auto selected_entity  = uint32_t(0);
         bool        selected_changed = false;
 
         {
-            ImGui::BeginChild(
-              "setting-materials-models-child");
-            for (const auto entity : materials)
+            for (const auto entity : models)
             {
                 const auto &name = scene->registry()->entities.get<std::string>(entity);
                 if (ImGui::Button(name.c_str()))
                 {
-                     if (selected_entity != entity)
-                         selected_changed = true;
-                     selected_entity = entity;
+                    if (selected_entity != entity) selected_changed = true;
+                    selected_entity = entity;
                 }
             }
-            ImGui::EndChild();
         }
 
-//        if (models.size() > 0)
-//        {
-//            ImGui::BeginChild("settings-materials-materials-list");
-//
-//            static auto material_search_string = std::array<char, 65>();
-//            material_search_string[64]         = '\0';
-//            const auto changed                 = ImGui::InputTextWithHint(
-//              "Material name",
-//              "Max 64 chars",
-//              material_search_string.data(),
-//              64);
-//
-//            static auto materials  = std::vector<cr::material>();
-//            static auto first_time = true;
-//            if (selected_changed || first_time)
-//            {
-//                selected_changed = false;
-//                materials.clear();
-//
-//                auto &registry_materials =
-//                  scene->registry()
-//                    ->entities
-//                    .get<cr::entity::model_materials>(models[selected_index].entity_handle)
-//                    .materials;
-//                for (auto i = models[selected_index].index_start;
-//                     i < models[selected_index].index_end;
-//                     i++)
-//                    materials.push_back(scene->meshes()[i].material);
-//            }
-//
-//            // This is a cool Imgui thing im going to make (search thing)
-//            static auto found_material_indices = std::vector<size_t>();
-//
-//            if (changed || first_time)
-//                found_material_indices = cr::algorithm::find_string_matches<cr::material>(
-//                  std::string(material_search_string.data()),
-//                  materials,
-//                  [](const cr::material &material) { return material.info.name; });
-//
-//            for (const auto index : found_material_indices)
-//            {
-//                auto &material = materials[index];
-//                ImGui::Separator();
-//                ImGui::Indent(4.f);
-//                ImGui::Text("%s", material.info.name.c_str());
-//                ImGui::Indent(4.f);
-//                static const auto material_types =
-//                  std::array<std::string, 3>({ "Metal", "Smooth", "Glass" });
-//                auto current_type = material.info.type == material::metal ? 0
-//                  : material.info.type == material::smooth                ? 1
-//                                                                          : 2;
-//
-//                if (ImGui::BeginCombo(
-//                      ("Type##" + material.info.name).c_str(),
-//                      material_types[current_type].c_str()))
-//                {
-//                    for (auto i = 0; i < material_types.size(); i++)
-//                        if (ImGui::Button(material_types[i].c_str())) current_type = i;
-//                    ImGui::EndCombo();
-//                }
-//
-//                switch (current_type)
-//                {
-//                case 0: material.info.type = material::metal; break;
-//                case 1: material.info.type = material::smooth; break;
-//                case 2: material.info.type = material::glass; break;
-//                }
-//
-//                ImGui::Separator();
-//
-//                switch (material.info.type)
-//                {
-//                case material::metal:
-//                    //                    ImGui::SliderFloat(
-//                    //                      ("Roughness##" + material.info.name).c_str(),
-//                    //                      &material.info.roughness,
-//                    //                      0,
-//                    //                      1);
-//                    ImGui::SliderFloat(
-//                      ("Reflectiveness##" + material.info.name).c_str(),
-//                      &material.info.reflectiveness,
-//                      0,
-//                      1);
-//                    break;
-//
-//                case material::smooth: break;
-//
-//                case material::glass:
-//                    ImGui::SliderFloat(
-//                      ("IOR##" + material.info.name).c_str(),
-//                      &material.info.ior,
-//                      1,
-//                      2);
-//                    break;
-//                }
-//
-//                ImGui::SliderFloat(
-//                  ("Emission##" + material.info.name).c_str(),
-//                  &material.info.emission,
-//                  0,
-//                  50);
-//
-//                if (!material.info.tex.has_value())
-//                    ImGui::ColorEdit3(
-//                      ("Colour##" + material.info.name).c_str(),
-//                      glm::value_ptr(material.info.colour));
-//
-//                ImGui::Unindent(8.f);
-//            }
-//
-//            if (ImGui::Button("Update Materials"))
-//            {
-//                const auto &model = models[selected_index];
-//                renderer->update([materials = materials, scene, &model] {
-//                    for (auto i = model.index_start; i < model.index_end; i++)
-//                    {
-//                        //                        scene->meshes()[i].material = materials[i];
-//                        auto &registry_materials =
-//                          scene->registry()
-//                            ->entities.get<cr::entity::model_materials>(model.entity_handle)
-//                            .materials;
-//                        registry_materials = materials;
-//                    }
-//                });
-//            }
-//
-//            ImGui::EndChild();
-//            first_time = false;
-//        }
+        if (selected_entity != 0)
+        {
+            const auto &registry_materials =
+              scene->registry()->entities.get<cr::entity::model_materials>(selected_entity);
+
+            ImGui::BeginChild("settings-materials-materials-list");
+
+            static auto material_search_string = std::array<char, 65>();
+            material_search_string[64]         = '\0';
+            const auto changed                 = ImGui::InputTextWithHint(
+              "Material name",
+              "Max 64 chars",
+              material_search_string.data(),
+              64);
+
+            static auto materials  = std::vector<cr::material>();
+            static auto first_time = true;
+            if (selected_changed || first_time)
+            {
+                selected_changed = false;
+                materials.clear();
+                materials = registry_materials.materials;
+            }
+
+            // This is a cool Imgui thing im going to make (search thing)
+            static auto found_material_indices = std::vector<size_t>();
+
+            if (changed || first_time)
+                found_material_indices = cr::algorithm::find_string_matches<cr::material>(
+                  std::string(material_search_string.data()),
+                  materials,
+                  [](const cr::material &material) { return material.info.name; });
+
+            for (const auto index : found_material_indices)
+            {
+                auto &material = materials[index];
+                ImGui::Separator();
+                ImGui::Indent(4.f);
+                ImGui::Text("%s", material.info.name.c_str());
+                ImGui::Indent(4.f);
+                static const auto material_types =
+                  std::array<std::string, 3>({ "Metal", "Smooth", "Glass" });
+                auto current_type = material.info.type == material::metal ? 0
+                  : material.info.type == material::smooth                ? 1
+                                                                          : 2;
+
+                if (ImGui::BeginCombo(
+                      ("Type##" + material.info.name).c_str(),
+                      material_types[current_type].c_str()))
+                {
+                    for (auto i = 0; i < material_types.size(); i++)
+                        if (ImGui::Button(material_types[i].c_str())) current_type = i;
+                    ImGui::EndCombo();
+                }
+
+                switch (current_type)
+                {
+                case 0: material.info.type = material::metal; break;
+                case 1: material.info.type = material::smooth; break;
+                case 2: material.info.type = material::glass; break;
+                }
+
+                ImGui::Separator();
+
+                switch (material.info.type)
+                {
+                case material::metal:
+                    //                    ImGui::SliderFloat(
+                    //                      ("Roughness##" + material.info.name).c_str(),
+                    //                      &material.info.roughness,
+                    //                      0,
+                    //                      1);
+                    ImGui::SliderFloat(
+                      ("Reflectiveness##" + material.info.name).c_str(),
+                      &material.info.reflectiveness,
+                      0,
+                      1);
+                    break;
+
+                case material::smooth: break;
+
+                case material::glass:
+                    ImGui::SliderFloat(
+                      ("IOR##" + material.info.name).c_str(),
+                      &material.info.ior,
+                      1,
+                      2);
+                    break;
+                }
+
+                ImGui::SliderFloat(
+                  ("Emission##" + material.info.name).c_str(),
+                  &material.info.emission,
+                  0,
+                  50);
+
+                if (!material.info.tex.has_value())
+                    ImGui::ColorEdit3(
+                      ("Colour##" + material.info.name).c_str(),
+                      glm::value_ptr(material.info.colour));
+
+                ImGui::Unindent(8.f);
+            }
+
+            if (ImGui::Button("Update Materials"))
+            {
+                renderer->update([materials = materials, scene, selected = selected_entity] {
+                    scene->registry()
+                      ->entities.get<cr::entity::model_materials>(selected)
+                      .materials = materials;
+                });
+            }
+
+            ImGui::EndChild();
+            first_time = false;
+        }
     }
 
     inline void setting_asset_loader(
@@ -776,6 +755,102 @@ namespace cr::ui
         ImGui::Unindent(8.0f);
     }
 
+    inline void setting_instances(cr::renderer *renderer, cr::scene *scene)
+    {
+        ImGui::Indent(4.0f);
+
+        const auto models = scene->registry()->entities.view<std::string, cr::entity::instances>();
+
+        static auto selected_entity  = uint32_t(0);
+        bool        selected_changed = false;
+
+        {
+            for (const auto entity : models)
+            {
+                const auto &name = scene->registry()->entities.get<std::string>(entity);
+                if (ImGui::Button(name.c_str()))
+                {
+                    if (selected_entity != entity) selected_changed = true;
+                    selected_entity = entity;
+                }
+            }
+        }
+
+        if (selected_entity != 0)
+        {
+            const auto &registry_instances =
+              scene->registry()->entities.get<cr::entity::instances>(selected_entity);
+
+            static auto transforms = std::vector<glm::mat4>();
+            static auto first_time = true;
+
+            if (selected_changed || first_time)
+            {
+                first_time = false;
+                transforms = registry_instances.transforms;
+            }
+
+            ImGui::BeginChild("settings-instances-instances-list");
+
+            ImGui::Text("Instances");
+            ImGui::SameLine();
+            if (ImGui::Button("+"))
+                transforms.push_back(glm::mat4(1));
+
+            ImGui::Indent(4.f);
+
+            static auto to_remove = std::vector<uint32_t>();
+
+            for (auto i = 0; i < transforms.size(); i++)
+            {
+                const auto matrix      = transforms[i];
+                auto       skew        = glm::vec3();
+                auto       perspective = glm::vec4();
+                auto       rotation    = glm::quat();
+
+                // Ones I use...
+                auto scale       = glm::vec3();
+                auto translation = glm::vec3();
+
+                glm::decompose(matrix, scale, rotation, translation, skew, perspective);
+
+                ImGui::Text("%s", fmt::format("Translation #{} ##{}", i, i).c_str());
+                ImGui::SameLine();
+                if (ImGui::Button("-"))
+                    to_remove.push_back(i);
+
+                ImGui::Indent(4.0f);
+                ImGui::InputFloat3(fmt::format("Scale##{}", i).c_str(), glm::value_ptr(scale));
+                ImGui::InputFloat3(fmt::format("Translation##{}", i).c_str(), glm::value_ptr(translation));
+                ImGui::Unindent(4.0f);
+
+                auto out_matrix = glm::mat4(1);
+                out_matrix      = glm::translate(out_matrix, translation);
+                out_matrix      = glm::scale(out_matrix, scale);
+
+                transforms[i] = out_matrix;
+            }
+
+            for (const auto remove : to_remove)
+                transforms.erase(transforms.begin() + remove);
+
+            if (ImGui::Button("Update"))
+            {
+                renderer->update(
+                  [scene, transforms = transforms, selected_entity = selected_entity]() {
+                      scene->registry()
+                        ->entities.get<cr::entity::instances>(selected_entity)
+                        .transforms = transforms;
+                  });
+            }
+            ImGui::Unindent(4.0f);
+            ImGui::EndChild();
+            to_remove.clear();
+        }
+
+        ImGui::Unindent(4.0f);
+    }
+
     inline void settings(
       std::unique_ptr<cr::renderer> *      renderer,
       std::unique_ptr<cr::draft_renderer> *draft_renderer,
@@ -786,8 +861,14 @@ namespace cr::ui
         ImGui::Begin("Misc");
 
         // List all of the different settings
-        static const auto window_settings = std::array<std::string, 7>(
-          { "Render", "Export", "Materials", "Asset Loader", "Stats", "Style", "Camera" });
+        static const auto window_settings = std::array<std::string, 8>({ "Render",
+                                                                         "Export",
+                                                                         "Materials",
+                                                                         "Asset Loader",
+                                                                         "Stats",
+                                                                         "Style",
+                                                                         "Camera",
+                                                                         "Instances" });
 
         static auto selected_window = 0;
 
@@ -814,6 +895,7 @@ namespace cr::ui
         case 4: setting_stats(renderer->get()); break;
         case 5: setting_style(); break;
         case 6: setting_camera(renderer->get(), scene->get()); break;
+        case 7: setting_instances(renderer->get(), scene->get()); break;
         }
 
         ImGui::EndChild();

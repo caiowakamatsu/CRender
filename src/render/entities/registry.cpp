@@ -30,10 +30,10 @@ cr::registry::registry()
     entities.prepare<std::string>();
 
     entities.prepare<cr::image>();
-    entities.prepare<cr::entity::instances>();
-    entities.prepare<cr::entity::gpu_data>();
     entities.prepare<cr::entity::geometry>();
+    entities.prepare<cr::entity::instances>();
     entities.prepare<cr::entity::embree_ctx>();
+    entities.prepare<cr::entity::model_gpu_data>();
     entities.prepare<cr::entity::model_materials>();
 
     // Create the camera
@@ -54,7 +54,10 @@ void cr::registry::register_model(const cr::asset_loader::model_data &data)
     // Good question - I'm waiting on Intels Embree team to reply to my github issue - And give a
     // helpful answer
     // https://github.com/embree/embree/issues/325
-    _upload_gpu_meshes(data);
+
+    auto entity = entities.create();
+
+    _upload_gpu_meshes(data, entity);
 
     auto indices = std::make_unique<std::vector<uint32_t>>(data.vertex_indices.size());
     std::generate(indices->begin(), indices->end(), [n = 0]() mutable { return n++; });
@@ -63,7 +66,6 @@ void cr::registry::register_model(const cr::asset_loader::model_data &data)
     auto texture_coords = ::persist_and_expand(data.texture_coords, data.texture_indices);
 
     static auto current_model_count = uint32_t(0);
-    auto        entity              = entities.create();
 
     // Create the model embree instance
     auto model_instance = cr::model::instance_geometry(*vertices, *indices, *texture_coords);
@@ -83,7 +85,8 @@ void cr::registry::register_model(const cr::asset_loader::model_data &data)
     for (auto i = 0; i < data.materials.size(); i++)
     {
         updated_materials[i] = data.materials[i];
-        updated_materials[i].info.tex = ecs_handles[data.materials[i].info.tex.value()];
+        if (auto handle = data.materials[i].info.tex; handle.has_value())
+            updated_materials[i].info.tex = ecs_handles[handle.value()];
     }
 
     entities.emplace<cr::entity::model_materials>(entity, updated_materials, data.material_indices);
@@ -93,7 +96,7 @@ void cr::registry::register_model(const cr::asset_loader::model_data &data)
     entities.emplace<std::string>(entity, data.name);
 }
 
-void cr::registry::_upload_gpu_meshes(const cr::asset_loader::model_data &data)
+void cr::registry::_upload_gpu_meshes(const cr::asset_loader::model_data &data, uint32_t entity)
 {
     struct mesh
     {
@@ -103,6 +106,8 @@ void cr::registry::_upload_gpu_meshes(const cr::asset_loader::model_data &data)
         cr::material material;
     };
     auto meshes = std::vector<mesh>(data.materials.size());
+    entities.emplace<cr::entity::model_gpu_data>(entity);
+    entities.get<cr::entity::model_gpu_data>(entity).meshes.reserve(data.materials.size());
 
     for (auto i = 0; i < meshes.size(); i++)
         meshes[i].material = data.materials[i];
@@ -184,9 +189,7 @@ void cr::registry::_upload_gpu_meshes(const cr::asset_loader::model_data &data)
         glBindVertexArray(0);
 
         gpu.material = std::move(mesh.material);
-
-        auto entity = entities.create();
-        entities.emplace<cr::entity::gpu_data>(entity, gpu);
+        entities.get<cr::entity::model_gpu_data>(entity).meshes.push_back(std::move(gpu));
     }
 }
 
