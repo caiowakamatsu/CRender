@@ -195,24 +195,32 @@ void cr::draft_renderer::render()
     glViewport(0, 0, _res_x, _res_y);
 
     glUseProgram(_program_handle);
-    _update_uniforms();
 
-    for (const auto entity : _scene->get()->registry()->entities.view<cr::entity::gpu_data>())
+    for (const auto entity : _scene->get()->registry()->entities.view<cr::entity::model_gpu_data, cr::entity::instances>())
     {
-        const auto mesh = _scene->get()->registry()->entities.get<cr::entity::gpu_data>(entity);
+        const auto meshes = _scene->get()->registry()->entities.get<cr::entity::model_gpu_data>(entity).meshes;
+        const auto instances = _scene->get()->registry()->entities.get<cr::entity::instances>(entity);
 
-        if (mesh.material.info.tex.has_value())
+        for (const auto &mesh : meshes)
         {
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, mesh.texture);
-        }
+            if (mesh.material.info.tex.has_value())
+            {
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, mesh.texture);
+            }
 
-        glBindVertexArray(mesh.vao);
-        glDrawArrays(GL_TRIANGLES, 0, mesh.indices);
+            glBindVertexArray(mesh.vao);
+
+            for (const auto &transform : instances.transforms)
+            {
+                _update_uniforms(transform);
+                glDrawArrays(GL_TRIANGLES, 0, mesh.indices);
+            }
+        }
     }
 }
 
-void cr::draft_renderer::_update_uniforms()
+void cr::draft_renderer::_update_uniforms(const glm::mat4 &model)
 {
     const auto mvp_location = glGetUniformLocation(_program_handle, "mvp");
 
@@ -240,7 +248,8 @@ void cr::draft_renderer::_update_uniforms()
     const auto view = glm::inverse(_scene->get()->registry()->camera()->mat4());
 
     // No model matrix *yet*
-    const auto mvp = projection * view;
+    // Model matrix!
+    const auto mvp = projection * view * model;
 
     glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(mvp));
 }

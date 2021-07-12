@@ -38,6 +38,11 @@ namespace cr::entity
         std::uint32_t indices;
     };
 
+    struct model_gpu_data
+    {
+        std::vector<gpu_data> meshes;
+    };
+
     struct geometry
     {
         geometry() = default;

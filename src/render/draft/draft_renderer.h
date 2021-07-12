@@ -60,7 +60,7 @@ namespace cr
         uint64_t _res_x;
         uint64_t _res_y;
 
-        void _update_uniforms();
+        void _update_uniforms(const glm::mat4 &model);
 
     };
 }
