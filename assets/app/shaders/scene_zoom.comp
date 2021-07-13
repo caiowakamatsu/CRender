@@ -11,6 +11,7 @@ uniform vec2 translation;
 
 uniform ivec2 target_size;
 uniform ivec2 scene_size;
+uniform int flip;
 
 uniform mat4 camera;
 
@@ -22,6 +23,12 @@ void main ()
 
     if (0 <= target.x && target.x <= 1 && 0 <= target.y && target.y <= 1)
     {
+        if (bool(flip))
+        {
+            target.y *= -1;
+            target.y += 1;
+        }
+
         vec4 output_colour = texture(rendered_scene, target);
         imageStore(img_output, ivec2(TARGET_PIXEL), output_colour);
     }
