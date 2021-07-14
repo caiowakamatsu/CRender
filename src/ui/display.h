@@ -29,6 +29,7 @@
 #include <render/draft/draft_renderer.h>
 #include <util/asset_loader.h>
 #include <util/logger.h>
+#include <util/opengl.h>
 
 namespace cr
 {
