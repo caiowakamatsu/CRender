@@ -18,131 +18,19 @@ cr::draft_renderer::draft_renderer(
     glGenRenderbuffers(1, &_rbo);
     _setup_required();
 
-    // Load shaders in
-    // Load the shader into the string
-    {
-        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/draft_mode.vert");
-        auto shader_string_stream  = std::stringstream();
-        shader_string_stream << shader_file_in_stream.rdbuf();
-        const auto shader_source = shader_string_stream.str();
+    _vertex_handle =
+      cr::opengl::create_shader("./assets/app/shaders/draft_mode.vert", GL_VERTEX_SHADER);
 
-        // Create OpenGL shader
-        auto       shader_handle = glCreateShader(GL_VERTEX_SHADER);
-        const auto shader_string = shader_source.c_str();
-        glShaderSource(shader_handle, 1, &shader_string, nullptr);
-        glCompileShader(shader_handle);
+    _fragment_handle =
+      cr::opengl::create_shader("./assets/app/shaders/draft_mode.frag", GL_FRAGMENT_SHADER);
 
-        auto success = int(0);
-        auto log     = std::array<char, 512>();
-        glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &success);
+    _program_handle = cr::opengl::create_program(_vertex_handle, _fragment_handle);
 
-        if (!success)
-        {
-            glGetShaderInfoLog(shader_handle, 512, nullptr, log.data());
-            cr::logger::error("Compiling shader [{}], with error [{}]\n", "vertex", log.data());
-        }
-        _vertex_handle = shader_handle;
-    }
+    _background_shader_handle = cr::opengl::create_shader(
+      "./assets/app/shaders/draft_mode_background.comp",
+      GL_COMPUTE_SHADER);
 
-    {
-        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/draft_mode.frag");
-        auto shader_string_stream  = std::stringstream();
-        shader_string_stream << shader_file_in_stream.rdbuf();
-        const auto shader_source = shader_string_stream.str();
-
-        // Create OpenGL shader type
-        auto       shader_handle = glCreateShader(GL_FRAGMENT_SHADER);
-        const auto shader_string = shader_source.c_str();
-        glShaderSource(shader_handle, 1, &shader_string, nullptr);
-        glCompileShader(shader_handle);
-
-        // Check if the shader compiled
-        auto success = int(0);
-        auto log     = std::array<char, 512>();
-        glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &success);
-
-        // If it failed, show the error message
-        if (!success)
-        {
-            glGetShaderInfoLog(shader_handle, 512, nullptr, log.data());
-            cr::logger::error("Compiling shader [{}], with error [{}]\n", "frag", log.data());
-        }
-        _fragment_handle = shader_handle;
-    }
-
-    {
-        // Create OpenGL program
-        auto program_handle = glCreateProgram();
-
-        glAttachShader(program_handle, _vertex_handle);
-        glAttachShader(program_handle, _fragment_handle);
-        glLinkProgram(program_handle);
-
-        auto success = int(0);
-        auto log     = std::array<char, 512>();
-        glGetProgramiv(program_handle, GL_LINK_STATUS, &success);
-
-        // If it failed, show the error message
-        if (!success)
-        {
-            glGetProgramInfoLog(program_handle, 512, nullptr, log.data());
-            cr::logger::error(
-              "Linking program [{}], with error [{}]\n",
-              program_handle,
-              log.data());
-        }
-        _program_handle = program_handle;
-    }
-
-    {
-        auto shader_file_in_stream =
-          std::ifstream("./assets/app/shaders/draft_mode_background.comp");
-        auto shader_string_stream = std::stringstream();
-        shader_string_stream << shader_file_in_stream.rdbuf();
-        const auto shader_source = shader_string_stream.str();
-
-        // Create OpenGL shader type
-        auto       shader_handle = glCreateShader(GL_COMPUTE_SHADER);
-        const auto shader_string = shader_source.c_str();
-        glShaderSource(shader_handle, 1, &shader_string, nullptr);
-        glCompileShader(shader_handle);
-
-        // Check if the shader compiled
-        auto success = int(0);
-        auto log     = std::array<char, 512>();
-        glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &success);
-
-        // If it failed, show the error message
-        if (!success)
-        {
-            glGetShaderInfoLog(shader_handle, 512, nullptr, log.data());
-            cr::logger::error("Compiling shader [{}], with error [{}]\n", "comp", log.data());
-        }
-        _background_shader_handle = shader_handle;
-    }
-
-    {
-        // Create OpenGL program
-        auto program_handle = glCreateProgram();
-
-        glAttachShader(program_handle, _background_shader_handle);
-        glLinkProgram(program_handle);
-
-        auto success = int(0);
-        auto log     = std::array<char, 512>();
-        glGetProgramiv(program_handle, GL_LINK_STATUS, &success);
-
-        // If it failed, show the error message
-        if (!success)
-        {
-            glGetProgramInfoLog(program_handle, 512, nullptr, log.data());
-            cr::logger::error(
-              "Linking program [{}], with error [{}]\n",
-              program_handle,
-              log.data());
-        }
-        _background_program_handle = program_handle;
-    }
+    _background_program_handle = cr::opengl::create_program(_background_shader_handle);
 }
 
 GLuint cr::draft_renderer::rendered_texture() const
@@ -196,10 +84,14 @@ void cr::draft_renderer::render()
 
     glUseProgram(_program_handle);
 
-    for (const auto entity : _scene->get()->registry()->entities.view<cr::entity::model_gpu_data, cr::entity::instances>())
+    for (const auto entity : _scene->get()
+                               ->registry()
+                               ->entities.view<cr::entity::model_gpu_data, cr::entity::instances>())
     {
-        const auto meshes = _scene->get()->registry()->entities.get<cr::entity::model_gpu_data>(entity).meshes;
-        const auto instances = _scene->get()->registry()->entities.get<cr::entity::instances>(entity);
+        const auto meshes =
+          _scene->get()->registry()->entities.get<cr::entity::model_gpu_data>(entity).meshes;
+        const auto instances =
+          _scene->get()->registry()->entities.get<cr::entity::instances>(entity);
 
         for (const auto &mesh : meshes)
         {

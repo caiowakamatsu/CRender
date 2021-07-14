@@ -15,7 +15,7 @@ namespace cr
 
         struct rendering_resources
         {
-            GLuint
+//            GLuint
         };
 
         glm::ivec2 _resolution;

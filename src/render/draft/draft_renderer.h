@@ -18,6 +18,7 @@
 #include <objects/thread_pool.h>
 #include <util/sampling.h>
 #include <util/logger.h>
+#include <util/opengl.h>
 
 #include <glad/glad.h>
 

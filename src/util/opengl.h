@@ -17,7 +17,7 @@ namespace cr::opengl
     /// \param path The shader location on disk
     /// \param shader_type The OpenGL shader type. VERTEX_SHADER, FRAGMENT_SHADER, COMPUTE_SHADER
     /// \return The shader handle, if there's no value then there was an error creating it
-    [[nodiscard]] std::optional<GLuint> create_shader(const std::string &path, GLuint shader_type)
+    [[nodiscard]] inline GLuint create_shader(const std::string &path, GLuint shader_type)
     {
         auto shader_stream = std::ifstream(path);
         auto shader_string_stream = std::stringstream();
@@ -37,7 +37,7 @@ namespace cr::opengl
         if (!success)
         {
             glGetShaderInfoLog(shader_handle, 512, nullptr, log.data());
-            cr::logger::error("Compiling shader [{}], with error [{}]\n", std::filesystem::path(path).filename().stem().c_str(), log.data());
+            cr::logger::error("Compiling shader [{}], with error [{}]\n", path, log.data());
             return {};
         }
         return shader_handle;
@@ -47,8 +47,8 @@ namespace cr::opengl
     /// \tparam ...
     /// \param shaders The shaders you want to attach to the program being created
     /// \return The program handle, nullopt if it failed
-    template <typename Shaders...>
-    [[nodiscard]] std::optional<GLuint> create_program(Shaders&&... shaders)
+    template <typename ...Shaders>
+    [[nodiscard]] inline GLuint create_program(Shaders&&... shaders)
     {
         const auto handle = glCreateProgram();
 
