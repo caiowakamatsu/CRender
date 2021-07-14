@@ -61,7 +61,7 @@ add_executable(CRender src/main.cpp
         src/ui/ui.h
         src/render/entities/components.h
         src/render/entities/registry.cpp
-        src/render/entities/registry.h src/render/draft/draft_renderer.cpp src/render/draft/draft_renderer.h src/render/timer.cpp src/render/timer.h src/util/logger.h src/util/logger.cpp src/util/numbers.h src/render/brdf.h src/util/denoise.h)
+        src/render/entities/registry.h src/render/draft/draft_renderer.cpp src/render/draft/draft_renderer.h src/render/timer.cpp src/render/timer.h src/util/logger.h src/util/logger.cpp src/util/numbers.h src/render/brdf.h src/util/denoise.h src/render/gpu_renderer.cpp src/render/gpu_renderer.h src/util/opengl.h)
 
 target_include_directories(CRender PRIVATE src)
 target_include_directories(CRender PRIVATE external)
