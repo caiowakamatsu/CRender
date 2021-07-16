@@ -6,13 +6,13 @@
 
 #IncludeRegexTransform: 
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/fmt-src/src/format.cc
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/fmt-src/src/format.cc
 fmt/format-inl.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/fmt-src/src/fmt/format-inl.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/fmt-src/src/fmt/format-inl.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/fmt-src/src/os.cc
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/fmt-src/src/os.cc
 fmt/os.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/fmt-src/src/fmt/os.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/fmt-src/src/fmt/os.h
 climits
 -
 sys/stat.h

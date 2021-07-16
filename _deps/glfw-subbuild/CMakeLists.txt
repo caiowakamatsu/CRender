@@ -12,8 +12,8 @@ project(glfw-populate NONE)
 include(ExternalProject)
 ExternalProject_Add(glfw-populate
                      "UPDATE_DISCONNECTED" "False" "GIT_REPOSITORY" "https://github.com/glfw/glfw" "GIT_TAG" "3.3.2"
-                    SOURCE_DIR          "/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src"
-                    BINARY_DIR          "/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-build"
+                    SOURCE_DIR          "/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src"
+                    BINARY_DIR          "/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-build"
                     CONFIGURE_COMMAND   ""
                     BUILD_COMMAND       ""
                     INSTALL_COMMAND     ""

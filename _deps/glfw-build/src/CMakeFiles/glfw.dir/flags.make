@@ -6,7 +6,7 @@ C_FLAGS = -O3 -DNDEBUG -fPIC   -Wall -std=gnu99
 
 C_DEFINES = -D_GLFW_USE_CONFIG_H
 
-C_INCLUDES = -I/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/include -I/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src -I/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-build/src 
+C_INCLUDES = -I/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/include -I/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src -I/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-build/src 
 
 # Custom flags: _deps/glfw-build/src/CMakeFiles/glfw.dir/context.c.o_FLAGS = -Wdeclaration-after-statement
 

@@ -44,10 +44,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /media/yohello/hrm1/code-stuff/test/CRender
+CMAKE_SOURCE_DIR = /media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /media/yohello/hrm1/code-stuff/test/CRender
+CMAKE_BINARY_DIR = /media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -191,14 +191,14 @@ CMakeFiles/CRender.dir/all: _deps/glfw-build/src/CMakeFiles/glfw.dir/all
 CMakeFiles/CRender.dir/all: _deps/fmt-build/CMakeFiles/fmt.dir/all
 	$(MAKE) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/depend
 	$(MAKE) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25 "Built target CRender"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25 "Built target CRender"
 .PHONY : CMakeFiles/CRender.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/CRender.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles 45
+	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/CMakeFiles 45
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/CRender.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/CMakeFiles 0
 .PHONY : CMakeFiles/CRender.dir/rule
 
 # Convenience name for target.
@@ -218,14 +218,14 @@ CMakeFiles/CRender.dir/clean:
 _deps/glfw-build/src/CMakeFiles/glfw.dir/all:
 	$(MAKE) -f _deps/glfw-build/src/CMakeFiles/glfw.dir/build.make _deps/glfw-build/src/CMakeFiles/glfw.dir/depend
 	$(MAKE) -f _deps/glfw-build/src/CMakeFiles/glfw.dir/build.make _deps/glfw-build/src/CMakeFiles/glfw.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles --progress-num=29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45 "Built target glfw"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/CMakeFiles --progress-num=29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45 "Built target glfw"
 .PHONY : _deps/glfw-build/src/CMakeFiles/glfw.dir/all
 
 # Build rule for subdir invocation for target.
 _deps/glfw-build/src/CMakeFiles/glfw.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles 17
+	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/CMakeFiles 17
 	$(MAKE) -f CMakeFiles/Makefile2 _deps/glfw-build/src/CMakeFiles/glfw.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/CMakeFiles 0
 .PHONY : _deps/glfw-build/src/CMakeFiles/glfw.dir/rule
 
 # Convenience name for target.
@@ -245,14 +245,14 @@ _deps/glfw-build/src/CMakeFiles/glfw.dir/clean:
 _deps/fmt-build/CMakeFiles/fmt.dir/all:
 	$(MAKE) -f _deps/fmt-build/CMakeFiles/fmt.dir/build.make _deps/fmt-build/CMakeFiles/fmt.dir/depend
 	$(MAKE) -f _deps/fmt-build/CMakeFiles/fmt.dir/build.make _deps/fmt-build/CMakeFiles/fmt.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles --progress-num=26,27,28 "Built target fmt"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/CMakeFiles --progress-num=26,27,28 "Built target fmt"
 .PHONY : _deps/fmt-build/CMakeFiles/fmt.dir/all
 
 # Build rule for subdir invocation for target.
 _deps/fmt-build/CMakeFiles/fmt.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/CMakeFiles 3
 	$(MAKE) -f CMakeFiles/Makefile2 _deps/fmt-build/CMakeFiles/fmt.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/CMakeFiles 0
 .PHONY : _deps/fmt-build/CMakeFiles/fmt.dir/rule
 
 # Convenience name for target.

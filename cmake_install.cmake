@@ -1,4 +1,4 @@
-# Install script for directory: /media/yohello/hrm1/code-stuff/test/CRender
+# Install script for directory: /media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/media/yohello/hrm1/code-stuff/test/CRender/external/cmake_install.cmake")
+  include("/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/external/cmake_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/media/yohello/hrm1/code-stuff/test/CRender/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

@@ -12,8 +12,8 @@ project(fmt-populate NONE)
 include(ExternalProject)
 ExternalProject_Add(fmt-populate
                      "UPDATE_DISCONNECTED" "False" "GIT_REPOSITORY" "https://github.com/fmtlib/fmt" "GIT_TAG" "7.1.3"
-                    SOURCE_DIR          "/media/yohello/hrm1/code-stuff/test/CRender/_deps/fmt-src"
-                    BINARY_DIR          "/media/yohello/hrm1/code-stuff/test/CRender/_deps/fmt-build"
+                    SOURCE_DIR          "/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/fmt-src"
+                    BINARY_DIR          "/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/fmt-build"
                     CONFIGURE_COMMAND   ""
                     BUILD_COMMAND       ""
                     INSTALL_COMMAND     ""

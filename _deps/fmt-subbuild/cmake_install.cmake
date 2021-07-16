@@ -1,4 +1,4 @@
-# Install script for directory: /media/yohello/hrm1/code-stuff/test/CRender/_deps/fmt-subbuild
+# Install script for directory: /media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/fmt-subbuild
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/media/yohello/hrm1/code-stuff/test/CRender/_deps/fmt-subbuild/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/fmt-subbuild/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

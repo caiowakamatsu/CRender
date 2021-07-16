@@ -1,4 +1,4 @@
-# Install script for directory: /media/yohello/hrm1/code-stuff/test/CRender/_deps/glm-src
+# Install script for directory: /media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glm-src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/media/yohello/hrm1/code-stuff/test/CRender/_deps/glm-build/glm/cmake_install.cmake")
+  include("/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glm-build/glm/cmake_install.cmake")
 
 endif()
 

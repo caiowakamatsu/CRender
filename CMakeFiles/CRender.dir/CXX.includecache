@@ -6,13 +6,13 @@
 
 #IncludeRegexTransform: 
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imconfig.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imconfig.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui.cpp
 imgui.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui.h
 imgui_internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_internal.h
 ctype.h
 -
 stdio.h
@@ -28,15 +28,15 @@ windows.h
 TargetConditionals.h
 -
 stb_sprintf.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/stb_sprintf.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/stb_sprintf.h
 Carbon/Carbon.h
 -
 imgui_user.inl
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_user.inl
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_user.inl
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui.h
 imconfig.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imconfig.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imconfig.h
 float.h
 -
 stdarg.h
@@ -50,11 +50,11 @@ assert.h
 stdint.h
 -
 imgui_user.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_user.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_user.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_demo.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_demo.cpp
 imgui.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui.h
 ctype.h
 -
 limits.h
@@ -70,13 +70,13 @@ stddef.h
 stdint.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_draw.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_draw.cpp
 imgui.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui.h
 imgui_internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_internal.h
 misc/freetype/imgui_freetype.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/misc/freetype/imgui_freetype.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/misc/freetype/imgui_freetype.h
 stdio.h
 -
 alloca.h
@@ -86,29 +86,29 @@ malloc.h
 stdlib.h
 -
 imstb_rectpack.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imstb_rectpack.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imstb_rectpack.h
 imstb_truetype.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imstb_truetype.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imstb_truetype.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_impl_glfw.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_impl_glfw.cpp
 imgui.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui.h
 imgui_impl_glfw.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_impl_glfw.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_impl_glfw.h
 GLFW/glfw3.h
 -
 GLFW/glfw3native.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_impl_glfw.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_impl_glfw.h
 imgui.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_impl_opengl3.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_impl_opengl3.cpp
 imgui.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui.h
 imgui_impl_opengl3.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_impl_opengl3.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_impl_opengl3.h
 stdio.h
 -
 stddef.h
@@ -138,13 +138,13 @@ glbinding/glbinding.h
 glbinding/gl/gl.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_impl_opengl3.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_impl_opengl3.h
 imgui.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui.h
 TargetConditionals.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/TargetConditionals.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/TargetConditionals.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_internal.h
 stdio.h
 -
 stdlib.h
@@ -154,23 +154,23 @@ math.h
 limits.h
 -
 imstb_textedit.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imstb_textedit.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imstb_textedit.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_tables.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_tables.cpp
 imgui.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui.h
 imgui_internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_internal.h
 stddef.h
 -
 stdint.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_widgets.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_widgets.cpp
 imgui.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui.h
 imgui_internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imgui_internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imgui_internal.h
 ctype.h
 -
 stddef.h
@@ -178,11 +178,11 @@ stddef.h
 stdint.h
 -
 imstb_textedit.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imstb_textedit.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imstb_textedit.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imnodes.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imnodes.cpp
 imnodes.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imnodes.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imnodes.h
 imgui/imgui.h
 -
 imgui/imgui_internal.h
@@ -204,27 +204,27 @@ stdio.h
 stdlib.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imnodes.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imnodes.h
 stddef.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imstb_rectpack.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imstb_rectpack.h
 stdlib.h
 -
 assert.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imstb_textedit.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imstb_textedit.h
 string.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/imstb_truetype.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/imstb_truetype.h
 stb_truetype.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/stb_truetype.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/stb_truetype.h
 stdio.h
 -
 stb_truetype.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/imgui/stb_truetype.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/imgui/stb_truetype.h
 math.h
 -
 math.h
@@ -244,15 +244,15 @@ string.h
 string.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/main.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/main.cpp
 ui/display.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/objects/model.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/objects/model.cpp
 model.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/objects/model.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/objects/model.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/objects/model.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/objects/model.h
 algorithm
 -
 vector
@@ -278,11 +278,11 @@ util/exception.h
 util/logger.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/objects/thread_pool.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/objects/thread_pool.cpp
 thread_pool.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/objects/thread_pool.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/objects/thread_pool.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/objects/thread_pool.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/objects/thread_pool.h
 cstdint
 -
 vector
@@ -304,11 +304,11 @@ condition_variable
 fmt/core.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/camera.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/camera.cpp
 camera.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/camera.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/camera.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/camera.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/camera.h
 glm/glm.hpp
 -
 glm/ext.hpp
@@ -320,11 +320,11 @@ render/ray.h
 util/numbers.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/draft/draft_renderer.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/draft/draft_renderer.cpp
 draft_renderer.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/draft/draft_renderer.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/draft/draft_renderer.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/draft/draft_renderer.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/draft/draft_renderer.h
 memory
 -
 variant
@@ -360,11 +360,11 @@ util/logger.h
 glad/glad.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/entities/registry.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/entities/registry.cpp
 registry.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/entities/registry.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/entities/registry.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/entities/registry.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/entities/registry.h
 entt/entt.hpp
 -
 render/entities/entity_type.h
@@ -384,13 +384,13 @@ util/sampling.h
 variant
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/material/material.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/material/material.cpp
 material.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/material/material.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/material/material.h
 utility
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/material/material.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/material/material.h
 string
 -
 optional
@@ -400,21 +400,21 @@ glm/glm.hpp
 objects/image.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/ray.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/ray.cpp
 ray.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/ray.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/ray.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/ray.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/ray.h
 glm/glm.hpp
 -
 render/material/material.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/renderer.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/renderer.cpp
 renderer.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/renderer.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/renderer.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/renderer.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/renderer.h
 memory
 -
 variant
@@ -448,11 +448,11 @@ util/sampling.h
 render/timer.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/scene.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/scene.cpp
 scene.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/scene.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/scene.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/scene.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/scene.h
 vector
 -
 random
@@ -478,11 +478,11 @@ objects/image.h
 util/exception.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/timer.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/timer.cpp
 timer.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/timer.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/timer.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/render/timer.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/render/timer.h
 chrono
 -
 cmath
@@ -494,15 +494,15 @@ numeric
 algorithm
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/ui/display.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/ui/display.cpp
 display.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/ui/display.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/ui/display.h
 stb/stbi_image_write.h
 -
 stb/stb_image.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/ui/display.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/ui/display.h
 functional
 -
 optional
@@ -550,15 +550,15 @@ util/asset_loader.h
 util/logger.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/ui/nodes/node_editor.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/ui/nodes/node_editor.cpp
 node_editor.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/ui/nodes/node_editor.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/ui/nodes/node_editor.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/ui/nodes/node_editor.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/ui/nodes/node_editor.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/util/asset_loader.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/util/asset_loader.cpp
 asset_loader.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/util/asset_loader.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/util/asset_loader.h
 tinyobj/tinobj.h
 -
 obj_loader/OBJ_Loader.h
@@ -572,7 +572,7 @@ tinyexr/tinyexr.h
 util/logger.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/util/asset_loader.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/util/asset_loader.h
 vector
 -
 string
@@ -592,9 +592,9 @@ util/exception.h
 regex
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/util/logger.cpp
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/util/logger.cpp
 logger.h
-/media/yohello/hrm1/code-stuff/test/CRender/src/util/logger.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/util/logger.h
 fstream
 -
 fmt/chrono.h
@@ -604,7 +604,7 @@ fmt/color.h
 filesystem
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/src/util/logger.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/src/util/logger.h
 fmt/core.h
 -
 string_view

@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/include/GLFW/glfw3.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/include/GLFW/glfw3.h
 stddef.h
 -
 stdint.h
@@ -50,7 +50,7 @@ GL/glext.h
 GL/glu.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/cocoa_joystick.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/cocoa_joystick.h
 IOKit/IOKitLib.h
 -
 IOKit/IOCFPlugIn.h
@@ -60,7 +60,7 @@ IOKit/hid/IOHIDLib.h
 IOKit/hid/IOHIDKeys.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/cocoa_platform.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/cocoa_platform.h
 stdint.h
 -
 dlfcn.h
@@ -70,19 +70,19 @@ Carbon/Carbon.h
 Cocoa/Cocoa.h
 -
 posix_thread.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/posix_thread.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/posix_thread.h
 cocoa_joystick.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/cocoa_joystick.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/cocoa_joystick.h
 nsgl_context.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/nsgl_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/nsgl_context.h
 egl_context.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/egl_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/egl_context.h
 osmesa_context.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/osmesa_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/osmesa_context.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/context.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/context.c
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 assert.h
 -
 stdio.h
@@ -94,9 +94,9 @@ limits.h
 stdio.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/egl_context.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/egl_context.c
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 stdio.h
 -
 string.h
@@ -106,13 +106,13 @@ stdlib.h
 assert.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/egl_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/egl_context.h
 EGL/eglplatform.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/glx_context.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/glx_context.c
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 string.h
 -
 stdlib.h
@@ -120,13 +120,13 @@ stdlib.h
 assert.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/glx_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/glx_context.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/init.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/init.c
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 mappings.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/mappings.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/mappings.h
 string.h
 -
 stdlib.h
@@ -138,9 +138,9 @@ stdarg.h
 assert.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/input.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/input.c
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 assert.h
 -
 float.h
@@ -152,25 +152,25 @@ stdlib.h
 string.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 glfw_config.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/glfw_config.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/glfw_config.h
 ../include/GLFW/glfw3.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/include/GLFW/glfw3.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/include/GLFW/glfw3.h
 cocoa_platform.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/cocoa_platform.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/cocoa_platform.h
 win32_platform.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/win32_platform.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/win32_platform.h
 x11_platform.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/x11_platform.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/x11_platform.h
 wl_platform.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/wl_platform.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/wl_platform.h
 null_platform.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/null_platform.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/null_platform.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/linux_joystick.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/linux_joystick.c
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 sys/types.h
 -
 sys/stat.h
@@ -192,7 +192,7 @@ string.h
 unistd.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/linux_joystick.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/linux_joystick.h
 linux/input.h
 -
 linux/limits.h
@@ -200,11 +200,11 @@ linux/limits.h
 regex.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/mappings.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/mappings.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/monitor.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/monitor.c
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 assert.h
 -
 math.h
@@ -218,25 +218,25 @@ stdlib.h
 limits.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/nsgl_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/nsgl_context.h
 stdatomic.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/null_joystick.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/null_joystick.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/null_platform.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/null_platform.h
 dlfcn.h
 -
 osmesa_context.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/osmesa_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/osmesa_context.h
 posix_time.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/posix_time.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/posix_time.h
 posix_thread.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/posix_thread.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/posix_thread.h
 null_joystick.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/null_joystick.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/null_joystick.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/osmesa_context.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/osmesa_context.c
 stdlib.h
 -
 string.h
@@ -244,37 +244,37 @@ string.h
 assert.h
 -
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/osmesa_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/osmesa_context.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/posix_thread.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/posix_thread.c
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 assert.h
 -
 string.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/posix_thread.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/posix_thread.h
 pthread.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/posix_time.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/posix_time.c
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 sys/time.h
 -
 time.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/posix_time.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/posix_time.h
 stdint.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/vulkan.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/vulkan.c
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 assert.h
 -
 string.h
@@ -282,11 +282,11 @@ string.h
 stdlib.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/wgl_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/wgl_context.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/win32_joystick.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/win32_joystick.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/win32_platform.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/win32_platform.h
 wctype.h
 -
 windows.h
@@ -300,17 +300,17 @@ dbt.h
 dwmapi.h
 -
 win32_joystick.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/win32_joystick.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/win32_joystick.h
 wgl_context.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/wgl_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/wgl_context.h
 egl_context.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/egl_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/egl_context.h
 osmesa_context.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/osmesa_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/osmesa_context.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/window.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/window.c
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 assert.h
 -
 string.h
@@ -320,7 +320,7 @@ stdlib.h
 float.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/wl_platform.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/wl_platform.h
 wayland-client.h
 -
 xkbcommon/xkbcommon.h
@@ -330,35 +330,35 @@ xkbcommon/xkbcommon-compose.h
 dlfcn.h
 -
 posix_thread.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/posix_thread.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/posix_thread.h
 posix_time.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/posix_time.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/posix_time.h
 linux_joystick.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/linux_joystick.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/linux_joystick.h
 null_joystick.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/null_joystick.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/null_joystick.h
 xkb_unicode.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/xkb_unicode.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/xkb_unicode.h
 egl_context.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/egl_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/egl_context.h
 osmesa_context.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/osmesa_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/osmesa_context.h
 wayland-xdg-shell-client-protocol.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/wayland-xdg-shell-client-protocol.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/wayland-xdg-shell-client-protocol.h
 wayland-xdg-decoration-client-protocol.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/wayland-xdg-decoration-client-protocol.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/wayland-xdg-decoration-client-protocol.h
 wayland-viewporter-client-protocol.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/wayland-viewporter-client-protocol.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/wayland-viewporter-client-protocol.h
 wayland-relative-pointer-unstable-v1-client-protocol.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/wayland-relative-pointer-unstable-v1-client-protocol.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/wayland-relative-pointer-unstable-v1-client-protocol.h
 wayland-pointer-constraints-unstable-v1-client-protocol.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/wayland-pointer-constraints-unstable-v1-client-protocol.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/wayland-pointer-constraints-unstable-v1-client-protocol.h
 wayland-idle-inhibit-unstable-v1-client-protocol.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/wayland-idle-inhibit-unstable-v1-client-protocol.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/wayland-idle-inhibit-unstable-v1-client-protocol.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/x11_init.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/x11_init.c
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 X11/Xresource.h
 -
 stdlib.h
@@ -372,9 +372,9 @@ stdio.h
 locale.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/x11_monitor.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/x11_monitor.c
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 limits.h
 -
 stdlib.h
@@ -384,7 +384,7 @@ string.h
 math.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/x11_platform.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/x11_platform.h
 unistd.h
 -
 signal.h
@@ -410,25 +410,25 @@ X11/extensions/Xinerama.h
 X11/extensions/XInput2.h
 -
 posix_thread.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/posix_thread.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/posix_thread.h
 posix_time.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/posix_time.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/posix_time.h
 xkb_unicode.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/xkb_unicode.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/xkb_unicode.h
 glx_context.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/glx_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/glx_context.h
 egl_context.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/egl_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/egl_context.h
 osmesa_context.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/osmesa_context.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/osmesa_context.h
 linux_joystick.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/linux_joystick.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/linux_joystick.h
 null_joystick.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/null_joystick.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/null_joystick.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/x11_window.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/x11_window.c
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 X11/cursorfont.h
 -
 X11/Xmd.h
@@ -448,11 +448,11 @@ errno.h
 assert.h
 -
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/xkb_unicode.c
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/xkb_unicode.c
 internal.h
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/internal.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/internal.h
 
-/media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src/xkb_unicode.h
+/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src/xkb_unicode.h
 
 _deps/glfw-build/src/glfw_config.h
 

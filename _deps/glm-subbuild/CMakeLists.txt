@@ -12,8 +12,8 @@ project(glm-populate NONE)
 include(ExternalProject)
 ExternalProject_Add(glm-populate
                      "UPDATE_DISCONNECTED" "False" "GIT_REPOSITORY" "https://github.com/g-truc/glm" "GIT_TAG" "0.9.9.8"
-                    SOURCE_DIR          "/media/yohello/hrm1/code-stuff/test/CRender/_deps/glm-src"
-                    BINARY_DIR          "/media/yohello/hrm1/code-stuff/test/CRender/_deps/glm-build"
+                    SOURCE_DIR          "/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glm-src"
+                    BINARY_DIR          "/media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glm-build"
                     CONFIGURE_COMMAND   ""
                     BUILD_COMMAND       ""
                     INSTALL_COMMAND     ""

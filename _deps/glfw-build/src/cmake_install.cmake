@@ -1,4 +1,4 @@
-# Install script for directory: /media/yohello/hrm1/code-stuff/test/CRender/_deps/glfw-src/src
+# Install script for directory: /media/yohello/hrm1/code-stuff/cross-dev/testing/CRender_push/_deps/glfw-src/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
