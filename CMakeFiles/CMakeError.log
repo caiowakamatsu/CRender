@@ -1,0 +1,92 @@
+Performing C SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
+Change Dir: /media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_34df9/fast && /usr/bin/make  -f CMakeFiles/cmTC_34df9.dir/build.make CMakeFiles/cmTC_34df9.dir/build
+make[1]: Entering directory '/media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_34df9.dir/src.c.o
+/usr/bin/cc -DCMAKE_HAVE_LIBC_PTHREAD   -o CMakeFiles/cmTC_34df9.dir/src.c.o -c /media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_34df9
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_34df9.dir/link.txt --verbose=1
+/usr/bin/cc -rdynamic CMakeFiles/cmTC_34df9.dir/src.c.o -o cmTC_34df9 
+/usr/bin/ld: CMakeFiles/cmTC_34df9.dir/src.c.o: in function `main':
+src.c:(.text+0x2f): undefined reference to `pthread_create'
+/usr/bin/ld: src.c:(.text+0x3b): undefined reference to `pthread_detach'
+/usr/bin/ld: src.c:(.text+0x47): undefined reference to `pthread_cancel'
+/usr/bin/ld: src.c:(.text+0x58): undefined reference to `pthread_join'
+collect2: error: ld returned 1 exit status
+make[1]: *** [CMakeFiles/cmTC_34df9.dir/build.make:99: cmTC_34df9] Error 1
+make[1]: Leaving directory '/media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles/CMakeTmp'
+make: *** [Makefile:127: cmTC_34df9/fast] Error 2
+
+
+Source file was:
+#include <pthread.h>
+
+static void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_69207/fast && /usr/bin/make  -f CMakeFiles/cmTC_69207.dir/build.make CMakeFiles/cmTC_69207.dir/build
+make[1]: Entering directory '/media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_69207.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create -o CMakeFiles/cmTC_69207.dir/CheckFunctionExists.c.o -c /usr/local/share/cmake-3.21/Modules/CheckFunctionExists.c
+Linking C executable cmTC_69207
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_69207.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=pthread_create -rdynamic CMakeFiles/cmTC_69207.dir/CheckFunctionExists.c.o -o cmTC_69207  -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+make[1]: *** [CMakeFiles/cmTC_69207.dir/build.make:99: cmTC_69207] Error 1
+make[1]: Leaving directory '/media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles/CMakeTmp'
+make: *** [Makefile:127: cmTC_69207/fast] Error 2
+
+
+
+Determining if the strtod_l exist failed with the following output:
+Change Dir: /media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_7909d/fast && /usr/bin/make  -f CMakeFiles/cmTC_7909d.dir/build.make CMakeFiles/cmTC_7909d.dir/build
+make[1]: Entering directory '/media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_7909d.dir/CheckSymbolExists.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_7909d.dir/CheckSymbolExists.c.o -c /media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles/CMakeTmp/CheckSymbolExists.c: In function ‘main’:
+/media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: error: ‘strtod_l’ undeclared (first use in this function); did you mean ‘strtoull’?
+   return ((int*)(&strtod_l))[argc];
+                   ^~~~~~~~
+                   strtoull
+/media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: note: each undeclared identifier is reported only once for each function it appears in
+make[1]: *** [CMakeFiles/cmTC_7909d.dir/build.make:78: CMakeFiles/cmTC_7909d.dir/CheckSymbolExists.c.o] Error 1
+make[1]: Leaving directory '/media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles/CMakeTmp'
+make: *** [Makefile:127: cmTC_7909d/fast] Error 2
+
+
+File /media/yohello/hrm1/code-stuff/test/CRender/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stdlib.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strtod_l
+  return ((int*)(&strtod_l))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
