@@ -60,13 +60,13 @@ add_executable(CRender src/main.cpp
         src/objects/model.cpp
         src/objects/model.h
         src/ui/ui.h
-        src/render/entities/entity_type.h
+#        src/render/entities/entity_type.h
         src/render/entities/components.h
         src/render/entities/registry.cpp
         src/render/entities/registry.h 
         src/render/draft/draft_renderer.cpp 
         src/render/draft/draft_renderer.h 
-        src/render/mesh.h 
+#        src/render/mesh.h 
         src/render/timer.cpp 
         src/render/timer.h 
         src/util/logger.h 
