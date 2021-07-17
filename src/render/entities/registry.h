@@ -2,22 +2,16 @@
 
 #include <entt/entt.hpp>
 
-#include <render/entities/entity_type.h>
 #include <render/entities/components.h>
 #include <render/camera.h>
-#include <render/mesh.h>
 #include <objects/model.h>
 #include <util/asset_loader.h>
 #include <util/sampling.h>
+#include <glad/glad.h>
 #include <variant>
 
 namespace cr
 {
-    struct raster_objects
-    {
-        std::vector<cr::mesh> meshes;
-    };
-
     class registry
     {
     public:
@@ -36,23 +30,21 @@ namespace cr
         /* Load a model into the register after loading it in */
         struct registered_model
         {
-            uint32_t          entity_handle;
-            cr::raster_objects meshes;
+            uint32_t           entity_handle;
         };
-        [[nodiscard]] registered_model register_model(const cr::asset_loader::model_data &data);
+        void register_model(const cr::asset_loader::model_data &data);
 
     private:
-        [[nodiscard]] cr::raster_objects
-          _get_meshes_by_material(const cr::asset_loader::model_data &data);
+        void _upload_gpu_meshes(const cr::asset_loader::model_data &data, uint32_t entity);
 
-        [[nodiscard]] cr::raster_objects
-          _upload_temporary_meshes(const std::vector<cr::temporary_mesh> &meshes);
-
-        [[nodiscard]] std::vector<float> _zip_mesh_data(const cr::temporary_mesh &mesh);
+        [[nodiscard]] std::vector<float> _zip_mesh_data(
+          const std::vector<glm::vec3> &vertices,
+          const std::vector<glm::vec3> &normals,
+          const std::vector<glm::vec2> &texture_coords);
 
         uint64_t _camera_entity;
 
         cr::entity::sun _sun {};
-        glm::mat3 _sun_transform;
+        glm::mat3       _sun_transform;
     };
 }    // namespace cr

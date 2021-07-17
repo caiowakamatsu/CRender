@@ -158,6 +158,8 @@ namespace cr::ui
               1,
               GL_FALSE,
               glm::value_ptr(scene->registry()->camera()->mat4()));
+
+            glUniform1i(glGetUniformLocation(compute_program, "flip"), in_draft_mode);
         }
 
         {
@@ -288,8 +290,6 @@ namespace cr::ui
             ImGui::SetTooltip("Set amount of samples per pixel you want to render, 0 for no limit");
         if (ImGui::Button("Set target sample count")) renderer->set_target_spp(target_spp);
 
-
-
         {
             ImGui::Text("Sun");
             ImGui::Indent(4.f);
@@ -304,9 +304,9 @@ namespace cr::ui
             ImGui::ColorEdit3("Colour", glm::value_ptr(sun.colour));
             ImGui::InputFloat3("Sun Direction", glm::value_ptr(sun.direction));
 
-            if (ImGui::Button("Update Camera"))
+            if (ImGui::Button("Update Sun"))
             {
-                renderer->update([sun_enabled = sun_enabled, sun = sun, scene ] {
+                renderer->update([sun_enabled = sun_enabled, sun = sun, scene] {
                     scene->registry()->set_sun(sun);
                     scene->set_sun_enabled(sun_enabled);
                 });
@@ -314,7 +314,6 @@ namespace cr::ui
 
             ImGui::Unindent(4.f);
         }
-
     }
 
     inline void setting_export(std::unique_ptr<cr::renderer> *renderer)
@@ -424,14 +423,22 @@ namespace cr::ui
             ImGui::EndCombo();
         }
 
-        ImGui::SliderFloat("FOV", &camera.value().fov, 5, 180);
-
         auto selected_type = cr::camera::mode::perspective;
 
         switch (current_type)
         {
-        case 0: selected_type = cr::camera::mode::perspective; break;
-        case 1: selected_type = cr::camera::mode::orthographic; break;
+        case 0:
+        {
+            selected_type = cr::camera::mode::perspective;
+            ImGui::SliderFloat("FOV", &camera.value().fov, 5, 180);
+            break;
+        }
+        case 1:
+        {
+            selected_type = cr::camera::mode::orthographic;
+            ImGui::InputFloat("Scale", &camera.value().scale, 1, 10);
+            break;
+        }
         }
 
         camera->current_mode = selected_type;
@@ -446,25 +453,28 @@ namespace cr::ui
 
     inline void setting_materials(cr::renderer *renderer, cr::scene *scene)
     {
-        const auto &models = scene->models();
+        const auto models =
+          scene->registry()->entities.view<std::string, cr::entity::model_materials>();
 
-        if (models.size() > 0)
+        static auto selected_entity  = uint32_t(0);
+        bool        selected_changed = false;
+
         {
-            ImGui::BeginChild(
-              "setting-materials-models-child",
-              { 0, ImGui::GetContentRegionAvail().y / 5 });
-            static auto selected_index   = 0;
-            bool        selected_changed = false;
-            for (auto i = 0; i < models.size(); i++)
+            for (const auto entity : models)
             {
-                const auto &model = models[i];
-                if (ImGui::Button(model.object_name.c_str()))
+                const auto &name = scene->registry()->entities.get<std::string>(entity);
+                if (ImGui::Button(name.c_str()))
                 {
-                    if (selected_index != i) selected_changed = true;
-                    selected_index = i;
+                    if (selected_entity != entity) selected_changed = true;
+                    selected_entity = entity;
                 }
             }
-            ImGui::EndChild();
+        }
+
+        if (selected_entity != 0)
+        {
+            const auto &registry_materials =
+              scene->registry()->entities.get<cr::entity::model_materials>(selected_entity);
 
             ImGui::BeginChild("settings-materials-materials-list");
 
@@ -482,15 +492,7 @@ namespace cr::ui
             {
                 selected_changed = false;
                 materials.clear();
-                auto &registry_materials =
-                  scene->registry()
-                    ->entities
-                    .get<cr::entity::model_materials>(models[selected_index].entity_handle)
-                    .materials;
-                for (auto i = models[selected_index].index_start;
-                     i < models[selected_index].index_end;
-                     i++)
-                    materials.push_back(scene->meshes()[i].material);
+                materials = registry_materials.materials;
             }
 
             // This is a cool Imgui thing im going to make (search thing)
@@ -575,17 +577,10 @@ namespace cr::ui
 
             if (ImGui::Button("Update Materials"))
             {
-                const auto &model = models[selected_index];
-                renderer->update([materials = materials, scene, &model] {
-                    for (auto i = model.index_start; i < model.index_end; i++)
-                    {
-                        //                        scene->meshes()[i].material = materials[i];
-                        auto &registry_materials =
-                          scene->registry()
-                            ->entities.get<cr::entity::model_materials>(model.entity_handle)
-                            .materials;
-                        registry_materials = materials;
-                    }
+                renderer->update([materials = materials, scene, selected = selected_entity] {
+                    scene->registry()
+                      ->entities.get<cr::entity::model_materials>(selected)
+                      .materials = materials;
                 });
             }
 
@@ -760,6 +755,102 @@ namespace cr::ui
         ImGui::Unindent(8.0f);
     }
 
+    inline void setting_instances(cr::renderer *renderer, cr::scene *scene)
+    {
+        ImGui::Indent(4.0f);
+
+        const auto models = scene->registry()->entities.view<std::string, cr::entity::instances>();
+
+        static auto selected_entity  = uint32_t(0);
+        bool        selected_changed = false;
+
+        {
+            for (const auto entity : models)
+            {
+                const auto &name = scene->registry()->entities.get<std::string>(entity);
+                if (ImGui::Button(name.c_str()))
+                {
+                    if (selected_entity != entity) selected_changed = true;
+                    selected_entity = entity;
+                }
+            }
+        }
+
+        if (selected_entity != 0)
+        {
+            const auto &registry_instances =
+              scene->registry()->entities.get<cr::entity::instances>(selected_entity);
+
+            static auto transforms = std::vector<glm::mat4>();
+            static auto first_time = true;
+
+            if (selected_changed || first_time)
+            {
+                first_time = false;
+                transforms = registry_instances.transforms;
+            }
+
+            ImGui::BeginChild("settings-instances-instances-list");
+
+            ImGui::Text("Instances");
+            ImGui::SameLine();
+            if (ImGui::Button("+"))
+                transforms.push_back(glm::mat4(1));
+
+            ImGui::Indent(4.f);
+
+            static auto to_remove = std::vector<uint32_t>();
+
+            for (auto i = 0; i < transforms.size(); i++)
+            {
+                const auto matrix      = transforms[i];
+                auto       skew        = glm::vec3();
+                auto       perspective = glm::vec4();
+                auto       rotation    = glm::quat();
+
+                // Ones I use...
+                auto scale       = glm::vec3();
+                auto translation = glm::vec3();
+
+                glm::decompose(matrix, scale, rotation, translation, skew, perspective);
+
+                ImGui::Text("%s", fmt::format("Translation #{} ##{}", i, i).c_str());
+                ImGui::SameLine();
+                if (ImGui::Button("-"))
+                    to_remove.push_back(i);
+
+                ImGui::Indent(4.0f);
+                ImGui::InputFloat3(fmt::format("Scale##{}", i).c_str(), glm::value_ptr(scale));
+                ImGui::InputFloat3(fmt::format("Translation##{}", i).c_str(), glm::value_ptr(translation));
+                ImGui::Unindent(4.0f);
+
+                auto out_matrix = glm::mat4(1);
+                out_matrix      = glm::translate(out_matrix, translation);
+                out_matrix      = glm::scale(out_matrix, scale);
+
+                transforms[i] = out_matrix;
+            }
+
+            for (const auto remove : to_remove)
+                transforms.erase(transforms.begin() + remove);
+
+            if (ImGui::Button("Update"))
+            {
+                renderer->update(
+                  [scene, transforms = transforms, selected_entity = selected_entity]() {
+                      scene->registry()
+                        ->entities.get<cr::entity::instances>(selected_entity)
+                        .transforms = transforms;
+                  });
+            }
+            ImGui::Unindent(4.0f);
+            ImGui::EndChild();
+            to_remove.clear();
+        }
+
+        ImGui::Unindent(4.0f);
+    }
+
     inline void settings(
       std::unique_ptr<cr::renderer> *      renderer,
       std::unique_ptr<cr::draft_renderer> *draft_renderer,
@@ -770,8 +861,14 @@ namespace cr::ui
         ImGui::Begin("Misc");
 
         // List all of the different settings
-        static const auto window_settings = std::array<std::string, 7>(
-          { "Render", "Export", "Materials", "Asset Loader", "Stats", "Style", "Camera" });
+        static const auto window_settings = std::array<std::string, 8>({ "Render",
+                                                                         "Export",
+                                                                         "Materials",
+                                                                         "Asset Loader",
+                                                                         "Stats",
+                                                                         "Style",
+                                                                         "Camera",
+                                                                         "Instances" });
 
         static auto selected_window = 0;
 
@@ -798,6 +895,7 @@ namespace cr::ui
         case 4: setting_stats(renderer->get()); break;
         case 5: setting_style(); break;
         case 6: setting_camera(renderer->get(), scene->get()); break;
+        case 7: setting_instances(renderer->get(), scene->get()); break;
         }
 
         ImGui::EndChild();

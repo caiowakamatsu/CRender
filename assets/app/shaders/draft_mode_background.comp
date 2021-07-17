@@ -11,22 +11,31 @@ uniform ivec2 scene_size;
 uniform mat4 camera;
 uniform float aspect_correction;
 uniform float fov;
+uniform int camera_mode;
 
 void main ()
 {
     vec2 nc = vec2(TARGET_PIXEL.xy) / vec2(scene_size);
-//    vec4 output_colour = texture(background, nc);
 
-    nc.x *= -1.f;
-    nc.x += 1.f;
-    float u = (2.0f * nc.x - 1.0f) * aspect_correction;
-    float v = (2.0f * nc.y - 1.0f);
-    float w = 1.0f / tan(0.5f * fov);
+    vec3 dir = vec3(0);
 
-    vec3 dir = normalize(camera * vec4(u, v, w, 0.0f)).xyz;
+    if (camera_mode == 0)
+    {
+        float u = (2.0f * nc.x - 1.0f) * aspect_correction;
+        float v = (2.0f * nc.y - 1.0f);
+        float w = 1.0f / tan(0.5f * radians(fov));
+
+        dir = normalize(camera * vec4(u, v, w, 0.0f)).xyz;
+    }
+    else if (camera_mode == 1)
+    {
+        dir = normalize(camera[2].xyz);
+    }
+
+
     vec2 uv = vec2(
         0.5 + atan(dir.z, dir.x) / (2 * 3.1415f),
-        0.5 + asin(dir.y) / 3.1415f);
+        0.5 - asin(dir.y) / 3.1415f);
 
     imageStore(img_output, ivec2(TARGET_PIXEL), texture(background, uv));
 }

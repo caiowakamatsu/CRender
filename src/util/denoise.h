@@ -8,9 +8,9 @@
 namespace cr
 {
     [[nodiscard]] inline cr::image denoise(
-      cr::image *                  framebuffer_in,
-      cr::image *                  normals,
-      cr::image *                  albedo,
+      const cr::image *            framebuffer_in,
+      const cr::image *            normals,
+      const cr::image *            albedo,
       cr::asset_loader::image_type output_type)
     {
         const auto width  = framebuffer_in->width();
@@ -18,7 +18,7 @@ namespace cr
 
         auto colour_buffer   = framebuffer_in->as_float3_buffer();
         auto normal_buffer   = normals->as_float3_buffer();
-        auto albedo_buffer = albedo->as_float3_buffer();
+        auto albedo_buffer   = albedo->as_float3_buffer();
         auto denoised_buffer = std::vector<float>(width * height * 3);
 
         auto device = oidn::newDevice();
@@ -30,13 +30,15 @@ namespace cr
         filter.setImage("albedo", albedo_buffer.data(), oidn::Format::Float3, width, height);
         filter.setImage("output", denoised_buffer.data(), oidn::Format::Float3, width, height);
 
-        if (output_type == asset_loader::image_type::EXR || output_type == asset_loader::image_type::HDR)
+        if (
+          output_type == asset_loader::image_type::EXR ||
+          output_type == asset_loader::image_type::HDR)
             filter.set("hdr", true);
 
         filter.commit();
         filter.execute();
 
-        const char* errorMessage;
+        const char *errorMessage;
         if (device.getError(errorMessage) != oidn::Error::None)
             cr::logger::error("There was an error denoising image: [{}]", errorMessage);
 

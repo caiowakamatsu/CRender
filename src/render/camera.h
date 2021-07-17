@@ -29,6 +29,7 @@ namespace cr
         [[nodiscard]] cr::ray get_ray(float x, float y, float aspect);
 
         float fov;
+        float scale;
 
         mode current_mode;
         glm::vec3 position {};
