@@ -3,7 +3,14 @@
 .vscode
 cmake-build-*
 /build
-
+CMakeFiles
+_deps
+assets
 # Files
 /out/*
 imgui.ini
+CMakeCache.txt
+.clang-format
+Makefile
+CRender
+cmake_install.cmake
