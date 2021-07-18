@@ -183,7 +183,8 @@ namespace cr
           std::unique_ptr<cr::scene> &         scene,
           std::unique_ptr<cr::renderer> &      renderer,
           std::unique_ptr<cr::thread_pool> &   thread_pool,
-          std::unique_ptr<cr::draft_renderer> &draft_renderer);
+          std::unique_ptr<cr::draft_renderer> &draft_renderer,
+          std::unique_ptr<cr::gpu_renderer> &  gpu_renderer);
 
         void stop();
 
@@ -222,7 +223,6 @@ namespace cr
 
         std::array<key_state, static_cast<size_t>(key_code::MAX_KEY)> _key_states {};
 
-        std::unordered_map<std::string, ImFont*> _fonts;
-
+        std::unordered_map<std::string, ImFont *> _fonts;
     };
 }    // namespace cr

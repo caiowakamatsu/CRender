@@ -44,8 +44,30 @@ cr::display::display()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    _compute_shader_id = cr::opengl::create_shader("./assets/app/shaders/scene_zoom.comp", GL_COMPUTE_SHADER);
+    _compute_shader_id =
+      cr::opengl::create_shader("./assets/app/shaders/scene_zoom.comp", GL_COMPUTE_SHADER);
     _compute_shader_program = cr::opengl::create_program(_compute_shader_id);
+
+    const auto callback = [](
+                            GLenum        source,
+                            GLenum        type,
+                            GLuint        id,
+                            GLenum        severity,
+                            GLsizei       length,
+                            const GLchar *message,
+                            const void *  userParam) {
+        if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+            cr::logger::info(fmt::format(
+              "Gl callback: Type: {}, Severity: {}, Message: {}",
+              type,
+              severity,
+              message));
+    };
+
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, GL_DONT_CARE, nullptr, GL_FALSE);
+//    glDebugMessageCallback(callback, nullptr);
 
     glfwSetWindowUserPointer(_glfw_window, this);
 
@@ -84,8 +106,11 @@ void cr::display::start(
   std::unique_ptr<cr::scene> &         scene,
   std::unique_ptr<cr::renderer> &      renderer,
   std::unique_ptr<cr::thread_pool> &   thread_pool,
-  std::unique_ptr<cr::draft_renderer> &draft_renderer)
+  std::unique_ptr<cr::draft_renderer> &draft_renderer,
+  std::unique_ptr<cr::gpu_renderer> &  gpu_renderer)
 {
+    renderer->pause();    // Todo: Remember to remove this after testing GPU renderer
+
     auto work_group_max = std::array<int, 3>();
 
     glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &work_group_max[0]);
@@ -138,12 +163,12 @@ void cr::display::start(
         if (!_in_draft_mode && draft_mode_changed)
         {
             draft_mode_changed = false;
-            renderer.get()->start();
+//            renderer->start();
         }
         else if (_in_draft_mode && draft_mode_changed)
         {
             draft_mode_changed = false;
-            renderer.get()->pause();
+//            renderer->pause();
         }
 
         // Root imgui node (Not visible)
@@ -154,6 +179,7 @@ void cr::display::start(
         ui::scene_preview(
           renderer.get(),
           draft_renderer.get(),
+          gpu_renderer.get(),
           scene.get(),
           _target_texture,
           _scene_texture_handle,
@@ -163,15 +189,22 @@ void cr::display::start(
         static auto messages = std::vector<std::string>();
 
         if (current_frame == 0)
-            messages.push_back("Welcome to CRender - The discord for support / updates is https://discord.gg/ZjrRyKXpWg");
-
+            messages.emplace_back(
+              "Welcome to CRender - The discord for support / updates is "
+              "https://discord.gg/ZjrRyKXpWg");
 
         cr::logger::read_messages(messages);
 
         ui::console(messages);
         messages.clear();
 
-        ui::settings(&renderer, &draft_renderer, &scene, &thread_pool, _in_draft_mode);
+        ui::settings(
+          &renderer,
+          &draft_renderer,
+          &gpu_renderer,
+          &scene,
+          &thread_pool,
+          _in_draft_mode);
 
         ImGui::PopFont();
 
@@ -200,7 +233,8 @@ void cr::display::start(
           GLFW_CURSOR,
           _in_draft_mode ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 
-        if (_in_draft_mode) _update_camera(scene.get()->registry()->camera());
+        if (_in_draft_mode)
+            _update_camera(scene->registry()->camera());
         _poll_events();
 
         current_frame++;

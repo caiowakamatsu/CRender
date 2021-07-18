@@ -11,6 +11,7 @@
 #include <util/denoise.h>
 #include <stb/stbi_image_write.h>
 #include <stb/stb_image.h>
+#include <render/gpu_renderer.h>
 #include "display.h"
 
 namespace cr::ui
@@ -107,6 +108,7 @@ namespace cr::ui
     inline void scene_preview(
       cr::renderer *      renderer,
       cr::draft_renderer *draft_renderer,
+      cr::gpu_renderer *  gpu_renderer,
       cr::scene *         scene,
       GLuint              target_texture,
       GLuint              scene_texture,
@@ -116,54 +118,9 @@ namespace cr::ui
         ImGui::Begin("Scene Preview");
         auto window_size = ImGui::GetContentRegionAvail();
 
-        // Set uniforms
         {
-            auto        io                  = ImGui::GetIO();
-            static auto current_translation = glm::vec2(0.0f, 0.0f);
-            static auto current_zoom        = float(1);
-            if (ImGui::IsWindowHovered())
-            {
-                current_zoom += io.MouseWheel * -.05;
-
-                if (ImGui::IsMouseDown(0))
-                {
-                    const auto delta =
-                      glm::vec2(io.MouseDelta.x, io.MouseDelta.y) * glm::vec2(-1, -1);
-                    current_translation.x += delta.x;
-                    current_translation.y += delta.y;
-                }
-            }
-
-            glUseProgram(compute_program);
-
-            glUniform1f(glGetUniformLocation(compute_program, "zoom"), current_zoom);
-
-            glUniform2fv(
-              glGetUniformLocation(compute_program, "translation"),
-              1,
-              glm::value_ptr(current_translation));
-
-            glUniform2i(
-              glGetUniformLocation(compute_program, "target_size"),
-              window_size.x,
-              window_size.y);
-
-            glUniform2i(
-              glGetUniformLocation(compute_program, "scene_size"),
-              renderer->current_resolution().x,
-              renderer->current_resolution().y);
-
-            glUniformMatrix4fv(
-              glGetUniformLocation(compute_program, "camera"),
-              1,
-              GL_FALSE,
-              glm::value_ptr(scene->registry()->camera()->mat4()));
-
-            glUniform1i(glGetUniformLocation(compute_program, "flip"), in_draft_mode);
-        }
-
-        {
-            if (in_draft_mode) draft_renderer->render();
+            //            if (in_draft_mode) draft_renderer->render();
+            gpu_renderer->render(glm::ivec2(1024, 1024));
             glUseProgram(compute_program);
 
             glBindTexture(GL_TEXTURE_2D, target_texture);
@@ -180,29 +137,77 @@ namespace cr::ui
             glClearTexImage(target_texture, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
             glBindImageTexture(0, target_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
 
-            if (in_draft_mode)
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, gpu_renderer->texture());
+            //            if (in_draft_mode)
+            //            {
+            //                const auto rendered = draft_renderer->rendered_texture();
+            //                glActiveTexture(GL_TEXTURE0);
+            //                glBindTexture(GL_TEXTURE_2D, rendered);
+            //            }
+            //            else
+            //            {
+            //                const auto current_progress = renderer->current_progress();
+            //                // Upload rendered scene to GPU
+            //                glBindTexture(GL_TEXTURE_2D, scene_texture);
+            //                glTexImage2D(
+            //                  GL_TEXTURE_2D,
+            //                  0,
+            //                  GL_RGBA8,
+            //                  current_progress->width(),
+            //                  current_progress->height(),
+            //                  0,
+            //                  GL_RGBA,
+            //                  GL_FLOAT,
+            //                  current_progress->data());
+            //                glActiveTexture(GL_TEXTURE0);
+            //                glBindTexture(GL_TEXTURE_2D, scene_texture);
+            //            }
+
+            // Set uniforms
             {
-                const auto rendered = draft_renderer->rendered_texture();
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, rendered);
-            }
-            else
-            {
-                const auto current_progress = renderer->current_progress();
-                // Upload rendered scene to GPU
-                glBindTexture(GL_TEXTURE_2D, scene_texture);
-                glTexImage2D(
-                  GL_TEXTURE_2D,
-                  0,
-                  GL_RGBA8,
-                  current_progress->width(),
-                  current_progress->height(),
-                  0,
-                  GL_RGBA,
-                  GL_FLOAT,
-                  current_progress->data());
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, scene_texture);
+                auto        io                  = ImGui::GetIO();
+                static auto current_translation = glm::vec2(0.0f, 0.0f);
+                static auto current_zoom        = float(1);
+                if (ImGui::IsWindowHovered())
+                {
+                    current_zoom += io.MouseWheel * -.05;
+
+                    if (ImGui::IsMouseDown(0))
+                    {
+                        const auto delta =
+                          glm::vec2(io.MouseDelta.x, io.MouseDelta.y) * glm::vec2(-1, -1);
+                        current_translation.x += delta.x;
+                        current_translation.y += delta.y;
+                    }
+                }
+
+                glUseProgram(compute_program);
+
+                glUniform1f(glGetUniformLocation(compute_program, "zoom"), current_zoom);
+
+                glUniform2fv(
+                  glGetUniformLocation(compute_program, "translation"),
+                  1,
+                  glm::value_ptr(current_translation));
+
+                glUniform2i(
+                  glGetUniformLocation(compute_program, "target_size"),
+                  window_size.x,
+                  window_size.y);
+
+                glUniform2i(
+                  glGetUniformLocation(compute_program, "scene_size"),
+                  renderer->current_resolution().x,
+                  renderer->current_resolution().y);
+
+                glUniformMatrix4fv(
+                  glGetUniformLocation(compute_program, "camera"),
+                  1,
+                  GL_FALSE,
+                  glm::value_ptr(scene->registry()->camera()->mat4()));
+
+                glUniform1i(glGetUniformLocation(compute_program, "flip"), in_draft_mode);
             }
 
             glDispatchCompute(
@@ -590,9 +595,10 @@ namespace cr::ui
     }
 
     inline void setting_asset_loader(
-      std::unique_ptr<cr::renderer> *renderer,
-      std::unique_ptr<cr::scene> *   scene,
-      bool                           in_draft_mode)
+      std::unique_ptr<cr::renderer> *    renderer,
+      std::unique_ptr<cr::gpu_renderer> *gpu_renderer,
+      std::unique_ptr<cr::scene> *       scene,
+      bool                               in_draft_mode)
     {
         static std::string current_directory;
         static std::string current_model;
@@ -628,12 +634,16 @@ namespace cr::ui
             // Load model in
             const auto model_data = cr::asset_loader::load_model(current_model, current_directory);
 
-            if (!in_draft_mode)
-                renderer->get()->update(
-                  [&scene, &model_data] { scene->get()->add_model(model_data); });
-            else
-                scene->get()->add_model(model_data);
+            scene->get()->add_model(model_data);
+
+            //            if (!in_draft_mode)
+            //                renderer->get()->update(
+            //                  [&scene, &model_data] { scene->get()->add_model(model_data); });
+            //            else
+            //                scene->get()->add_model(model_data);
             cr::logger::info("Finished loading model in [{}s]", timer.time_since_start());
+
+            gpu_renderer->get()->build();
 
             auto texture_count = 0;
             for (const auto &material : model_data.materials)
@@ -794,8 +804,7 @@ namespace cr::ui
 
             ImGui::Text("Instances");
             ImGui::SameLine();
-            if (ImGui::Button("+"))
-                transforms.push_back(glm::mat4(1));
+            if (ImGui::Button("+")) transforms.push_back(glm::mat4(1));
 
             ImGui::Indent(4.f);
 
@@ -816,12 +825,13 @@ namespace cr::ui
 
                 ImGui::Text("%s", fmt::format("Translation #{} ##{}", i, i).c_str());
                 ImGui::SameLine();
-                if (ImGui::Button("-"))
-                    to_remove.push_back(i);
+                if (ImGui::Button("-")) to_remove.push_back(i);
 
                 ImGui::Indent(4.0f);
                 ImGui::InputFloat3(fmt::format("Scale##{}", i).c_str(), glm::value_ptr(scale));
-                ImGui::InputFloat3(fmt::format("Translation##{}", i).c_str(), glm::value_ptr(translation));
+                ImGui::InputFloat3(
+                  fmt::format("Translation##{}", i).c_str(),
+                  glm::value_ptr(translation));
                 ImGui::Unindent(4.0f);
 
                 auto out_matrix = glm::mat4(1);
@@ -831,8 +841,7 @@ namespace cr::ui
                 transforms[i] = out_matrix;
             }
 
-            for (const auto remove : to_remove)
-                transforms.erase(transforms.begin() + remove);
+            for (const auto remove : to_remove) transforms.erase(transforms.begin() + remove);
 
             if (ImGui::Button("Update"))
             {
@@ -854,6 +863,7 @@ namespace cr::ui
     inline void settings(
       std::unique_ptr<cr::renderer> *      renderer,
       std::unique_ptr<cr::draft_renderer> *draft_renderer,
+      std::unique_ptr<cr::gpu_renderer> *  gpu_renderer,
       std::unique_ptr<cr::scene> *         scene,
       std::unique_ptr<cr::thread_pool> *   pool,
       bool                                 draft_mode)
@@ -891,7 +901,7 @@ namespace cr::ui
         case 0: setting_render(renderer->get(), draft_renderer->get(), scene->get(), *pool); break;
         case 1: setting_export(renderer); break;
         case 2: setting_materials(renderer->get(), scene->get()); break;
-        case 3: setting_asset_loader(renderer, scene, draft_mode); break;
+        case 3: setting_asset_loader(renderer, gpu_renderer, scene, draft_mode); break;
         case 4: setting_stats(renderer->get()); break;
         case 5: setting_style(); break;
         case 6: setting_camera(renderer->get(), scene->get()); break;

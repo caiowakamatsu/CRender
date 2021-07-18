@@ -6,6 +6,7 @@
 #include <sstream>
 #include <array>
 #include <filesystem>
+#include <unordered_set>
 
 #include <util/logger.h>
 
@@ -63,7 +64,7 @@ namespace cr::opengl
 
         if (!success)
         {
-            glGetShaderInfoLog(handle, 512, nullptr, log.data());
+            glGetProgramInfoLog(handle, 512, nullptr, log.data());
             cr::logger::error("Linking program [{}], with error [{}]\n", handle, log.data());
             return {};
         }

@@ -3,15 +3,169 @@
 cr::gpu_renderer::gpu_renderer(cr::scene *scene, const glm::ivec2 &resolution)
     : _scene(scene), _resolution(resolution)
 {
-    // Compile compute shader
+    glGenTextures(1, &_opengl_handles.texture);
+    glBindTexture(GL_TEXTURE_2D, _opengl_handles.texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    _embree_ctx.device = rtcNewDevice(nullptr);
+
+    _opengl_handles.shader =
+      cr::opengl::create_shader("./assets/app/shaders/pathtrace/entry.comp", GL_COMPUTE_SHADER);
+    _opengl_handles.compute = cr::opengl::create_program(_opengl_handles.shader);
+
+    glGenBuffers(1, &_opengl_handles.render_data_buffer);
+    _update_resolution();
 }
 
-void cr::gpu_renderer::render_to(const GLuint target_texture, const glm::ivec2 &resolution) const
+void cr::gpu_renderer::build()
+{
+    _build_bvh();
+}
+
+void cr::gpu_renderer::render(const glm::ivec2 &resolution) const
 {
     // Todo: Update resolution and reload resolution dependent resources
-    if (resolution != _resolution);
+    if (resolution != _resolution)
+        ;
 
+    glUseProgram(_opengl_handles.compute);
+
+    glBindImageTexture(0, _opengl_handles.texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+
+    // Update the camera data
+    auto rendering_resources        = cr::gpu_renderer::rendering_resources();
+    rendering_resources.resolution  = glm::ivec4(_resolution, 4, 0);
+    rendering_resources.mvp         = _scene->registry()->camera()->mat4();
+    rendering_resources.camera_data = glm::vec4(
+      glm::radians(_scene->registry()->camera()->fov),
+      static_cast<float>(_resolution.x) / _resolution.y,
+      0.0f,
+      0.0f);
+
+    glBindBuffer(GL_UNIFORM_BUFFER, _opengl_handles.render_data_buffer);
+    glBufferData(GL_UNIFORM_BUFFER, 96, &rendering_resources, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    // Upload the buffers
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, _opengl_handles.render_data_buffer);
+    if (_opengl_handles.bvh_data_buffer !=~0)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, _opengl_handles.bvh_data_buffer);
+
+    glDispatchCompute(resolution.x / 8, resolution.y / 8, 1);
+
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     // Bind path tracing compute shader
+}
 
+GLuint cr::gpu_renderer::texture() const
+{
+    return _opengl_handles.texture;
+}
+
+void cr::gpu_renderer::_update_resolution()
+{
+    glBindTexture(GL_TEXTURE_2D, _opengl_handles.texture);
+    glTexImage2D(
+      GL_TEXTURE_2D,
+      0,
+      GL_RGBA8,
+      static_cast<int>(_resolution.x),
+      static_cast<int>(_resolution.y),
+      0,
+      GL_RGBA,
+      GL_UNSIGNED_BYTE,
+      nullptr);
+    glClearTexImage(_opengl_handles.texture, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+}
+
+void cr::gpu_renderer::_build_bvh()
+{
+    auto primitives = std::vector<RTCBuildPrimitive>();
+
+    const auto &geometries = _scene->registry()->entities.view<cr::entity::geometry>();
+
+    auto triangles = std::vector<glm::vec3>();
+    for (auto i = 0; i < geometries.size(); i++)
+    {
+        const auto &geometry =
+          _scene->registry()->entities.get<cr::entity::geometry>(geometries[i]);
+
+        primitives.resize(primitives.size() + geometry.vert_coords->size());
+        for (auto j = 0; j + 3 < geometry.vert_coords->size(); j += 3)
+        {
+            const auto vertices = std::array<glm::vec3, 3>({
+              (*geometry.vert_coords)[j + 0],
+              (*geometry.vert_coords)[j + 1],
+              (*geometry.vert_coords)[j + 2],
+            });
+
+            const auto max = glm::max(vertices[0], glm::max(vertices[1], vertices[2]));
+            const auto min = glm::min(vertices[0], glm::min(vertices[1], vertices[2]));
+
+            auto primitive    = RTCBuildPrimitive();
+            primitive.lower_x = min.x;
+            primitive.lower_y = min.y;
+            primitive.lower_z = min.z;
+            primitive.upper_x = max.x;
+            primitive.upper_y = max.y;
+            primitive.upper_z = max.z;
+
+            primitive.geomID = i;
+            primitive.primID = j;
+
+            primitives.push_back(primitive);
+        }
+    }
+
+    primitives.reserve(primitives.size() + 30000000);
+
+    auto bvh = rtcNewBVH(_embree_ctx.device);
+
+    auto node_count = size_t(0);
+
+    auto arguments                   = rtcDefaultBuildArguments();
+    arguments.byteSize               = sizeof(arguments);
+    arguments.buildFlags             = RTC_BUILD_FLAG_NONE;
+    arguments.buildQuality           = RTC_BUILD_QUALITY_LOW;
+    arguments.maxBranchingFactor     = 2;
+    arguments.maxDepth               = 1024;
+    arguments.sahBlockSize           = 1;
+    arguments.minLeafSize            = 1;
+    arguments.maxLeafSize            = 1;
+    arguments.traversalCost          = 1.0f;
+    arguments.intersectionCost       = 1.0f;
+    arguments.bvh                    = bvh;
+    arguments.primitives             = primitives.data();
+    arguments.primitiveCount         = primitives.size();
+    arguments.primitiveArrayCapacity = primitives.capacity();
+    arguments.createNode             = cr::embree_node::create_node;
+    arguments.setNodeChildren        = cr::embree_node::set_children;
+    arguments.setNodeBounds          = cr::embree_node::set_bounds;
+    arguments.createLeaf             = cr::embree_node::create_leaf;
+    arguments.splitPrimitive         = cr::split_primitive;
+    arguments.buildProgress          = nullptr;
+    arguments.userPtr                = &node_count;
+
+    const auto root = static_cast<cr::embree_node*>(rtcBuildBVH(&arguments));
+
+    // Place the BVHs into a single array
+    auto flat_nodes = std::vector<bvh_node>();
+    flat_nodes.reserve(node_count);
+
+    auto node = cr::bvh_node(root->bounds[0].merge(root->bounds[1]));
+    node.set_leaf(false);
+    flat_nodes.emplace_back(node);
+    bvh_node::flatten_nodes(flat_nodes, 0, root);
+
+    glGenBuffers(1, &_opengl_handles.bvh_data_buffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, _opengl_handles.bvh_data_buffer);
+    glBufferData(
+      GL_SHADER_STORAGE_BUFFER,
+      flat_nodes.size() * 32,
+      flat_nodes.data(),
+      GL_DYNAMIC_COPY);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
