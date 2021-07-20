@@ -199,12 +199,14 @@ namespace cr
          * [0..2] - Minimum XYZ
          * [3] - Leaf node? Bool yes / no
          * [4..6] - Maximum XYZ
-         * [7] - Next node  - As int
+         * [7] - Next node (or primitive) - As int
          */
         glm::vec4 front= glm::vec4(999.9, 999.f, 999.f, true);
         glm::vec4 back;
 
         void set_leaf(bool is_leaf) { front[3] = is_leaf; }
+
+        void set_primitive_id(int id) { std::memcpy(&back[3], &id, sizeof(int)); }
 
         void set_child_node_start(int index) { std::memcpy(&back[3], &index, sizeof(int)); }
 //        void set_child_node_start(int index) { data[7] = index; }
@@ -235,6 +237,8 @@ namespace cr
             {
                 auto node = bvh_node(children[i]->bounds[0].merge(children[i]->bounds[1]));
                 node.set_leaf(children[i]->is_leaf);
+                if (children[i]->is_leaf)
+                    node.set_primitive_id(children[i]->id);
                 nodes.emplace_back(node);
             }
 

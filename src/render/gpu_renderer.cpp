@@ -23,6 +23,8 @@ cr::gpu_renderer::gpu_renderer(cr::scene *scene, const glm::ivec2 &resolution)
 void cr::gpu_renderer::build()
 {
     _build_bvh();
+    _build_triangle_buffer();
+    _build_material_buffer();
 }
 
 void cr::gpu_renderer::render(const glm::ivec2 &resolution) const
@@ -51,8 +53,15 @@ void cr::gpu_renderer::render(const glm::ivec2 &resolution) const
 
     // Upload the buffers
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, _opengl_handles.render_data_buffer);
+
     if (_opengl_handles.bvh_data_buffer !=~0)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, _opengl_handles.bvh_data_buffer);
+
+    if (_opengl_handles.triangle_data_buffer != ~0)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, _opengl_handles.triangle_data_buffer);
+
+    if (_opengl_handles.material_data_buffer != ~0)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, _opengl_handles.material_data_buffer);
 
     glDispatchCompute(resolution.x / 8, resolution.y / 8, 1);
 
@@ -93,13 +102,13 @@ void cr::gpu_renderer::_build_bvh()
         const auto &geometry =
           _scene->registry()->entities.get<cr::entity::geometry>(geometries[i]);
 
-        primitives.resize(primitives.size() + geometry.vert_coords->size());
-        for (auto j = 0; j + 3 < geometry.vert_coords->size(); j += 3)
+        primitives.reserve(primitives.size() + geometry.vert_coords->size() / 3);
+        for (auto j = 0; j < geometry.vert_coords->size() / 3; j++)
         {
             const auto vertices = std::array<glm::vec3, 3>({
-              (*geometry.vert_coords)[j + 0],
-              (*geometry.vert_coords)[j + 1],
-              (*geometry.vert_coords)[j + 2],
+              (*geometry.vert_coords)[j * 3 + 0],
+              (*geometry.vert_coords)[j * 3 + 1],
+              (*geometry.vert_coords)[j * 3 + 2],
             });
 
             const auto max = glm::max(vertices[0], glm::max(vertices[1], vertices[2]));
@@ -129,7 +138,7 @@ void cr::gpu_renderer::_build_bvh()
     auto arguments                   = rtcDefaultBuildArguments();
     arguments.byteSize               = sizeof(arguments);
     arguments.buildFlags             = RTC_BUILD_FLAG_NONE;
-    arguments.buildQuality           = RTC_BUILD_QUALITY_LOW;
+    arguments.buildQuality           = RTC_BUILD_QUALITY_MEDIUM;
     arguments.maxBranchingFactor     = 2;
     arguments.maxDepth               = 1024;
     arguments.sahBlockSize           = 1;
@@ -160,6 +169,8 @@ void cr::gpu_renderer::_build_bvh()
     flat_nodes.emplace_back(node);
     bvh_node::flatten_nodes(flat_nodes, 0, root);
 
+    if (auto buffer = _opengl_handles.bvh_data_buffer; buffer != ~0)
+        glDeleteBuffers(1, &buffer);
     glGenBuffers(1, &_opengl_handles.bvh_data_buffer);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, _opengl_handles.bvh_data_buffer);
     glBufferData(
@@ -167,5 +178,65 @@ void cr::gpu_renderer::_build_bvh()
       flat_nodes.size() * 32,
       flat_nodes.data(),
       GL_DYNAMIC_COPY);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+void cr::gpu_renderer::_build_triangle_buffer()
+{
+    auto triangles = std::vector<gpu_triangle>();
+
+    const auto &entities = _scene->registry()->entities.view<cr::entity::geometry, cr::entity::model_materials>();
+
+    for (auto entity : entities)
+    {
+        const auto &geometry =
+          _scene->registry()->entities.get<cr::entity::geometry>(entity);
+        const auto &material =
+          _scene->registry()->entities.get<cr::entity::model_materials>(entity);
+
+        triangles.reserve(triangles.size() + geometry.vert_coords->size() / 3);
+        for (auto j = 0; j < geometry.vert_coords->size() / 3; j++)
+        {
+            const auto vertices = std::array<glm::vec3, 3>({
+                                                             (*geometry.vert_coords)[j * 3 + 0],
+                                                             (*geometry.vert_coords)[j * 3 + 1],
+                                                             (*geometry.vert_coords)[j * 3 + 2],
+                                                           });
+
+            auto triangle = gpu_triangle();
+            triangle.v0 = glm::vec4(vertices[0], 0.0f);
+            triangle.v1 = glm::vec4(vertices[1], 0.0f);
+            triangle.v2 = glm::vec4(vertices[2], 0.0f);
+            triangles.push_back(triangle);
+        }
+    }
+
+    if (auto buffer = _opengl_handles.triangle_data_buffer; buffer != ~0)
+        glDeleteBuffers(1, &buffer);
+    glGenBuffers(1, &_opengl_handles.triangle_data_buffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, _opengl_handles.triangle_data_buffer);
+    glBufferData(
+      GL_SHADER_STORAGE_BUFFER,
+      triangles.size() * sizeof(float) * 12,
+      triangles.data(),
+      GL_DYNAMIC_COPY);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+
+}
+
+void cr::gpu_renderer::_build_material_buffer()
+{
+//    auto material_buffer =
+
+    if (auto buffer = _opengl_handles.material_data_buffer; buffer != ~0)
+        glDeleteBuffers(1, &buffer);
+    glGenBuffers(1, &_opengl_handles.material_data_buffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, _opengl_handles.material_data_buffer);
+//    glBufferData(
+//      GL_SHADER_STORAGE_BUFFER,
+//      triangles.size() * sizeof(float) * 12,
+//      triangles.data(),
+//      GL_DYNAMIC_COPY);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }

@@ -26,8 +26,20 @@ namespace cr
         struct rendering_resources
         {
             glm::ivec4 resolution;
-            glm::mat4 mvp;
-            glm::vec3 camera_data;
+            glm::mat4  mvp;
+            glm::vec3  camera_data;
+        };
+
+        struct gpu_triangle
+        {
+            /*
+             * v0 - X-Z = Vertex 0 XYZ, W = U
+             * v1 - X-Z = Vertex 1 XYZ, W = V
+             * v2 - X-Z = Vertex 2 XYZ, W = MaterialID (as int)
+             */
+            glm::vec4 v0;
+            glm::vec4 v1;
+            glm::vec4 v2;
         };
 
         struct
@@ -37,7 +49,9 @@ namespace cr
             GLuint compute;
 
             GLuint render_data_buffer;
-            GLuint bvh_data_buffer = ~0;
+            GLuint bvh_data_buffer      = ~0;
+            GLuint triangle_data_buffer = ~0;
+            GLuint material_data_buffer = ~0;
         } _opengl_handles;
 
         struct
@@ -49,6 +63,10 @@ namespace cr
         void _update_resolution();
 
         void _build_bvh();
+
+        void _build_triangle_buffer();
+
+        void _build_material_buffer();
 
         glm::ivec2 _resolution;
 
