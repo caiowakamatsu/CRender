@@ -37,6 +37,7 @@ namespace cr
     public:
         enum class key_code
         {
+            // I feel bad for caio, he had to write out this entire thing
             SPACE             = 32,    // I can't wait to write all of these out
             APOSTROPHE        = 39,
             COMMA             = 44,

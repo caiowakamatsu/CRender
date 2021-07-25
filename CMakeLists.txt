@@ -25,6 +25,7 @@ add_subdirectory(external)
 
 FILE(GLOB ImGuiSources src/imgui/*)
 
+#I don't bloody know why mesh.h & entity_type.h is missing
 add_executable(CRender src/main.cpp
         src/glad/glad.h
         src/glad/glad.c
@@ -78,6 +79,7 @@ add_executable(CRender src/main.cpp
 target_include_directories(CRender PRIVATE src)
 target_include_directories(CRender PRIVATE external)
 
+#Wasn't this broken like yesterday????? Maybe it was because of the setvars stuff
 target_link_libraries(CRender glfw fmt glm embree OpenImageDenoise stdc++fs)
 
 target_compile_definitions(CRender PUBLIC -DGLFW_INCLUDE_NONE -D__STDC_CONSTANT_MACROS -DIMGUI_IMPL_OPENGL_LOADER_GLAD)

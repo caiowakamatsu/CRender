@@ -8,9 +8,9 @@
 
 cr::display::display()
 {
-    glfwSetErrorCallback([](int error, const char *description) {
-        cr::logger::error("GLFW Failed with error [{}], description [{}]", error, description);
-    });
+    glfwSetErrorCallback(
+      [](int error, const char *description)
+      { cr::logger::error("GLFW Failed with error [{}], description [{}]", error, description); });
 
     const auto init_glfw = glfwInit();
     if (!init_glfw) exit("Failed to initialize GLFW", 1);
@@ -73,7 +73,7 @@ cr::display::display()
         // Create OpenGL program
         auto program_handle = glCreateProgram();
 
-	glAttachShader(program_handle, _compute_shader_id);
+        glAttachShader(program_handle, _compute_shader_id);
         glLinkProgram(program_handle);
 
         auto success = int(0);
@@ -94,23 +94,27 @@ cr::display::display()
 
     glfwSetWindowUserPointer(_glfw_window, this);
 
-    glfwSetCursorPosCallback(_glfw_window, [](GLFWwindow *window, double x, double y) {
-        auto ptr = reinterpret_cast<display *>(glfwGetWindowUserPointer(window));
+    glfwSetCursorPosCallback(
+      _glfw_window,
+      [](GLFWwindow *window, double x, double y)
+      {
+          auto ptr = reinterpret_cast<display *>(glfwGetWindowUserPointer(window));
 
-        ptr->_mouse_pos.x = x;
-        ptr->_mouse_pos.y = y;
+          ptr->_mouse_pos.x = x;
+          ptr->_mouse_pos.y = y;
 
-        ptr->_mouse_change_prev = ptr->_mouse_pos_prev - ptr->_mouse_pos;
+          ptr->_mouse_change_prev = ptr->_mouse_pos_prev - ptr->_mouse_pos;
 
-        // coordinates are reversed on y axis (top left vs bottom left)
-        ptr->_mouse_change_prev.x *= -1;
+          // coordinates are reversed on y axis (top left vs bottom left)
+          ptr->_mouse_change_prev.x *= -1;
 
-        ptr->_mouse_pos_prev = ptr->_mouse_pos;
-    });
+          ptr->_mouse_pos_prev = ptr->_mouse_pos;
+      });
 
     glfwSetKeyCallback(
       _glfw_window,
-      [](GLFWwindow *window, int key, int scancode, int action, int mods) {
+      [](GLFWwindow *window, int key, int scancode, int action, int mods)
+      {
           auto ptr = reinterpret_cast<display *>(glfwGetWindowUserPointer(window));
 
           if (key < ptr->_key_states.size())
@@ -158,98 +162,42 @@ void cr::display::start(
     bool draft_mode_changed = false;
     while (!glfwWindowShouldClose(_glfw_window))
     {
-        if (ui::new_theme.has_value())
-        {
-            switch (ui::new_theme.value())
-            {
-            case ImGuiThemes::theme::RED: cr::ImGuiThemes::Red(); break;
-            case ImGuiThemes::theme::CORPORATE_GREY: cr::ImGuiThemes::CorporateGrey(); break;
-            case ImGuiThemes::theme::CHERRY: cr::ImGuiThemes::CherryTheme(); break;
-            case ImGuiThemes::theme::DARK_CHARCOAL: cr::ImGuiThemes::DarkCharcoal(); break;
-            case ImGuiThemes::theme::VISUAL_STUDIO: cr::ImGuiThemes::VisualStudio(); break;
-            case ImGuiThemes::theme::GREEN: cr::ImGuiThemes::Green(); break;
-            }
-
-            ui::new_theme.reset();
-        }
-
+        // DO NOT DELETE THIS THIS IS HOW WE CLOSE THE WINDOW, AND OPEN IT AND STUFF
+        _poll_events();
         _timer.frame_start();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+
+        //I think this is needed?
         auto ui_ctx = cr::ui::init();
-
-        if (!_in_draft_mode && draft_mode_changed)
-        {
-            draft_mode_changed = false;
-            renderer.get()->start();
-        }
-        else if (_in_draft_mode && draft_mode_changed)
-        {
-            draft_mode_changed = false;
-            renderer.get()->pause();
-        }
-
         // Root imgui node (Not visible)
         ui::root_node(ui_ctx);
-
         ImGui::PushFont(font);
 
-        ui::scene_preview(
-          renderer.get(),
-          draft_renderer.get(),
-          scene.get(),
-          _target_texture,
-          _scene_texture_handle,
-          _compute_shader_program,
-          _in_draft_mode);
+        // was related to something else but ehhhh fixing it takes a while
+        // ui::console(messages);
+        // messages.clear();
 
-        static auto messages = std::vector<std::string>();
-
-        if (current_frame == 0)
-            messages.push_back("Welcome to CRender - The discord for support / updates is https://discord.gg/ZjrRyKXpWg");
-
-
-        cr::logger::read_messages(messages);
-
-        ui::console(messages);
-        messages.clear();
-
-        ui::settings(&renderer, &draft_renderer, &scene, &thread_pool, _in_draft_mode);
-
+        // idk how to explain this but it's needed for this program to work
         ImGui::PopFont();
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        ImGui::Render();
-        glClearColor(1, 1, 1, 1);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        _timer.frame_stop();
-        glfwSwapBuffers(_glfw_window);
-
-        if (
-          _key_states[static_cast<int>(key_code::KEY_R)] == key_state::pressed &&
-          !io.WantCaptureKeyboard)
-        {
-            _in_draft_mode     = !_in_draft_mode;
-            draft_mode_changed = true;
-            if (_in_draft_mode)
-                cr::logger::info("Switched to draft mode");
-            else
-                cr::logger::info("Switched to path tracing mode");
-        }
-
         glfwSetInputMode(
           _glfw_window,
           GLFW_CURSOR,
           _in_draft_mode ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        ImGui::Render();
+        // Background colour
+        glClearColor(0.5,0.5,0.5,0.5);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        if (_in_draft_mode) _update_camera(scene.get()->registry()->camera());
-        _poll_events();
-
-        current_frame++;
+        _timer.frame_stop();
+        glfwSwapBuffers(_glfw_window);
     }
+    std::cout << "Should start closing?";
+
     glDeleteTextures(1, &_scene_texture_handle);
     stop();
 }
@@ -266,6 +214,7 @@ void cr::display::_poll_events()
 
 void cr::display::stop()
 {
+    std::cout << "Should close or smth?";
     glfwSetWindowShouldClose(_glfw_window, true);
 }
 
