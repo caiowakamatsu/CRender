@@ -19,13 +19,11 @@ endif ()
 
 find_package(embree 3.0 REQUIRED)
 find_package(OpenImageDenoise 1.4.0 REQUIRED)
-# find_package(OpenGL REQUIRED)
 
 add_subdirectory(external)
 
 FILE(GLOB ImGuiSources src/imgui/*)
 
-#I don't bloody know why mesh.h & entity_type.h is missing
 add_executable(CRender src/main.cpp
         src/glad/glad.h
         src/glad/glad.c
@@ -61,13 +59,11 @@ add_executable(CRender src/main.cpp
         src/objects/model.cpp
         src/objects/model.h
         src/ui/ui.h
-#        src/render/entities/entity_type.h
         src/render/entities/components.h
         src/render/entities/registry.cpp
         src/render/entities/registry.h 
         src/render/draft/draft_renderer.cpp 
         src/render/draft/draft_renderer.h 
-#        src/render/mesh.h 
         src/render/timer.cpp 
         src/render/timer.h 
         src/util/logger.h 
@@ -79,7 +75,6 @@ add_executable(CRender src/main.cpp
 target_include_directories(CRender PRIVATE src)
 target_include_directories(CRender PRIVATE external)
 
-#Wasn't this broken like yesterday????? Maybe it was because of the setvars stuff
 target_link_libraries(CRender glfw fmt glm embree OpenImageDenoise stdc++fs)
 
 target_compile_definitions(CRender PUBLIC -DGLFW_INCLUDE_NONE -D__STDC_CONSTANT_MACROS -DIMGUI_IMPL_OPENGL_LOADER_GLAD)
