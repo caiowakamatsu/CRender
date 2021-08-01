@@ -289,31 +289,6 @@ namespace cr::ui
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Set amount of samples per pixel you want to render, 0 for no limit");
         if (ImGui::Button("Set target sample count")) renderer->set_target_spp(target_spp);
-
-        {
-            ImGui::Text("Sun");
-            ImGui::Indent(4.f);
-
-            static auto sun_enabled = true;
-            static auto sun         = cr::entity::sun();
-            ImGui::InputFloat("Sun Size", &sun.size);
-            sun.size = glm::max(sun.size, 0.1f);
-
-            ImGui::InputFloat("Intensity", &sun.intensity);
-            ImGui::Checkbox("Sun enabled", &sun_enabled);
-            ImGui::ColorEdit3("Colour", glm::value_ptr(sun.colour));
-            ImGui::InputFloat3("Sun Direction", glm::value_ptr(sun.direction));
-
-            if (ImGui::Button("Update Sun"))
-            {
-                renderer->update([sun_enabled = sun_enabled, sun = sun, scene] {
-                    scene->registry()->set_sun(sun);
-                    scene->set_sun_enabled(sun_enabled);
-                });
-            }
-
-            ImGui::Unindent(4.f);
-        }
     }
 
     inline void setting_export(std::unique_ptr<cr::renderer> *renderer)
@@ -589,9 +564,126 @@ namespace cr::ui
         }
     }
 
+    inline void setting_sky(std::unique_ptr<cr::renderer> *renderer, std::unique_ptr<cr::scene> *scene)
+    {
+        static const auto sky_modes =
+            std::array<std::string, 2>({ "Solid color", "Skybox" });
+        
+        static auto current_type = 0;
+
+        if (ImGui::BeginCombo("Sky Mode", sky_modes[current_type].c_str()))
+        {
+            for (auto i = 0; i < sky_modes.size(); i++)
+                if (ImGui::Button(sky_modes[i].c_str())) current_type = i;
+            ImGui::EndCombo();
+        }
+
+        switch (current_type)
+        {
+        case 0:
+        {
+            ImGui::Text("Solid color");
+            ImGui::Indent(4.f);
+
+            static auto color = glm::vec3();
+
+            ImGui::ColorEdit3("Colour##Skybox", glm::value_ptr(color));
+            // ImGui::InputFloat3("Sun Direction", glm::value_ptr(sun.direction));
+
+            if (ImGui::Button("Update Colour"))
+                renderer->get()->update(
+                    [&scene]()
+                    {
+                        auto skybox = cr::image(std::vector<float>{color.r, color.g, color.b, 1}, 1, 1);
+
+                        scene->get()->set_skybox(std::move(skybox)); 
+                    });
+
+            ImGui::Unindent(4.f);
+            break;
+        }
+        case 1:
+        {
+            bool               throw_away = false;
+            ImGui::Text("Skybox Loader");
+            ImGui::Indent(4.f);
+
+            static std::filesystem::path current_skybox;
+            if (ImGui::BeginCombo("Select Skybox", current_skybox.string().c_str()))
+            {
+                for (const auto &entry : std::filesystem::directory_iterator("./assets/skybox"))
+                {
+                    if (entry.is_directory()) continue;
+
+                    if (ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
+                    {
+                        current_skybox = entry.path();
+                        break;
+                    }
+                }
+                ImGui::EndCombo();
+            }
+
+            if (!current_skybox.empty() && ImGui::Button("Load Skybox"))
+            {
+                auto timer = cr::timer();
+                // Load skybox in
+                cr::logger::info("Started to load skybox [{}]", current_skybox.stem().string());
+                renderer->get()->update([&scene, current_skybox = current_skybox, &timer] {
+                    auto image  = cr::asset_loader::load_picture(current_skybox.string());
+                    auto skybox = cr::image(image.colour, image.res.x, image.res.y);
+
+                    scene->get()->set_skybox(std::move(skybox));
+
+                    cr::logger::info("Finished loading skybox in [{}s]", timer.time_since_start());
+                    cr::logger::info(
+                    "-- Skybox Stats\n\tResolution:\n\t\tX: [{}]\n\t\tY: [{}]",
+                    image.res.x,
+                    image.res.y);
+                });
+            }
+
+            static auto rotation = glm::vec2();
+            ImGui::DragFloat2("Rotation", glm::value_ptr(rotation), 0.f, 1.f);
+
+            ImGui::SameLine();
+            if (ImGui::Button("Update"))
+                renderer->get()->update(
+                [&scene]() { scene->get()->set_skybox_rotation(rotation / 360.f); });
+
+            break;
+        }
+        }
+        
+        {
+            ImGui::Text("Sun");
+            ImGui::Indent(4.f);
+
+            static auto sun_enabled = true;
+            static auto sun         = cr::entity::sun();
+            ImGui::InputFloat("Sun Size", &sun.size);
+            sun.size = glm::max(sun.size, 0.1f);
+
+            ImGui::InputFloat("Intensity", &sun.intensity);
+            ImGui::Checkbox("Sun enabled", &sun_enabled);
+            ImGui::ColorEdit3("Colour", glm::value_ptr(sun.colour));
+            ImGui::InputFloat3("Sun Direction", glm::value_ptr(sun.direction));
+
+            if (ImGui::Button("Update Sun"))
+            {
+                renderer->get()->update([sun_enabled = sun_enabled, sun = sun, scene] {
+                    scene->get()->registry()->set_sun(sun);
+                    scene->get()->set_sun_enabled(sun_enabled);
+                });
+            }
+
+            ImGui::Unindent(4.f);
+        }
+    }
+
     inline void setting_asset_loader(
       std::unique_ptr<cr::renderer> *renderer,
-      std::unique_ptr<cr::scene> *   scene,
+      std::unique_ptr<cr::scene>    *scene,
       bool                           in_draft_mode)
     {
         static std::string current_directory;
@@ -649,55 +741,6 @@ namespace cr::ui
         }
 
         ImGui::Unindent(4.f);
-        ImGui::Separator();
-        ImGui::NewLine();
-        ImGui::Text("Skybox Loader");
-        ImGui::Indent(4.f);
-
-        static std::filesystem::path current_skybox;
-        if (ImGui::BeginCombo("Select Skybox", current_skybox.string().c_str()))
-        {
-            for (const auto &entry : std::filesystem::directory_iterator("./assets/skybox"))
-            {
-                if (entry.is_directory()) continue;
-
-                if (ImGui::Selectable(entry.path().filename().string().c_str(), &throw_away))
-                {
-                    current_skybox = entry.path();
-                    break;
-                }
-            }
-            ImGui::EndCombo();
-        }
-
-        if (!current_skybox.empty() && ImGui::Button("Load Skybox"))
-        {
-            auto timer = cr::timer();
-            // Load skybox in
-            cr::logger::info("Started to load skybox [{}]", current_skybox.stem().string());
-            renderer->get()->update([&scene, current_skybox = current_skybox, &timer] {
-                auto image  = cr::asset_loader::load_picture(current_skybox.string());
-                auto skybox = cr::image(image.colour, image.res.x, image.res.y);
-
-                scene->get()->set_skybox(std::move(skybox));
-
-                cr::logger::info("Finished loading skybox in [{}s]", timer.time_since_start());
-                cr::logger::info(
-                  "-- Skybox Stats\n\tResolution:\n\t\tX: [{}]\n\t\tY: [{}]",
-                  image.res.x,
-                  image.res.y);
-            });
-        }
-
-        static auto rotation = glm::vec2();
-        ImGui::DragFloat2("Rotation", glm::value_ptr(rotation), 0.f, 1.f);
-
-        ImGui::SameLine();
-        if (ImGui::Button("Update"))
-            renderer->get()->update(
-              [&scene]() { scene->get()->set_skybox_rotation(rotation / 360.f); });
-
-        ImGui::Unindent(8.f);
     }
 
     inline void setting_stats(cr::renderer *renderer)
@@ -861,9 +904,10 @@ namespace cr::ui
         ImGui::Begin("Misc");
 
         // List all of the different settings
-        static const auto window_settings = std::array<std::string, 8>({ "Render",
+        static const auto window_settings = std::array<std::string, 9>({ "Render",
                                                                          "Export",
                                                                          "Materials",
+                                                                         "Sky",
                                                                          "Asset Loader",
                                                                          "Stats",
                                                                          "Style",
@@ -891,11 +935,12 @@ namespace cr::ui
         case 0: setting_render(renderer->get(), draft_renderer->get(), scene->get(), *pool); break;
         case 1: setting_export(renderer); break;
         case 2: setting_materials(renderer->get(), scene->get()); break;
-        case 3: setting_asset_loader(renderer, scene, draft_mode); break;
-        case 4: setting_stats(renderer->get()); break;
-        case 5: setting_style(); break;
-        case 6: setting_camera(renderer->get(), scene->get()); break;
-        case 7: setting_instances(renderer->get(), scene->get()); break;
+        case 3: setting_sky(renderer, scene); break;
+        case 4: setting_asset_loader(renderer, scene, draft_mode); break;
+        case 5: setting_stats(renderer->get()); break;
+        case 6: setting_style(); break;
+        case 7: setting_camera(renderer->get(), scene->get()); break;
+        case 8: setting_instances(renderer->get(), scene->get()); break;
         }
 
         ImGui::EndChild();

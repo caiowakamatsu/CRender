@@ -321,8 +321,18 @@ void cr::display::_update_camera(cr::camera *camera)
 
     camera->translate(translation);
 
-    rotation.x += _mouse_change_prev.x * 2.0 * _timer.since_last_frame();
-    rotation.y -= _mouse_change_prev.y * 2.0 * _timer.since_last_frame();
+    if (
+      _key_states[static_cast<int>(key_code::KEY_LEFT_SHIFT)] == key_state::held ||
+      _key_states[static_cast<int>(key_code::KEY_LEFT_SHIFT)] == key_state::repeat)
+    {
+        rotation.x += _mouse_change_prev.x * 20.0 * _timer.since_last_frame();
+        rotation.y -= _mouse_change_prev.y * 20.0 * _timer.since_last_frame();
+    }
+    else
+    {
+        rotation.x += _mouse_change_prev.x * 2.0 * _timer.since_last_frame();
+        rotation.y -= _mouse_change_prev.y * 2.0 * _timer.since_last_frame();
+    }
 
     _mouse_change_prev = {};
 
