@@ -33,18 +33,27 @@ void cr::scene::add_model(const cr::asset_loader::model_data &model)
     _entities.register_model(model);
 }
 
+void cr::scene::set_skybox_mode(cr::sky::mode mode)
+{
+    _skybox.current_mode = mode;
+}
+
+void cr::scene::set_skybox_colour(glm::vec3 colour)
+{
+    // no opengl skybox yet
+    _skybox.colour = colour;
+}
+
 void cr::scene::set_skybox(cr::image &&skybox)
 {
-    if (!_skybox.has_value())
-    {
-        _skybox_texture = 0;
-        glGenTextures(1, &_skybox_texture.value());
-        glBindTexture(GL_TEXTURE_2D, _skybox_texture.value());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    }
+    _skybox_texture = 0;
+    glGenTextures(1, &_skybox_texture.value());
+    glBindTexture(GL_TEXTURE_2D, _skybox_texture.value());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     glBindTexture(GL_TEXTURE_2D, _skybox_texture.value());
     glTexImage2D(
       GL_TEXTURE_2D,
@@ -56,7 +65,7 @@ void cr::scene::set_skybox(cr::image &&skybox)
       GL_RGBA,
       GL_FLOAT,
       skybox.data());
-    _skybox = skybox;
+    _skybox.skybox = skybox;
 }
 
 void cr::scene::set_skybox_rotation(const glm::vec2 &rotation)
@@ -66,14 +75,7 @@ void cr::scene::set_skybox_rotation(const glm::vec2 &rotation)
 
 glm::vec3 cr::scene::sample_skybox(float x, float y) const noexcept
 {
-    if (_skybox.has_value())
-    {
-        return _skybox->get_uv(x + _skybox_rotation.x, y + _skybox_rotation.y);
-    }
-    else
-    {
-        return glm::vec3();
-    }
+    return _skybox.sample(x + _skybox_rotation.x, y + _skybox_rotation.y);
 }
 
 cr::ray::intersection_record cr::scene::cast_ray(const cr::ray ray)

@@ -578,25 +578,26 @@ namespace cr::ui
             ImGui::EndCombo();
         }
 
+        auto selected_type = cr::sky::mode::solid_colour;
+
         switch (current_type)
         {
         case 0:
         {
-            ImGui::Text("Solid color");
+            selected_type = cr::sky::mode::solid_colour;
+            ImGui::Text("Solid colour");
             ImGui::Indent(4.f);
 
-            static auto color = glm::vec3();
+            static auto colour = glm::vec3();
 
-            ImGui::ColorEdit3("Colour##Skybox", glm::value_ptr(color));
-            // ImGui::InputFloat3("Sun Direction", glm::value_ptr(sun.direction));
+            ImGui::ColorEdit3("Colour##Skybox", glm::value_ptr(colour));
 
             if (ImGui::Button("Update Colour"))
                 renderer->get()->update(
                     [&scene]()
                     {
-                        auto skybox = cr::image(std::vector<float>{color.r, color.g, color.b, 1}, 1, 1);
-
-                        scene->get()->set_skybox(std::move(skybox)); 
+                        scene->get()->set_skybox_mode(cr::sky::mode::solid_colour);
+                        scene->get()->set_skybox_colour(colour);
                     });
 
             ImGui::Unindent(4.f);
@@ -604,7 +605,8 @@ namespace cr::ui
         }
         case 1:
         {
-            bool               throw_away = false;
+            selected_type = cr::sky::mode::sky_box;
+            bool throw_away = false;
             ImGui::Text("Skybox Loader");
             ImGui::Indent(4.f);
 
@@ -633,6 +635,7 @@ namespace cr::ui
                     auto image  = cr::asset_loader::load_picture(current_skybox.string());
                     auto skybox = cr::image(image.colour, image.res.x, image.res.y);
 
+                    scene->get()->set_skybox_mode(cr::sky::mode::sky_box);
                     scene->get()->set_skybox(std::move(skybox));
 
                     cr::logger::info("Finished loading skybox in [{}s]", timer.time_since_start());
@@ -654,6 +657,9 @@ namespace cr::ui
             break;
         }
         }
+
+        
+        // skybox->current_mode = selected_type;
         
         {
             ImGui::Text("Sun");
