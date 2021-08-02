@@ -63,7 +63,16 @@ add_executable(CRender src/main.cpp
         src/ui/ui.h
         src/render/entities/components.h
         src/render/entities/registry.cpp
-        src/render/entities/registry.h src/render/draft/draft_renderer.cpp src/render/draft/draft_renderer.h src/render/timer.cpp src/render/timer.h src/util/logger.h src/util/logger.cpp src/util/numbers.h src/render/brdf.h src/util/denoise.h)
+        src/render/entities/registry.h 
+        src/render/draft/draft_renderer.cpp 
+        src/render/draft/draft_renderer.h 
+        src/render/timer.cpp 
+        src/render/timer.h 
+        src/util/logger.h 
+        src/util/logger.cpp 
+        src/util/numbers.h 
+        src/render/brdf.h 
+        src/util/denoise.h)
 
 target_include_directories(CRender PRIVATE src)
 target_include_directories(CRender PRIVATE external)
@@ -78,4 +87,4 @@ else()
     set(CRENDER_ASSET_PATH_VAR "${CMAKE_SOURCE_DIR}/assets/app/")
 endif()
 
-target_compile_definitions(CRender PUBLIC -DGLFW_INCLUDE_NONE -D__STDC_CONSTANT_MACROS -DCRENDER_ASSET_PATH="${CRENDER_ASSET_PATH_VAR}")
+target_compile_definitions(CRender PUBLIC -DGLFW_INCLUDE_NONE -D__STDC_CONSTANT_MACROS -DIMGUI_IMPL_OPENGL_LOADER_GLAD -DCRENDER_ASSET_PATH="${CRENDER_ASSET_PATH_VAR}")

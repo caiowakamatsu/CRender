@@ -30,7 +30,7 @@ namespace cr
 
         struct information
         {
-            type                    type           = smooth;
+            type                    shade_type           = smooth;
             float                   ior            = 1.5;
             float                   roughness      = 0.5;
             float                   reflectiveness = 1;
