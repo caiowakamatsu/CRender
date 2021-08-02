@@ -21,7 +21,7 @@ cr::draft_renderer::draft_renderer(
     // Load shaders in
     // Load the shader into the string
     {
-        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/draft_mode.vert");
+        auto shader_file_in_stream = std::ifstream(std::string(CRENDER_ASSET_PATH) + "shaders/draft_mode.vert");
         auto shader_string_stream  = std::stringstream();
         shader_string_stream << shader_file_in_stream.rdbuf();
         const auto shader_source = shader_string_stream.str();
@@ -45,7 +45,7 @@ cr::draft_renderer::draft_renderer(
     }
 
     {
-        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/draft_mode.frag");
+        auto shader_file_in_stream = std::ifstream(std::string(CRENDER_ASSET_PATH) + "shaders/draft_mode.frag");
         auto shader_string_stream  = std::stringstream();
         shader_string_stream << shader_file_in_stream.rdbuf();
         const auto shader_source = shader_string_stream.str();
@@ -96,7 +96,7 @@ cr::draft_renderer::draft_renderer(
 
     {
         auto shader_file_in_stream =
-          std::ifstream("./assets/app/shaders/draft_mode_background.comp");
+          std::ifstream(std::string(CRENDER_ASSET_PATH) + "shaders/draft_mode_background.comp");
         auto shader_string_stream = std::stringstream();
         shader_string_stream << shader_file_in_stream.rdbuf();
         const auto shader_source = shader_string_stream.str();

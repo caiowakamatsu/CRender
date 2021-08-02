@@ -104,10 +104,8 @@ namespace cr::sampling
          * Specular G (Geometric Shadowing)
          *
          *                                                          0.5
-         * V(v,l,a) =
-         * -----------------------------------------------------------------------------------------
-         *            n * l sqrt((n * v) ^ 2 (1 - a ^ 2) + a ^ 2) + n * v sqrt((n * l) ^ 2 (1 - a ^
-         * 2) + a ^ 2)
+         * V(v,l,a) = -----------------------------------------------------------------------------------------
+         *            n * l sqrt((n * v) ^ 2 (1 - a ^ 2) + a ^ 2) + n * v sqrt((n * l) ^ 2 (1 - a ^ 2) + a ^ 2)
          *
          */
         [[nodiscard]] inline float specular_g(float NoV, float NoL, float roughness)

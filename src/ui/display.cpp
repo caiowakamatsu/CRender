@@ -46,7 +46,7 @@ cr::display::display()
 
     // Load the compute shader into the string
     {
-        auto shader_file_in_stream = std::ifstream("./assets/app/shaders/scene_zoom.comp");
+        auto shader_file_in_stream = std::ifstream(std::string(CRENDER_ASSET_PATH) + "shaders/scene_zoom.comp");
         auto shader_string_stream  = std::stringstream();
         shader_string_stream << shader_file_in_stream.rdbuf();
         const auto shader_source = shader_string_stream.str();
@@ -145,7 +145,7 @@ void cr::display::start(
     auto &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-    const auto font = io.Fonts->AddFontFromFileTTF("./assets/app/fonts/Oxygen-Regular.ttf", 18.f);
+    const auto font = io.Fonts->AddFontFromFileTTF((std::string(CRENDER_ASSET_PATH) + "fonts/Oxygen-Regular.ttf").c_str(), 18.f);
 
     cr::ImGuiThemes::CorporateGrey();
 
