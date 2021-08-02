@@ -68,4 +68,4 @@ target_include_directories(CRender PRIVATE external)
 
 target_link_libraries(CRender glfw fmt glm embree OpenImageDenoise)
 
-target_compile_definitions(CRender PUBLIC -DGLFW_INCLUDE_NONE -D__STDC_CONSTANT_MACROS)
+target_compile_definitions(CRender PUBLIC -DGLFW_INCLUDE_NONE -D__STDC_CONSTANT_MACROS -DCRENDER_ASSET_PATH="${CMAKE_SOURCE_DIR}/assets/app/")
