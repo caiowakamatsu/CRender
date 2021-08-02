@@ -11,7 +11,7 @@
 #include <render/material/material.h>
 #include <render/entities/registry.h>
 #include <objects/model.h>
-#include <objects/image.h>
+#include <objects/sky.h>
 #include <util/exception.h>
 
 namespace cr
@@ -22,6 +22,10 @@ namespace cr
         scene() = default;
 
         void add_model(const cr::asset_loader::model_data &model);
+
+        void set_skybox_mode(cr::sky::mode mode);
+
+        void set_skybox_colour(glm::vec3 colour);
 
         void set_skybox(cr::image &&skybox);
 
@@ -44,8 +48,8 @@ namespace cr
     private:
         bool _sun_enabled = true;
 
-        std::optional<cr::image> _skybox;
-        std::optional<GLuint>    _skybox_texture;
+        cr::sky _skybox;
+        std::optional<GLuint>  _skybox_texture;
 
         glm::vec2 _skybox_rotation;
 

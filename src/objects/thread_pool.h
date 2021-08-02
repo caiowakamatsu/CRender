@@ -10,6 +10,7 @@
 #include <queue>
 
 #include <fmt/core.h>
+#include <condition_variable>
 
 namespace cr
 {
