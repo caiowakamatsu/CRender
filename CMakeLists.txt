@@ -6,6 +6,8 @@ project(CRender)
 
 set(EMBREE_ISA_AVX256 ON)
 
+option(CRENDER_USE_RELATIVE_ASSET_PATH "Enabled during development, for production builds disable" OFF)
+
 if (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC" AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     message(STATUS "Using clang-cl options (MSVC interface)")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR- /arch:AVX /MT /W4 /EHa /EHs")
@@ -81,4 +83,12 @@ target_include_directories(CRender PRIVATE external)
 
 target_link_libraries(CRender glfw fmt glm embree OpenImageDenoise)
 
-target_compile_definitions(CRender PUBLIC -DGLFW_INCLUDE_NONE -D__STDC_CONSTANT_MACROS)
+if (CRENDER_USE_RELATIVE_ASSET_PATH)
+    message("Using relative asset path")
+    set(CRENDER_ASSET_PATH_VAR "./assets/app/")
+else()
+    message("Using none-relative asset path")
+    set(CRENDER_ASSET_PATH_VAR "${CMAKE_SOURCE_DIR}/assets/app/")
+endif()
+
+target_compile_definitions(CRender PUBLIC -DGLFW_INCLUDE_NONE -D__STDC_CONSTANT_MACROS -DIMGUI_IMPL_OPENGL_LOADER_GLAD -DCRENDER_ASSET_PATH="${CRENDER_ASSET_PATH_VAR}")

@@ -231,7 +231,7 @@ cr::asset_loader::model_data
         material_data.name = material.name;
         material_data.colour =
           glm::vec4(material.diffuse[0], material.diffuse[1], material.diffuse[2], 1.0f);
-        material_data.type     = cr::material::type::smooth;
+        material_data.shade_type     = cr::material::type::smooth;
         material_data.emission = 0.0f;
 
         // Texture stuff!

@@ -34,7 +34,7 @@ namespace
 
         out.albedo = glm::vec3(out.colour);
 
-        switch (record.material->info.type)
+        switch (record.material->info.shade_type)
         {
         case cr::material::glass:
         {

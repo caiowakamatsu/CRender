@@ -48,27 +48,6 @@ cr::display::display()
       cr::opengl::create_shader("./assets/app/shaders/scene_zoom.comp", GL_COMPUTE_SHADER);
     _compute_shader_program = cr::opengl::create_program(_compute_shader_id);
 
-    const auto callback = [](
-                            GLenum        source,
-                            GLenum        type,
-                            GLuint        id,
-                            GLenum        severity,
-                            GLsizei       length,
-                            const GLchar *message,
-                            const void *  userParam) {
-        if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
-            cr::logger::info(fmt::format(
-              "Gl callback: Type: {}, Severity: {}, Message: {}",
-              type,
-              severity,
-              message));
-    };
-
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, GL_DONT_CARE, nullptr, GL_FALSE);
-//    glDebugMessageCallback(callback, nullptr);
-
     glfwSetWindowUserPointer(_glfw_window, this);
 
     glfwSetCursorPosCallback(_glfw_window, [](GLFWwindow *window, double x, double y) {
@@ -125,7 +104,7 @@ void cr::display::start(
     auto &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-    const auto font = io.Fonts->AddFontFromFileTTF("./assets/app/fonts/Oxygen-Regular.ttf", 18.f);
+    const auto font = io.Fonts->AddFontFromFileTTF((std::string(CRENDER_ASSET_PATH) + "fonts/Oxygen-Regular.ttf").c_str(), 18.f);
 
     cr::ImGuiThemes::CorporateGrey();
 
