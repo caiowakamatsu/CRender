@@ -513,8 +513,8 @@ namespace cr::ui
                 ImGui::Indent(4.f);
                 static const auto material_types =
                   std::array<std::string, 3>({ "Metal", "Smooth", "Glass" });
-                auto current_type = material.info.type == material::metal ? 0
-                  : material.info.type == material::smooth                ? 1
+                auto current_type = material.info.shade_type == material::metal ? 0
+                  : material.info.shade_type == material::smooth                ? 1
                                                                           : 2;
 
                 if (ImGui::BeginCombo(
@@ -528,14 +528,14 @@ namespace cr::ui
 
                 switch (current_type)
                 {
-                case 0: material.info.type = material::metal; break;
-                case 1: material.info.type = material::smooth; break;
-                case 2: material.info.type = material::glass; break;
+                case 0: material.info.shade_type = material::metal; break;
+                case 1: material.info.shade_type = material::smooth; break;
+                case 2: material.info.shade_type = material::glass; break;
                 }
 
                 ImGui::Separator();
 
-                switch (material.info.type)
+                switch (material.info.shade_type)
                 {
                 case material::metal:
                     //                    ImGui::SliderFloat(
