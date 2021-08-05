@@ -627,7 +627,7 @@ namespace cr::ui
             ImGui::EndCombo();
         }
 
-        if (current_model != std::filesystem::path() && ImGui::Button("Load Model"))
+        if (!current_model.empty() && ImGui::Button("Load Model"))
         {
             cr::logger::info("Starting to load model [{}]", current_model);
             auto timer = cr::timer();

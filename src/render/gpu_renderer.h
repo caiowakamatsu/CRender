@@ -18,13 +18,24 @@ namespace cr
 
         void build();
 
-        void render(const glm::ivec2 &resolution) const;
+        void render(const glm::ivec2 &resolution);
 
         [[nodiscard]] GLuint texture() const;
 
     private:
         struct rendering_resources
         {
+            [[nodiscard]] bool operator==(const rendering_resources &rhs) const noexcept
+            {
+                return rhs.resolution == resolution && rhs.mvp == mvp &&
+                  rhs.camera_data == camera_data;
+            }
+
+            [[nodiscard]] bool operator!=(const rendering_resources &rhs) const noexcept
+            {
+                return !(*this == rhs);
+            }
+
             glm::ivec4 resolution;
             glm::mat4  mvp;
             glm::vec3  camera_data;
@@ -44,7 +55,8 @@ namespace cr
 
         struct
         {
-            GLuint texture;
+            GLuint target;
+            GLuint accumulation;
             GLuint shader;
             GLuint compute;
 
@@ -68,7 +80,11 @@ namespace cr
 
         void _build_material_buffer();
 
+        std::uint32_t _current_frame = 0;
+
         glm::ivec2 _resolution;
+
+        rendering_resources _previous_resources;
 
         cr::scene *_scene;
     };

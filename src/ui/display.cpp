@@ -45,7 +45,7 @@ cr::display::display()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     _compute_shader_id =
-      cr::opengl::create_shader("./assets/app/shaders/scene_zoom.comp", GL_COMPUTE_SHADER);
+      cr::opengl::create_shader(std::string(CRENDER_ASSET_PATH) + "shaders/scene_zoom.comp", GL_COMPUTE_SHADER);
     _compute_shader_program = cr::opengl::create_program(_compute_shader_id);
 
     glfwSetWindowUserPointer(_glfw_window, this);
@@ -289,8 +289,8 @@ void cr::display::_update_camera(cr::camera *camera)
 
     camera->translate(translation);
 
-    rotation.x += _mouse_change_prev.x * 2.0 * _timer.since_last_frame();
-    rotation.y -= _mouse_change_prev.y * 2.0 * _timer.since_last_frame();
+    rotation.x += _mouse_change_prev.x * 20.0 * _timer.since_last_frame();
+    rotation.y -= _mouse_change_prev.y * 20.0 * _timer.since_last_frame();
 
     _mouse_change_prev = {};
 

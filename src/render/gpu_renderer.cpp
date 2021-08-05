@@ -3,8 +3,15 @@
 cr::gpu_renderer::gpu_renderer(cr::scene *scene, const glm::ivec2 &resolution)
     : _scene(scene), _resolution(resolution)
 {
-    glGenTextures(1, &_opengl_handles.texture);
-    glBindTexture(GL_TEXTURE_2D, _opengl_handles.texture);
+    glGenTextures(1, &_opengl_handles.target);
+    glBindTexture(GL_TEXTURE_2D, _opengl_handles.target);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glGenTextures(1, &_opengl_handles.accumulation);
+    glBindTexture(GL_TEXTURE_2D, _opengl_handles.accumulation);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -13,7 +20,7 @@ cr::gpu_renderer::gpu_renderer(cr::scene *scene, const glm::ivec2 &resolution)
     _embree_ctx.device = rtcNewDevice(nullptr);
 
     _opengl_handles.shader =
-      cr::opengl::create_shader("./assets/app/shaders/pathtrace/entry.comp", GL_COMPUTE_SHADER);
+      cr::opengl::create_shader(std::string(CRENDER_ASSET_PATH) + "shaders/pathtrace/entry.comp", GL_COMPUTE_SHADER);
     _opengl_handles.compute = cr::opengl::create_program(_opengl_handles.shader);
 
     glGenBuffers(1, &_opengl_handles.render_data_buffer);
@@ -27,7 +34,7 @@ void cr::gpu_renderer::build()
     _build_material_buffer();
 }
 
-void cr::gpu_renderer::render(const glm::ivec2 &resolution) const
+void cr::gpu_renderer::render(const glm::ivec2 &resolution)
 {
     // Todo: Update resolution and reload resolution dependent resources
     if (resolution != _resolution)
@@ -35,7 +42,8 @@ void cr::gpu_renderer::render(const glm::ivec2 &resolution) const
 
     glUseProgram(_opengl_handles.compute);
 
-    glBindImageTexture(0, _opengl_handles.texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+    glBindImageTexture(0, _opengl_handles.target, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+    glBindImageTexture(1, _opengl_handles.accumulation, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
     // Update the camera data
     auto rendering_resources        = cr::gpu_renderer::rendering_resources();
@@ -46,6 +54,10 @@ void cr::gpu_renderer::render(const glm::ivec2 &resolution) const
       static_cast<float>(_resolution.x) / _resolution.y,
       0.0f,
       0.0f);
+
+    if (rendering_resources != _previous_resources)
+        _current_frame = 0;
+    _previous_resources = rendering_resources;
 
     glBindBuffer(GL_UNIFORM_BUFFER, _opengl_handles.render_data_buffer);
     glBufferData(GL_UNIFORM_BUFFER, 96, &rendering_resources, GL_STATIC_DRAW);
@@ -63,20 +75,23 @@ void cr::gpu_renderer::render(const glm::ivec2 &resolution) const
     if (_opengl_handles.material_data_buffer != ~0)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, _opengl_handles.material_data_buffer);
 
+    glUniform1ui(glGetUniformLocation(_opengl_handles.compute, "current_frame"), _current_frame);
+
     glDispatchCompute(resolution.x / 8, resolution.y / 8, 1);
 
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    _current_frame++;
     // Bind path tracing compute shader
 }
 
 GLuint cr::gpu_renderer::texture() const
 {
-    return _opengl_handles.texture;
+    return _opengl_handles.target;
 }
 
 void cr::gpu_renderer::_update_resolution()
 {
-    glBindTexture(GL_TEXTURE_2D, _opengl_handles.texture);
+    glBindTexture(GL_TEXTURE_2D, _opengl_handles.target);
     glTexImage2D(
       GL_TEXTURE_2D,
       0,
@@ -87,7 +102,20 @@ void cr::gpu_renderer::_update_resolution()
       GL_RGBA,
       GL_UNSIGNED_BYTE,
       nullptr);
-    glClearTexImage(_opengl_handles.texture, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glClearTexImage(_opengl_handles.target, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+    glBindTexture(GL_TEXTURE_2D, _opengl_handles.accumulation);
+    glTexImage2D(
+      GL_TEXTURE_2D,
+      0,
+      GL_RGBA32F,
+      static_cast<int>(_resolution.x),
+      static_cast<int>(_resolution.y),
+      0,
+      GL_RGBA,
+      GL_UNSIGNED_BYTE,
+      nullptr);
+    glClearTexImage(_opengl_handles.accumulation, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 }
 
 void cr::gpu_renderer::_build_bvh()
