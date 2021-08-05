@@ -18,7 +18,7 @@ cr::display::display()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    _glfw_window = glfwCreateWindow(1920, 1080, "CRender", nullptr, nullptr);
+    _glfw_window = glfwCreateWindow(2100, 1380, "CRender", nullptr, nullptr);
     if (!_glfw_window) exit("Failed to create GLFW window", 2);
 
     glfwMakeContextCurrent(_glfw_window);
@@ -208,7 +208,7 @@ void cr::display::start(
         static auto messages = std::vector<std::string>();
 
         if (current_frame == 0)
-            messages.push_back("Welcome to CRender - The discord for support / updates is https://discord.gg/ZjrRyKXpWg");
+            messages.emplace_back("Welcome to CRender - The discord for support / updates is https://discord.gg/ZjrRyKXpWg");
 
 
         cr::logger::read_messages(messages);
@@ -321,8 +321,8 @@ void cr::display::_update_camera(cr::camera *camera)
 
     camera->translate(translation);
 
-    rotation.x += _mouse_change_prev.x * 2.0 * _timer.since_last_frame();
-    rotation.y -= _mouse_change_prev.y * 2.0 * _timer.since_last_frame();
+    rotation.x += _mouse_change_prev.x * 20.0 * _timer.since_last_frame();
+    rotation.y -= _mouse_change_prev.y * 20.0 * _timer.since_last_frame();
 
     _mouse_change_prev = {};
 

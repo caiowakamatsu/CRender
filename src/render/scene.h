@@ -42,7 +42,7 @@ namespace cr
         [[nodiscard]] bool is_sun_enabled() const noexcept;
 
     private:
-        bool _sun_enabled = true;
+        bool _sun_enabled = false;
 
         std::optional<cr::image> _skybox;
         std::optional<GLuint>    _skybox_texture;

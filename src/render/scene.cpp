@@ -72,7 +72,7 @@ glm::vec3 cr::scene::sample_skybox(float x, float y) const noexcept
     }
     else
     {
-        return glm::vec3();
+        return glm::vec3(0.3);
     }
 }
 

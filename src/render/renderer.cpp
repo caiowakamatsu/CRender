@@ -105,35 +105,37 @@ cr::renderer::renderer(
       _albedo(res_x, res_y), _depth(res_x, res_y), _res_x(res_x), _res_y(res_y),
       _max_bounces(bounces), _thread_pool(pool), _scene(scene), _raw_buffer(res_x * res_y * 3)
 {
-    _management_thread = std::thread([this]() {
-        while (_run_management)
-        {
-            const auto tasks = _get_tasks();
+    _management_thread = std::thread(
+      [this]()
+      {
+          while (_run_management)
+          {
+              const auto tasks = _get_tasks();
 
-            if (!tasks.empty() && (_current_sample < _spp_target || _spp_target == 0))
-            {
-                _thread_pool->get()->wait_on_tasks(tasks);
-                _current_sample++;
-            }
-            else
-            {
-                if (_current_sample == _spp_target && _current_sample != 0)
-                    cr::logger::info(
-                      "Finished rendering [{}] samples at resolution [X: {}, Y: {}], took: [{}]s",
-                      _spp_target,
-                      _res_x,
-                      _res_y,
-                      _timer.time_since_start());
+              if (!tasks.empty() && (_current_sample < _spp_target || _spp_target == 0))
+              {
+                  _thread_pool->get()->wait_on_tasks(tasks);
+                  _current_sample++;
+              }
+              else
+              {
+                  if (_current_sample == _spp_target && _current_sample != 0)
+                      cr::logger::info(
+                        "Finished rendering [{}] samples at resolution [X: {}, Y: {}], took: [{}]s",
+                        _spp_target,
+                        _res_x,
+                        _res_y,
+                        _timer.time_since_start());
 
-                {
-                    auto guard = std::unique_lock(_pause_mutex);
-                    _pause_cond_var.notify_one();
-                }
-                auto guard = std::unique_lock(_start_mutex);
-                _start_cond_var.wait(guard);
-            }
-        }
-    });
+                  {
+                      auto guard = std::unique_lock(_pause_mutex);
+                      _pause_cond_var.notify_one();
+                  }
+                  auto guard = std::unique_lock(_start_mutex);
+                  _start_cond_var.wait(guard);
+              }
+          }
+      });
 }
 
 cr::renderer::~renderer()
@@ -238,11 +240,13 @@ std::vector<std::function<void()>> cr::renderer::_get_tasks()
     tasks.reserve(_res_y);
 
     for (auto y = 0; y < _res_y; y++)
-        tasks.emplace_back([this, y] {
-            auto fired_rays = size_t(0);
-            for (auto x = 0; x < _res_x; x++) this->_sample_pixel(x, y, fired_rays);
-            _total_rays += fired_rays;
-        });
+        tasks.emplace_back(
+          [this, y]
+          {
+              auto fired_rays = size_t(0);
+              for (auto x = 0; x < _res_x; x++) this->_sample_pixel(x, y, fired_rays);
+              _total_rays += fired_rays;
+          });
 
     return tasks;
 }
@@ -274,9 +278,11 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
 
             const auto miss_sample = _scene->get()->sample_skybox(miss_uv.x, miss_uv.y);
 
-            if (i == 0) albedo = miss_sample;
-
-            final += throughput * miss_sample;
+            if (i == 0)
+            {
+                final += throughput * miss_sample;
+                albedo = miss_sample;
+            }
             break;
         }
         else
@@ -296,7 +302,8 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
         }
 
         // Sun NEE
-        if (_scene->get()->is_sun_enabled()) {
+        if (_scene->get()->is_sun_enabled())
+        {
             auto out_ray = cr::ray(
               intersection.intersection_point + intersection.normal * 0.001f,
               glm::vec3(0.0f));

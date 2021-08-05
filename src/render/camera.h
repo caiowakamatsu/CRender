@@ -18,7 +18,7 @@ namespace cr
             orthographic,
         };
 
-        camera(glm::vec3 position = glm::vec3(5, 5, 0), float fov = 75, mode camera_mode = mode::perspective);
+        camera(glm::vec3 position = glm::vec3(0, 8, 19), float fov = 35, mode camera_mode = mode::perspective);
 
         void translate(const glm::vec3 &translation);
 

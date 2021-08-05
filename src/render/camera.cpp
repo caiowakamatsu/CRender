@@ -3,7 +3,9 @@
 cr::camera::camera(glm::vec3 position, float fov, mode camera_mode) :
 position(position), fov(fov), _cached_matrix(1), current_mode(camera_mode)
 {
-
+    rotation.x = 180;
+    rotation.y = 20.5;
+    _update_cache();
 }
 
 glm::mat4 cr::camera::mat4() const noexcept

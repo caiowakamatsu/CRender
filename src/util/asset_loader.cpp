@@ -231,49 +231,88 @@ cr::asset_loader::model_data
         material_data.name = material.name;
         material_data.colour =
           glm::vec4(material.diffuse[0], material.diffuse[1], material.diffuse[2], 1.0f);
-        material_data.shade_type     = cr::material::type::smooth;
-        material_data.emission = 0.0f;
+        material_data.shade_type = cr::material::type::smooth;
+        material_data.emission   = 0.0f;
 
         // Texture stuff!
-        if (!material.diffuse_texname.empty())
-        {
-            if (const auto &it = already_loaded.find(material.diffuse_texname);
-                it == already_loaded.end())
-            {
-                const auto texture_name = folder + '\\' + material.diffuse_texname;
-
-                auto image_dimensions = glm::ivec3();
-                stbi_set_flip_vertically_on_load(true);
-                auto data = stbi_load(
-                  texture_name.c_str(),
-                  &image_dimensions.x,
-                  &image_dimensions.y,
-                  &image_dimensions.z,
-                  4);
-                stbi_set_flip_vertically_on_load(false);
-
-                auto texture_image = cr::image(image_dimensions.x, image_dimensions.y);
-
-                for (auto x = 0; x < image_dimensions.x; x++)
-                    for (auto y = 0; y < image_dimensions.y; y++)
-                    {
-                        const auto base_index = (x + y * image_dimensions.x) * 4;
-
-                        const auto r = data[base_index + 0] / 255.f;
-                        const auto g = data[base_index + 1] / 255.f;
-                        const auto b = data[base_index + 2] / 255.f;
-                        const auto a = data[base_index + 3] / 255.f;
-
-                        texture_image.set(x, y, glm::vec4(r, g, b, a));
-                    }
-
-                stbi_image_free(data);
-                model_data.textures.push_back(std::move(texture_image));
-                material_data.tex = model_data.textures.size() - 1;
-                already_loaded.insert({ material.diffuse_texname, material_data.tex.value() });
-            } else
-                material_data.tex = it->second;
+        auto colour = glm::vec3();
+        if (material.name == "Back_Wall" || material.name == "Material")
+            colour = glm::vec3(1.0);
+        else if (material.name == "Bottom_Plane") {
+            material_data.roughness = .25f;
+            material_data.shade_type = material::type::metal;
+            colour = glm::vec3(0.227);
+        } else if (material.name == "Middle_Plane") {
+            material_data.roughness = .4;
+            material_data.shade_type = material::type::metal;
+            colour = glm::vec3(0.227);
+        } else if (material.name == "Top_Plane") {
+            material_data.roughness = .8f;
+            material_data.shade_type = material::type::metal;
+            colour = glm::vec3(0.227);
         }
+        else if (material.name == "Big_Cube") {
+            material_data.emission = 1.0f;
+            colour = glm::vec3(0.25, 0, 1.0);
+        }
+        else if (material.name == "Medium_Cube") {
+            material_data.emission = 1.0f;
+            colour = glm::vec3(0.0, 0.1, 1.0);
+        }
+        else if (material.name == "Small_Cube") {
+            material_data.emission = 1.0f;
+            colour = glm::vec3(0.0, 0.95, 1.0);
+        }
+
+        material_data.colour = glm::vec4(colour, 1.0f);
+
+        if (false)
+            if (!material.diffuse_texname.empty())
+            {
+                if (const auto &it = already_loaded.find(material.diffuse_texname);
+                    it == already_loaded.end())
+                {
+                    const auto texture_name = folder + '\\' + material.diffuse_texname;
+
+                    auto image_dimensions = glm::ivec3();
+                    stbi_set_flip_vertically_on_load(true);
+                    auto data = stbi_load(
+                      texture_name.c_str(),
+                      &image_dimensions.x,
+                      &image_dimensions.y,
+                      &image_dimensions.z,
+                      4);
+                    stbi_set_flip_vertically_on_load(false);
+
+                    auto texture_image = cr::image(image_dimensions.x, image_dimensions.y);
+
+                    for (auto x = 0; x < image_dimensions.x; x++)
+                        for (auto y = 0; y < image_dimensions.y; y++)
+                        {
+                            const auto base_index = (x + y * image_dimensions.x) * 4;
+
+                            const auto r = data[base_index + 0] / 255.f;
+                            const auto g = data[base_index + 1] / 255.f;
+                            const auto b = data[base_index + 2] / 255.f;
+                            const auto a = data[base_index + 3] / 255.f;
+
+                            texture_image.set(x, y, glm::vec4(r, g, b, a));
+                        }
+
+                    stbi_image_free(data);
+                    model_data.textures.push_back(std::move(texture_image));
+                    material_data.tex = model_data.textures.size() - 1;
+                    already_loaded.insert({ material.diffuse_texname, material_data.tex.value() });
+                }
+                else
+                    material_data.tex = it->second;
+            }
+            else
+            {
+                // The model we're loading has no texture
+                material_data.colour =
+                  glm::vec4(material.diffuse[0], material.diffuse[1], material.diffuse[2], 1.0f);
+            }
 
         model_data.materials.emplace_back(material_data);
     }
