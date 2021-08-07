@@ -223,6 +223,7 @@ void cr::draft_renderer::render()
 void cr::draft_renderer::_update_uniforms(const glm::mat4 &model)
 {
     const auto mvp_location = glGetUniformLocation(_program_handle, "mvp");
+    const auto pos_location = glGetUniformLocation(_program_handle, "camera_os");
 
     const auto camera = _scene->get()->registry()->camera();
 
@@ -252,6 +253,7 @@ void cr::draft_renderer::_update_uniforms(const glm::mat4 &model)
     const auto mvp = projection * view * model;
 
     glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(mvp));
+    glUniform3f(pos_location, camera->position.x, camera->position.y, camera->position.z);
 }
 
 void cr::draft_renderer::set_resolution(uint64_t res_x, uint64_t res_y)

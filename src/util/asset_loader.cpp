@@ -282,10 +282,6 @@ cr::asset_loader::model_data
     {
         for (const auto idx : shape.mesh.indices)
         {
-            if (idx.vertex_index == -1) cr::exit("Vertex index was -1");
-            if (idx.texcoord_index == -1) cr::exit("Tex coord index was -1");
-            if (idx.normal_index == -1) cr::exit("Normal index was -1");
-
             model_data.vertex_indices.push_back(idx.vertex_index);
 
             model_data.texture_indices.push_back(idx.texcoord_index);

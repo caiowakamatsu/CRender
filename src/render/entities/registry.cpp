@@ -117,8 +117,23 @@ void cr::registry::_upload_gpu_meshes(const cr::asset_loader::model_data &data, 
         const auto mesh_index = data.material_indices[i / 3];
 
         meshes[mesh_index].vertices.push_back(data.vertices[data.vertex_indices[i]]);
-        meshes[mesh_index].normals.push_back(data.normals[data.normal_indices[i]]);
         meshes[mesh_index].uvs.push_back(data.texture_coords[data.texture_indices[i]]);
+
+        // This part is slightly inefficient... but some models just dont support stuff so...
+        if (data.normal_indices[i] == -1)
+        {
+            // Calculate the normal
+            const auto v0 = data.vertices[data.vertex_indices[i / 3 + 0]];
+            const auto v1 = data.vertices[data.vertex_indices[i / 3 + 1]];
+            const auto v2 = data.vertices[data.vertex_indices[i / 3 + 2]];
+
+            const auto e0 = v2 - v0;
+            const auto e1 = v1 - v0;
+            const auto normal = glm::cross(e0, e1);
+            meshes[mesh_index].normals.push_back(normal);
+        } else
+            meshes[mesh_index].normals.push_back(data.normals[data.normal_indices[i]]);
+
     }
 
     for (const auto &mesh : meshes)
