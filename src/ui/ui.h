@@ -250,12 +250,14 @@ namespace cr::ui
 
         if (ImGui::Button("Update"))
         {
-            renderer->update([renderer, draft_renderer, &pool]() {
-                renderer->set_max_bounces(bounces);
-                renderer->set_resolution(resolution.x, resolution.y);
-                draft_renderer->set_resolution(resolution.x, resolution.y);
-                pool = std::make_unique<cr::thread_pool>(thread_count);
-            });
+            renderer->update(
+              [renderer, draft_renderer, &pool]()
+              {
+                  renderer->set_max_bounces(bounces);
+                  renderer->set_resolution(resolution.x, resolution.y);
+                  draft_renderer->set_resolution(resolution.x, resolution.y);
+                  pool = std::make_unique<cr::thread_pool>(thread_count);
+              });
         }
 
         ImGui::Text(
@@ -302,14 +304,42 @@ namespace cr::ui
             ImGui::InputFloat("Intensity", &sun.intensity);
             ImGui::Checkbox("Sun enabled", &sun_enabled);
             ImGui::ColorEdit3("Colour", glm::value_ptr(sun.colour));
-            ImGui::InputFloat3("Sun Direction", glm::value_ptr(sun.direction));
+
+            static auto sun_dir = glm::vec3(0.8, -1, 0.0);
+
+            static auto use_angles = false;
+            ImGui::Checkbox("Use Angles", &use_angles);
+            if (use_angles)
+            {
+                ImGui::SliderFloat("Elevation", &sun_dir.x, -90, 90);
+                ImGui::SliderFloat("Azimuth", &sun_dir.y, 0, 360);
+            }
+            else
+            {
+                ImGui::InputFloat("Direction X", &sun_dir.x);
+                ImGui::InputFloat("Direction Y", &sun_dir.y);
+                ImGui::InputFloat("Direction Z", &sun_dir.z);
+            }
 
             if (ImGui::Button("Update Sun"))
             {
-                renderer->update([sun_enabled = sun_enabled, sun = sun, scene] {
-                    scene->registry()->set_sun(sun);
-                    scene->set_sun_enabled(sun_enabled);
-                });
+                const auto elevation = -sun_dir.x / 360.f * cr::numbers<float>::tau;
+                const auto azimuth   = sun_dir.y / 360.f * cr::numbers<float>::tau;
+
+                if (use_angles)
+                    sun.direction = glm::normalize(glm::vec3(
+                      glm::cos(azimuth) * glm::cos(elevation),
+                      glm::sin(elevation),
+                      glm::sin(azimuth) * glm::sin(elevation)));
+                else
+                    sun.direction = glm::normalize(glm::vec3(sun_dir.x, sun_dir.y, sun_dir.z));
+
+                renderer->update(
+                  [sun_enabled = sun_enabled, sun = sun, scene]
+                  {
+                      scene->registry()->set_sun(sun);
+                      scene->set_sun_enabled(sun_enabled);
+                  });
             }
 
             ImGui::Unindent(4.f);
@@ -445,8 +475,8 @@ namespace cr::ui
 
         if (ImGui::Button("Update"))
         {
-            renderer->update(
-              [scene, camera = camera] { *scene->registry()->camera() = camera.value(); });
+            renderer->update([scene, camera = camera]
+                             { *scene->registry()->camera() = camera.value(); });
             camera.reset();
         }
     }
@@ -515,7 +545,7 @@ namespace cr::ui
                   std::array<std::string, 3>({ "Metal", "Smooth", "Glass" });
                 auto current_type = material.info.shade_type == material::metal ? 0
                   : material.info.shade_type == material::smooth                ? 1
-                                                                          : 2;
+                                                                                : 2;
 
                 if (ImGui::BeginCombo(
                       ("Type##" + material.info.name).c_str(),
@@ -577,11 +607,12 @@ namespace cr::ui
 
             if (ImGui::Button("Update Materials"))
             {
-                renderer->update([materials = materials, scene, selected = selected_entity] {
-                    scene->registry()
-                      ->entities.get<cr::entity::model_materials>(selected)
-                      .materials = materials;
-                });
+                renderer->update(
+                  [materials = materials, scene, selected = selected_entity] {
+                      scene->registry()
+                        ->entities.get<cr::entity::model_materials>(selected)
+                        .materials = materials;
+                  });
             }
 
             ImGui::EndChild();
@@ -629,8 +660,8 @@ namespace cr::ui
             const auto model_data = cr::asset_loader::load_model(current_model, current_directory);
 
             if (!in_draft_mode)
-                renderer->get()->update(
-                  [&scene, &model_data] { scene->get()->add_model(model_data); });
+                renderer->get()->update([&scene, &model_data]
+                                        { scene->get()->add_model(model_data); });
             else
                 scene->get()->add_model(model_data);
             cr::logger::info("Finished loading model in [{}s]", timer.time_since_start());
@@ -675,18 +706,20 @@ namespace cr::ui
             auto timer = cr::timer();
             // Load skybox in
             cr::logger::info("Started to load skybox [{}]", current_skybox.stem().string());
-            renderer->get()->update([&scene, current_skybox = current_skybox, &timer] {
-                auto image  = cr::asset_loader::load_picture(current_skybox.string());
-                auto skybox = cr::image(image.colour, image.res.x, image.res.y);
+            renderer->get()->update(
+              [&scene, current_skybox = current_skybox, &timer]
+              {
+                  auto image  = cr::asset_loader::load_picture(current_skybox.string());
+                  auto skybox = cr::image(image.colour, image.res.x, image.res.y);
 
-                scene->get()->set_skybox(std::move(skybox));
+                  scene->get()->set_skybox(std::move(skybox));
 
-                cr::logger::info("Finished loading skybox in [{}s]", timer.time_since_start());
-                cr::logger::info(
-                  "-- Skybox Stats\n\tResolution:\n\t\tX: [{}]\n\t\tY: [{}]",
-                  image.res.x,
-                  image.res.y);
-            });
+                  cr::logger::info("Finished loading skybox in [{}s]", timer.time_since_start());
+                  cr::logger::info(
+                    "-- Skybox Stats\n\tResolution:\n\t\tX: [{}]\n\t\tY: [{}]",
+                    image.res.x,
+                    image.res.y);
+              });
         }
 
         static auto rotation = glm::vec2();
@@ -694,8 +727,8 @@ namespace cr::ui
 
         ImGui::SameLine();
         if (ImGui::Button("Update"))
-            renderer->get()->update(
-              [&scene]() { scene->get()->set_skybox_rotation(rotation / 360.f); });
+            renderer->get()->update([&scene]()
+                                    { scene->get()->set_skybox_rotation(rotation / 360.f); });
 
         ImGui::Unindent(8.f);
     }
@@ -794,8 +827,7 @@ namespace cr::ui
 
             ImGui::Text("Instances");
             ImGui::SameLine();
-            if (ImGui::Button("+"))
-                transforms.push_back(glm::mat4(1));
+            if (ImGui::Button("+")) transforms.push_back(glm::mat4(1));
 
             ImGui::Indent(4.f);
 
@@ -816,12 +848,13 @@ namespace cr::ui
 
                 ImGui::Text("%s", fmt::format("Translation #{} ##{}", i, i).c_str());
                 ImGui::SameLine();
-                if (ImGui::Button("-"))
-                    to_remove.push_back(i);
+                if (ImGui::Button("-")) to_remove.push_back(i);
 
                 ImGui::Indent(4.0f);
                 ImGui::InputFloat3(fmt::format("Scale##{}", i).c_str(), glm::value_ptr(scale));
-                ImGui::InputFloat3(fmt::format("Translation##{}", i).c_str(), glm::value_ptr(translation));
+                ImGui::InputFloat3(
+                  fmt::format("Translation##{}", i).c_str(),
+                  glm::value_ptr(translation));
                 ImGui::Unindent(4.0f);
 
                 auto out_matrix = glm::mat4(1);
@@ -831,13 +864,13 @@ namespace cr::ui
                 transforms[i] = out_matrix;
             }
 
-            for (const auto remove : to_remove)
-                transforms.erase(transforms.begin() + remove);
+            for (const auto remove : to_remove) transforms.erase(transforms.begin() + remove);
 
             if (ImGui::Button("Update"))
             {
                 renderer->update(
-                  [scene, transforms = transforms, selected_entity = selected_entity]() {
+                  [scene, transforms = transforms, selected_entity = selected_entity]()
+                  {
                       scene->registry()
                         ->entities.get<cr::entity::instances>(selected_entity)
                         .transforms = transforms;
