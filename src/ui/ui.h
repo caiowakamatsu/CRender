@@ -11,6 +11,7 @@
 #include <util/denoise.h>
 #include <stb/stbi_image_write.h>
 #include <stb/stb_image.h>
+#include <render/post_processor.h>
 #include "display.h"
 
 namespace cr::ui
@@ -346,7 +347,9 @@ namespace cr::ui
         }
     }
 
-    inline void setting_export(std::unique_ptr<cr::renderer> *renderer)
+    inline void setting_export(
+      std::unique_ptr<cr::renderer> *      renderer,
+      std::unique_ptr<cr::post_processor> *processor)
     {
         static auto file_string = std::array<char, 32>();
         ImGui::InputTextWithHint("File Name", "Max 32 chars", file_string.data(), 64);
@@ -375,11 +378,13 @@ namespace cr::ui
         static auto export_albedo = false;
         static auto export_normal = false;
         static auto export_depth  = false;
-        static auto denoise       = false;
+        static auto denoise       = true;
+        static auto post_process  = true;
         ImGui::Checkbox("Export Albedo", &export_albedo);
         ImGui::Checkbox("Export Normal", &export_normal);
         ImGui::Checkbox("Export Depth", &export_depth);
         ImGui::Checkbox("Denoise", &denoise);
+        ImGui::Checkbox("Post Process", &post_process);
 
         if (ImGui::Button("Save"))
         {
@@ -884,24 +889,31 @@ namespace cr::ui
         ImGui::Unindent(4.0f);
     }
 
+    inline void setting_post_process(cr::post_processor &processor)
+    {
+        if (ImGui::Button("Post Process")) { }
+    }
+
     inline void settings(
       std::unique_ptr<cr::renderer> *      renderer,
       std::unique_ptr<cr::draft_renderer> *draft_renderer,
       std::unique_ptr<cr::scene> *         scene,
       std::unique_ptr<cr::thread_pool> *   pool,
+      std::unique_ptr<cr::post_processor> *post_processor,
       bool                                 draft_mode)
     {
         ImGui::Begin("Misc");
 
         // List all of the different settings
-        static const auto window_settings = std::array<std::string, 8>({ "Render",
+        static const auto window_settings = std::array<std::string, 9>({ "Render",
                                                                          "Export",
                                                                          "Materials",
                                                                          "Asset Loader",
                                                                          "Stats",
                                                                          "Style",
                                                                          "Camera",
-                                                                         "Instances" });
+                                                                         "Instances",
+                                                                         "Post Processing" });
 
         static auto selected_window = 0;
 
@@ -929,6 +941,7 @@ namespace cr::ui
         case 5: setting_style(); break;
         case 6: setting_camera(renderer->get(), scene->get()); break;
         case 7: setting_instances(renderer->get(), scene->get()); break;
+        case 8: setting_post_process(**post_processor); break;
         }
 
         ImGui::EndChild();

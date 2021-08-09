@@ -129,7 +129,8 @@ void cr::display::start(
   std::unique_ptr<cr::scene> &         scene,
   std::unique_ptr<cr::renderer> &      renderer,
   std::unique_ptr<cr::thread_pool> &   thread_pool,
-  std::unique_ptr<cr::draft_renderer> &draft_renderer)
+  std::unique_ptr<cr::draft_renderer> &draft_renderer,
+  std::unique_ptr<cr::post_processor> &post_processor)
 {
     auto work_group_max = std::array<int, 3>();
 
@@ -216,7 +217,7 @@ void cr::display::start(
         ui::console(messages);
         messages.clear();
 
-        ui::settings(&renderer, &draft_renderer, &scene, &thread_pool, _in_draft_mode);
+        ui::settings(&renderer, &draft_renderer, &scene, &thread_pool, &post_processor, _in_draft_mode);
 
         ImGui::PopFont();
 

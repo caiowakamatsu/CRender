@@ -28,10 +28,6 @@ namespace cr
         entt::basic_registry<uint32_t> entities;
 
         /* Load a model into the register after loading it in */
-        struct registered_model
-        {
-            uint32_t           entity_handle;
-        };
         void register_model(const cr::asset_loader::model_data &data);
 
     private:
