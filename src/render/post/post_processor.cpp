@@ -115,9 +115,9 @@ cr::image cr::post_processor::process(const cr::image &image) const noexcept
     auto bloom_img = GLuint();
     if (_use_bloom)
     {
-//        const auto blurred =
-//          _blur(_brightness(image, 0.7f), glm::ivec2(image.width(), image.height()));
-                const auto blurred = _blur(image, glm::ivec2(image.width(), image.height()));
+        const auto blurred =
+          _blur(_brightness(image, 0.7f), glm::ivec2(image.width(), image.height()));
+//                const auto blurred = _blur(image, glm::ivec2(image.width(), image.height()));
 
         cr::asset_loader::export_framebuffer(blurred, "blur-debug", asset_loader::image_type::PNG);
 
@@ -261,7 +261,7 @@ cr::image cr::post_processor::_blur(const cr::image &source_img, const glm::ivec
           i == 0 ? source_img.data() : nullptr);
     }
 
-    for (auto i = 0; i < 40; i++)
+    for (auto i = 0; i < 10; i++)
     {
         const auto source = i % 2 == 0 ? buffers[0] : buffers[1];
         const auto target = i % 2 != 0 ? buffers[0] : buffers[1];
