@@ -29,11 +29,7 @@ namespace cr
         filter.setImage("normal", normal_buffer.data(), oidn::Format::Float3, width, height);
         filter.setImage("albedo", albedo_buffer.data(), oidn::Format::Float3, width, height);
         filter.setImage("output", denoised_buffer.data(), oidn::Format::Float3, width, height);
-
-        if (
-          output_type == asset_loader::image_type::EXR ||
-          output_type == asset_loader::image_type::HDR)
-            filter.set("hdr", true);
+        filter.set("hdr", true);
 
         filter.commit();
         filter.execute();

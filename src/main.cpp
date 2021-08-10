@@ -10,7 +10,9 @@ int main()
     auto renderer = std::make_unique<cr::renderer>(1024, 1024, 5, &thread_pool, &scene);
     auto main_display = cr::display();
 
+    auto post_processor = std::make_unique<cr::post_processor>();
+
     auto draft_renderer = std::make_unique<cr::draft_renderer>(1024, 1024, &scene);
 
-    main_display.start(scene, renderer, thread_pool, draft_renderer);
+    main_display.start(scene, renderer, thread_pool, draft_renderer, post_processor);
 }

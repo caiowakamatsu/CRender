@@ -182,7 +182,8 @@ namespace cr
           std::unique_ptr<cr::scene> &         scene,
           std::unique_ptr<cr::renderer> &      renderer,
           std::unique_ptr<cr::thread_pool> &   thread_pool,
-          std::unique_ptr<cr::draft_renderer> &draft_renderer);
+          std::unique_ptr<cr::draft_renderer> &draft_renderer,
+          std::unique_ptr<cr::post_processor> &post_processor);
 
         void stop();
 

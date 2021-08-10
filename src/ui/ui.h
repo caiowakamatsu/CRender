@@ -11,6 +11,7 @@
 #include <util/denoise.h>
 #include <stb/stbi_image_write.h>
 #include <stb/stb_image.h>
+#include <render/post/post_processor.h>
 #include "display.h"
 
 namespace cr::ui
@@ -346,7 +347,9 @@ namespace cr::ui
         }
     }
 
-    inline void setting_export(std::unique_ptr<cr::renderer> *renderer)
+    inline void setting_export(
+      std::unique_ptr<cr::renderer> *      renderer,
+      std::unique_ptr<cr::post_processor> *processor)
     {
         static auto file_string = std::array<char, 32>();
         ImGui::InputTextWithHint("File Name", "Max 32 chars", file_string.data(), 64);
@@ -375,11 +378,13 @@ namespace cr::ui
         static auto export_albedo = false;
         static auto export_normal = false;
         static auto export_depth  = false;
-        static auto denoise       = false;
+        static auto denoise       = true;
+        static auto post_process  = true;
         ImGui::Checkbox("Export Albedo", &export_albedo);
         ImGui::Checkbox("Export Normal", &export_normal);
         ImGui::Checkbox("Export Depth", &export_depth);
         ImGui::Checkbox("Denoise", &denoise);
+        ImGui::Checkbox("Post Process", &post_process);
 
         if (ImGui::Button("Save"))
         {
@@ -390,7 +395,7 @@ namespace cr::ui
 
             const auto data = renderer->get()->current_progress();
 
-            auto folder = export_albedo || export_normal || export_depth || denoise;
+            auto folder = export_albedo || export_normal || export_depth || denoise || post_process;
 
             if (folder)
             {
@@ -403,21 +408,22 @@ namespace cr::ui
             if (export_albedo)
                 cr::asset_loader::export_framebuffer(
                   *renderer->get()->current_albedos(),
-                  (file_str + "-albedos").data(),
+                  file_str + "-albedos",
                   asset_loader::image_type::JPG);
 
             if (export_normal)
                 cr::asset_loader::export_framebuffer(
                   *renderer->get()->current_normals(),
-                  (file_str + "-normals").data(),
+                  file_str + "-normals",
                   asset_loader::image_type::JPG);
 
             if (export_depth)
                 cr::asset_loader::export_framebuffer(
                   *renderer->get()->current_depths(),
-                  (file_str + "-depth").data(),
+                  file_str + "-depth",
                   asset_loader::image_type::JPG);
 
+            auto to_post = *data;
             if (denoise)
             {
                 const auto denoised = cr::denoise(
@@ -425,9 +431,21 @@ namespace cr::ui
                   renderer->get()->current_normals(),
                   renderer->get()->current_albedos(),
                   selected_type);
+
+                if (post_process) to_post = denoised;
+
                 cr::asset_loader::export_framebuffer(
                   denoised,
-                  (file_str + "-denoised").data(),
+                  file_str + "-denoised",
+                  selected_type);
+            }
+
+            if (post_process)
+            {
+                const auto processed = processor->get()->process(to_post);
+                cr::asset_loader::export_framebuffer(
+                  processed,
+                  file_str + "-processed",
                   selected_type);
             }
 
@@ -884,24 +902,74 @@ namespace cr::ui
         ImGui::Unindent(4.0f);
     }
 
+    inline void setting_post_process(cr::post_processor &processor)
+    {
+        static auto bloom      = post_processor::bloom_settings();
+        static auto gray_scale = post_processor::gray_scale_settings();
+        static auto tonemap    = post_processor::tonemapping_settings();
+        ImGui::Checkbox("Use Bloom", &bloom.enabled);
+        if (bloom.enabled)
+        {
+            ImGui::Indent(4.f);
+            ImGui::InputFloat("Threshold", &bloom.threshold);
+            ImGui::InputFloat("Bloom Strength", &bloom.strength);
+            ImGui::Unindent(4.f);
+        }
+
+        ImGui::Checkbox("Use Gray Scale", &gray_scale.enabled);
+
+        ImGui::Checkbox("Use Tonemapping", &tonemap.enabled);
+        if (tonemap.enabled)
+        {
+            ImGui::Indent(4.f);
+            ImGui::InputFloat("Exposure", &tonemap.exposure);
+            static const auto tonemapping_operators = std::array<std::string, 4>(
+              { "Linear", "Reinhard", "Jim and Richard", "Uncharted 2" });
+            static auto selected_window = 0;
+
+            if (selected_window != 2)
+                ImGui::InputFloat("Gamma Correction", &tonemap.gamma_correction);
+
+            if (ImGui::BeginCombo(
+                  "Tonemapping Operator",
+                  tonemapping_operators[selected_window].c_str()))
+            {
+                for (auto i = 0; i < tonemapping_operators.size(); i++)
+                    if (ImGui::Button(tonemapping_operators[i].c_str())) selected_window = i;
+                ImGui::EndCombo();
+            }
+            tonemap.type = selected_window;
+            ImGui::Unindent(4.f);
+        }
+
+        if (ImGui::Button("Update"))
+        {
+            processor.submit_bloom_settings(bloom);
+            processor.submit_gray_scale_settings(gray_scale);
+            processor.submit_tonemapping_settings(tonemap);
+        }
+    }
+
     inline void settings(
       std::unique_ptr<cr::renderer> *      renderer,
       std::unique_ptr<cr::draft_renderer> *draft_renderer,
       std::unique_ptr<cr::scene> *         scene,
       std::unique_ptr<cr::thread_pool> *   pool,
+      std::unique_ptr<cr::post_processor> *post_processor,
       bool                                 draft_mode)
     {
         ImGui::Begin("Misc");
 
         // List all of the different settings
-        static const auto window_settings = std::array<std::string, 8>({ "Render",
+        static const auto window_settings = std::array<std::string, 9>({ "Render",
                                                                          "Export",
                                                                          "Materials",
                                                                          "Asset Loader",
                                                                          "Stats",
                                                                          "Style",
                                                                          "Camera",
-                                                                         "Instances" });
+                                                                         "Instances",
+                                                                         "Post Processing" });
 
         static auto selected_window = 0;
 
@@ -922,13 +990,14 @@ namespace cr::ui
         switch (selected_window)
         {
         case 0: setting_render(renderer->get(), draft_renderer->get(), scene->get(), *pool); break;
-        case 1: setting_export(renderer); break;
+        case 1: setting_export(renderer, post_processor); break;
         case 2: setting_materials(renderer->get(), scene->get()); break;
         case 3: setting_asset_loader(renderer, scene, draft_mode); break;
         case 4: setting_stats(renderer->get()); break;
         case 5: setting_style(); break;
         case 6: setting_camera(renderer->get(), scene->get()); break;
         case 7: setting_instances(renderer->get(), scene->get()); break;
+        case 8: setting_post_process(**post_processor); break;
         }
 
         ImGui::EndChild();
