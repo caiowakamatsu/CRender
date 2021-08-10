@@ -89,7 +89,7 @@ namespace
     void export_png(const cr::image &buffer, const std::string &path)
     {
         auto data = std::vector<uint8_t>(buffer.width() * buffer.height() * 4);
-        for (auto i = 0; i < data.size(); i++) data[i] = buffer.data()[i] * 255.f;
+        for (auto i = 0; i < data.size(); i++) data[i] = glm::min(buffer.data()[i] * 255.f, 255.f);
 
         stbi_write_png(
           path.c_str(),
@@ -103,7 +103,7 @@ namespace
     void export_jpg(const cr::image &buffer, const std::string &path)
     {
         auto data = std::vector<uint8_t>(buffer.width() * buffer.height() * 4);
-        for (auto i = 0; i < data.size(); i++) data[i] = buffer.data()[i] * 255.f;
+        for (auto i = 0; i < data.size(); i++) data[i] = glm::min(buffer.data()[i] * 255.f, 255.f);
 
         stbi_write_jpg(path.c_str(), buffer.width(), buffer.height(), 4, data.data(), 100);
     }

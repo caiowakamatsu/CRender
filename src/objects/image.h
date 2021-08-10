@@ -125,7 +125,14 @@ namespace cr
             set(x, y, glm::vec4(colour, 1.0f));
         }
 
-        [[nodiscard]] cr::image operator +(const cr::image &image) const noexcept;
+        [[nodiscard]] glm::vec4 operator[](size_t index) const noexcept
+        {
+            return glm::vec4(
+              _image_data[index * 4 + 0],
+              _image_data[index * 4 + 1],
+              _image_data[index * 4 + 2],
+              _image_data[index * 4 + 3]);
+        }
 
         void set(uint64_t x, uint64_t y, const glm::vec4 &colour) noexcept
         {

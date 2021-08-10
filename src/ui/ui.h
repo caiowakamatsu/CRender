@@ -11,7 +11,7 @@
 #include <util/denoise.h>
 #include <stb/stbi_image_write.h>
 #include <stb/stb_image.h>
-#include <render/post_processor.h>
+#include <render/post/post_processor.h>
 #include "display.h"
 
 namespace cr::ui
@@ -395,7 +395,7 @@ namespace cr::ui
 
             const auto data = renderer->get()->current_progress();
 
-            auto folder = export_albedo || export_normal || export_depth || denoise;
+            auto folder = export_albedo || export_normal || export_depth || denoise || post_process;
 
             if (folder)
             {
@@ -408,21 +408,22 @@ namespace cr::ui
             if (export_albedo)
                 cr::asset_loader::export_framebuffer(
                   *renderer->get()->current_albedos(),
-                  (file_str + "-albedos").data(),
+                  file_str + "-albedos",
                   asset_loader::image_type::JPG);
 
             if (export_normal)
                 cr::asset_loader::export_framebuffer(
                   *renderer->get()->current_normals(),
-                  (file_str + "-normals").data(),
+                  file_str + "-normals",
                   asset_loader::image_type::JPG);
 
             if (export_depth)
                 cr::asset_loader::export_framebuffer(
                   *renderer->get()->current_depths(),
-                  (file_str + "-depth").data(),
+                  file_str + "-depth",
                   asset_loader::image_type::JPG);
 
+            auto to_post = *data;
             if (denoise)
             {
                 const auto denoised = cr::denoise(
@@ -430,10 +431,24 @@ namespace cr::ui
                   renderer->get()->current_normals(),
                   renderer->get()->current_albedos(),
                   selected_type);
+
+                if (post_process)
+                    to_post = denoised;
+
                 cr::asset_loader::export_framebuffer(
                   denoised,
-                  (file_str + "-denoised").data(),
+                  file_str + "-denoised",
                   selected_type);
+            }
+
+            if (post_process)
+            {
+                const auto processed = processor->get()->process(to_post);
+                cr::asset_loader::export_framebuffer(
+                  processed,
+                  file_str + "-processed",
+                  selected_type
+                  );
             }
 
             cr::logger::info("Finished exporting image in [{}s]", timer.time_since_start());
@@ -934,7 +949,7 @@ namespace cr::ui
         switch (selected_window)
         {
         case 0: setting_render(renderer->get(), draft_renderer->get(), scene->get(), *pool); break;
-        case 1: setting_export(renderer); break;
+        case 1: setting_export(renderer, post_processor); break;
         case 2: setting_materials(renderer->get(), scene->get()); break;
         case 3: setting_asset_loader(renderer, scene, draft_mode); break;
         case 4: setting_stats(renderer->get()); break;

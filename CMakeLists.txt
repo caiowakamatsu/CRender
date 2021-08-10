@@ -72,7 +72,7 @@ add_executable(CRender src/main.cpp
         src/util/logger.cpp 
         src/util/numbers.h 
         src/render/brdf.h 
-        src/util/denoise.h src/render/post_processor.cpp src/render/post_processor.h)
+        src/util/denoise.h src/render/post/post_processor.cpp src/render/post/post_processor.h)
 
 target_include_directories(CRender PRIVATE src)
 target_include_directories(CRender PRIVATE external)
