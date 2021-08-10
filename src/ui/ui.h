@@ -432,8 +432,7 @@ namespace cr::ui
                   renderer->get()->current_albedos(),
                   selected_type);
 
-                if (post_process)
-                    to_post = denoised;
+                if (post_process) to_post = denoised;
 
                 cr::asset_loader::export_framebuffer(
                   denoised,
@@ -447,8 +446,7 @@ namespace cr::ui
                 cr::asset_loader::export_framebuffer(
                   processed,
                   file_str + "-processed",
-                  selected_type
-                  );
+                  selected_type);
             }
 
             cr::logger::info("Finished exporting image in [{}s]", timer.time_since_start());
@@ -906,7 +904,50 @@ namespace cr::ui
 
     inline void setting_post_process(cr::post_processor &processor)
     {
-        if (ImGui::Button("Post Process")) { }
+        static auto bloom      = post_processor::bloom_settings();
+        static auto gray_scale = post_processor::gray_scale_settings();
+        static auto tonemap    = post_processor::tonemapping_settings();
+        ImGui::Checkbox("Use Bloom", &bloom.enabled);
+        if (bloom.enabled)
+        {
+            ImGui::Indent(4.f);
+            ImGui::InputFloat("Threshold", &bloom.threshold);
+            ImGui::InputFloat("Bloom Strength", &bloom.strength);
+            ImGui::Unindent(4.f);
+        }
+
+        ImGui::Checkbox("Use Gray Scale", &gray_scale.enabled);
+
+        ImGui::Checkbox("Use Tonemapping", &tonemap.enabled);
+        if (tonemap.enabled)
+        {
+            ImGui::Indent(4.f);
+            ImGui::InputFloat("Exposure", &tonemap.exposure);
+            static const auto tonemapping_operators = std::array<std::string, 4>(
+              { "Linear", "Reinhard", "Jim and Richard", "Uncharted 2" });
+            static auto selected_window = 0;
+
+            if (selected_window != 2)
+                ImGui::InputFloat("Gamma Correction", &tonemap.gamma_correction);
+
+            if (ImGui::BeginCombo(
+                  "Tonemapping Operator",
+                  tonemapping_operators[selected_window].c_str()))
+            {
+                for (auto i = 0; i < tonemapping_operators.size(); i++)
+                    if (ImGui::Button(tonemapping_operators[i].c_str())) selected_window = i;
+                ImGui::EndCombo();
+            }
+            tonemap.type = selected_window;
+            ImGui::Unindent(4.f);
+        }
+
+        if (ImGui::Button("Update"))
+        {
+            processor.submit_bloom_settings(bloom);
+            processor.submit_gray_scale_settings(gray_scale);
+            processor.submit_tonemapping_settings(tonemap);
+        }
     }
 
     inline void settings(

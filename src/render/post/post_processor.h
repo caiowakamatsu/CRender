@@ -16,21 +16,39 @@ namespace cr
 
         [[nodiscard]] cr::image process(const cr::image &image) const noexcept;
 
-        void enable_bloom();
+        struct bloom_settings
+        {
+            bool enabled = false;
+            float threshold = 0.7f;
+            float strength = 1.0f;
+        };
+        void submit_bloom_settings(const bloom_settings &settings);
 
-        void enable_gray_scale();
+        struct gray_scale_settings
+        {
+            bool enabled = false;
+        };
+        void submit_gray_scale_settings(const gray_scale_settings &settings);
 
-        void disable_bloom();
-
-        void disable_gray_scale();
+        struct tonemapping_settings
+        {
+            bool enabled = false;
+            int type = 0;
+            float exposure = 1.f;
+            float gamma_correction = 2.2f;
+        };
+        void submit_tonemapping_settings(const tonemapping_settings &settings);
 
     private:
         [[nodiscard]] cr::image _blur(const cr::image &source, const glm::ivec2 &dimensions) const noexcept;
 
-        [[nodiscard]] cr::image _brightness(const cr::image &source, float brightness_required) const noexcept;
+        [[nodiscard]] cr::image _brightness(const cr::image &source) const noexcept;
 
-        bool _use_bloom = true;
-        bool _use_gray_scale = false;
+        bloom_settings _bloom_settings;
+
+        gray_scale_settings _gray_scale_settings;
+
+        tonemapping_settings _tonemapping_settings;
 
         struct
         {

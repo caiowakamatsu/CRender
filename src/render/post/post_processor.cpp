@@ -109,17 +109,14 @@ cr::post_processor::post_processor()
 
 cr::image cr::post_processor::process(const cr::image &image) const noexcept
 {
-    if (!_use_bloom && !_use_gray_scale)
+    if (
+      !_bloom_settings.enabled && !_gray_scale_settings.enabled && !_tonemapping_settings.enabled)
         return image;    // Short circuit if there's no post being done
 
     auto bloom_img = GLuint();
-    if (_use_bloom)
+    if (_bloom_settings.enabled)
     {
-        const auto blurred =
-          _blur(_brightness(image, 0.7f), glm::ivec2(image.width(), image.height()));
-//                const auto blurred = _blur(image, glm::ivec2(image.width(), image.height()));
-
-        cr::asset_loader::export_framebuffer(blurred, "blur-debug", asset_loader::image_type::PNG);
+        const auto blurred = _blur(_brightness(image), glm::ivec2(image.width(), image.height()));
 
         glGenTextures(1, &bloom_img);
         glBindTexture(GL_TEXTURE_2D, bloom_img);
@@ -193,10 +190,32 @@ cr::image cr::post_processor::process(const cr::image &image) const noexcept
       image.height());
 
     glUniform1i(
-      glGetUniformLocation(_gpu_handles.compute_program, "use_gray_scale"),
-      _use_gray_scale);
+      glGetUniformLocation(_gpu_handles.compute_program, "use_bloom"),
+      _bloom_settings.enabled);
 
-    glUniform1i(glGetUniformLocation(_gpu_handles.compute_program, "use_bloom"), _use_bloom);
+    glUniform1i(
+      glGetUniformLocation(_gpu_handles.compute_program, "use_gray_scale"),
+      _gray_scale_settings.enabled);
+
+    glUniform1i(
+      glGetUniformLocation(_gpu_handles.compute_program, "use_tonemapping"),
+      _tonemapping_settings.enabled);
+
+    glUniform1f(
+      glGetUniformLocation(_gpu_handles.compute_program, "bloom_strength"),
+      _bloom_settings.strength);
+
+    glUniform1i(
+      glGetUniformLocation(_gpu_handles.compute_program, "tonemapping_type"),
+      _tonemapping_settings.type);
+
+    glUniform1f(
+      glGetUniformLocation(_gpu_handles.compute_program, "tonemapping_exposure"),
+      _tonemapping_settings.exposure);
+
+    glUniform1f(
+      glGetUniformLocation(_gpu_handles.compute_program, "gamma_correction"),
+      _tonemapping_settings.gamma_correction);
 
     glDispatchCompute(
       static_cast<int>(glm::ceil(image.width() / 8)),
@@ -213,26 +232,6 @@ cr::image cr::post_processor::process(const cr::image &image) const noexcept
     glDeleteTextures(1, &gpu_src_img);
 
     return processed_image;
-}
-
-void cr::post_processor::enable_bloom()
-{
-    _use_bloom = true;
-}
-
-void cr::post_processor::enable_gray_scale()
-{
-    _use_gray_scale = true;
-}
-
-void cr::post_processor::disable_bloom()
-{
-    _use_bloom = false;
-}
-
-void cr::post_processor::disable_gray_scale()
-{
-    _use_gray_scale = false;
 }
 
 cr::image cr::post_processor::_blur(const cr::image &source_img, const glm::ivec2 &dimensions)
@@ -293,35 +292,37 @@ cr::image cr::post_processor::_blur(const cr::image &source_img, const glm::ivec
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, blurred.data());
     glDeleteTextures(2, buffers.data());
 
-    cr::asset_loader::export_framebuffer(source_img, "pre-blur", asset_loader::image_type::PNG);
-
     return blurred;
 }
 
-cr::image
-  cr::post_processor::_brightness(const cr::image &source, float brightness_required) const noexcept
+cr::image cr::post_processor::_brightness(const cr::image &source) const noexcept
 {
     auto passed = source;
 
     for (auto i = 0; i < passed.height() * passed.width(); i++)
     {
         const auto at         = glm::vec3(passed.get(i % source.width(), i / source.height()));
-
-        if (
-          glm::isnan(at.x) ||
-          glm::isnan(at.y) ||
-          glm::isnan(at.z) ||
-          glm::isinf(at.x) ||
-          glm::isinf(at.y) ||
-          glm::isinf(at.z)) {
-            passed.set(i % source.width(), i / source.height(), glm::vec3(0.2, 0.9, 0.9));
-        } else {
-            const auto brightness = glm::dot(at, glm::vec3(0.2126, 0.7152, 0.0722));
-            if (brightness < brightness_required)
-                passed.set(i % source.width(), i / source.height(), glm::vec3(0));
-
-        }
+        const auto brightness = glm::dot(at, glm::vec3(0.2126, 0.7152, 0.0722));
+        if (brightness < _bloom_settings.threshold)
+            passed.set(i % source.width(), i / source.height(), glm::vec3(0));
     }
 
     return passed;
+}
+
+void cr::post_processor::submit_bloom_settings(const cr::post_processor::bloom_settings &settings)
+{
+    _bloom_settings = settings;
+}
+
+void cr::post_processor::submit_gray_scale_settings(
+  const cr::post_processor::gray_scale_settings &settings)
+{
+    _gray_scale_settings = settings;
+}
+
+void cr::post_processor::submit_tonemapping_settings(
+  const cr::post_processor::tonemapping_settings &settings)
+{
+    _tonemapping_settings = settings;
 }
