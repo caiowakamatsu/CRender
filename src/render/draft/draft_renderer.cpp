@@ -21,8 +21,9 @@ cr::draft_renderer::draft_renderer(
     // Load shaders in
     // Load the shader into the string
     {
-        auto shader_file_in_stream = std::ifstream(std::string(CRENDER_ASSET_PATH) + "shaders/draft_mode.vert");
-        auto shader_string_stream  = std::stringstream();
+        auto shader_file_in_stream =
+          std::ifstream(std::string(CRENDER_ASSET_PATH) + "shaders/draft_mode.vert");
+        auto shader_string_stream = std::stringstream();
         shader_string_stream << shader_file_in_stream.rdbuf();
         const auto shader_source = shader_string_stream.str();
 
@@ -45,8 +46,9 @@ cr::draft_renderer::draft_renderer(
     }
 
     {
-        auto shader_file_in_stream = std::ifstream(std::string(CRENDER_ASSET_PATH) + "shaders/draft_mode.frag");
-        auto shader_string_stream  = std::stringstream();
+        auto shader_file_in_stream =
+          std::ifstream(std::string(CRENDER_ASSET_PATH) + "shaders/draft_mode.frag");
+        auto shader_string_stream = std::stringstream();
         shader_string_stream << shader_file_in_stream.rdbuf();
         const auto shader_source = shader_string_stream.str();
 
@@ -196,10 +198,14 @@ void cr::draft_renderer::render()
 
     glUseProgram(_program_handle);
 
-    for (const auto entity : _scene->get()->registry()->entities.view<cr::entity::model_gpu_data, cr::entity::instances>())
+    for (const auto entity : _scene->get()
+                               ->registry()
+                               ->entities.view<cr::entity::model_gpu_data, cr::entity::instances>())
     {
-        const auto meshes = _scene->get()->registry()->entities.get<cr::entity::model_gpu_data>(entity).meshes;
-        const auto instances = _scene->get()->registry()->entities.get<cr::entity::instances>(entity);
+        const auto meshes =
+          _scene->get()->registry()->entities.get<cr::entity::model_gpu_data>(entity).meshes;
+        const auto instances =
+          _scene->get()->registry()->entities.get<cr::entity::instances>(entity);
 
         for (const auto &mesh : meshes)
         {
@@ -207,6 +213,16 @@ void cr::draft_renderer::render()
             {
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, mesh.texture);
+                glUniform3f(glGetUniformLocation(_program_handle, "colour"), -1, -1, -1);
+            }
+            else
+            {
+                const auto colour = mesh.material.info.colour;
+                glUniform3f(
+                  glGetUniformLocation(_program_handle, "colour"),
+                  colour.x,
+                  colour.y,
+                  colour.z);
             }
 
             glBindVertexArray(mesh.vao);
@@ -223,7 +239,7 @@ void cr::draft_renderer::render()
 void cr::draft_renderer::_update_uniforms(const glm::mat4 &model)
 {
     const auto mvp_location = glGetUniformLocation(_program_handle, "mvp");
-    const auto pos_location = glGetUniformLocation(_program_handle, "camera_os");
+    const auto pos_location = glGetUniformLocation(_program_handle, "camera_pos");
 
     const auto camera = _scene->get()->registry()->camera();
 
