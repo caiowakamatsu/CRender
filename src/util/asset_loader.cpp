@@ -252,25 +252,29 @@ cr::asset_loader::model_data
                   4);
                 stbi_set_flip_vertically_on_load(false);
 
-                auto texture_image = cr::image(image_dimensions.x, image_dimensions.y);
+                if (data != nullptr)
+                {
+                    auto texture_image = cr::image(image_dimensions.x, image_dimensions.y);
 
-                for (auto x = 0; x < image_dimensions.x; x++)
-                    for (auto y = 0; y < image_dimensions.y; y++)
-                    {
-                        const auto base_index = (x + y * image_dimensions.x) * 4;
+                    for (auto x = 0; x < image_dimensions.x; x++)
+                        for (auto y = 0; y < image_dimensions.y; y++)
+                        {
+                            const auto base_index = (x + y * image_dimensions.x) * 4;
 
-                        const auto r = data[base_index + 0] / 255.f;
-                        const auto g = data[base_index + 1] / 255.f;
-                        const auto b = data[base_index + 2] / 255.f;
-                        const auto a = data[base_index + 3] / 255.f;
+                            const auto r = data[base_index + 0] / 255.f;
+                            const auto g = data[base_index + 1] / 255.f;
+                            const auto b = data[base_index + 2] / 255.f;
+                            const auto a = data[base_index + 3] / 255.f;
 
-                        texture_image.set(x, y, glm::vec4(r, g, b, a));
-                    }
+                            texture_image.set(x, y, glm::vec4(r, g, b, a));
+                        }
 
-                stbi_image_free(data);
-                model_data.textures.push_back(std::move(texture_image));
-                material_data.tex = model_data.textures.size() - 1;
-                already_loaded.insert({ material.diffuse_texname, material_data.tex.value() });
+                    stbi_image_free(data);
+                    model_data.textures.push_back(std::move(texture_image));
+                    material_data.tex = model_data.textures.size() - 1;
+                    already_loaded.insert({ material.diffuse_texname, material_data.tex.value() });
+                } else
+                    cr::logger::warn("Failed to find texture [{}], defaulting to blank material", material.diffuse_texname);
             } else
                 material_data.tex = it->second;
         }
