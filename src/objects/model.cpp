@@ -36,6 +36,9 @@ namespace
           glm::normalize(glm::vec3(ray_hit.hit.Ng_x, ray_hit.hit.Ng_y, ray_hit.hit.Ng_z));
         record.material = &materials.materials[materials.indices[ray_hit.hit.primID]];
 
+        if (glm::dot(record.normal, ray.direction) > 0)
+            record.normal *= -1;
+
         rtcInterpolate0(
           geometry.geometry,
           ray_hit.hit.primID,
