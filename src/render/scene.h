@@ -21,7 +21,7 @@ namespace cr
     public:
         scene() = default;
 
-        void add_model(const cr::asset_loader::model_data &model);
+        void add_model(const cr::asset_loader::loaded_model &model);
 
         void set_skybox(cr::image &&skybox);
 
@@ -40,6 +40,13 @@ namespace cr
         [[nodiscard]] glm::vec2 skybox_rotation() const noexcept;
 
         [[nodiscard]] bool is_sun_enabled() const noexcept;
+
+        struct nee_sample
+        {
+            glm::vec3 contribution;
+            float pdf;
+        };
+        [[nodiscard]] nee_sample sample_light(const cr::ray::intersection_record &record, cr::random *random);
 
     private:
         bool _sun_enabled = true;

@@ -13,7 +13,13 @@
 
 namespace cr::asset_loader
 {
-    struct model_data
+    struct material_index
+    {
+        uint32_t begin;
+        uint32_t end;
+    };
+
+    struct loaded_model
     {
         std::string name;
 
@@ -27,19 +33,18 @@ namespace cr::asset_loader
         std::vector<uint32_t> material_indices;
         std::vector<uint32_t> texture_indices;
         std::vector<uint32_t> normal_indices;
+
+        std::unordered_map<uint32_t, material_index> unique_material_indices;
     };
 
-    [[nodiscard]] model_data load_model(const std::string &file, const std::string &folder);
+    [[nodiscard]] loaded_model load_model(const std::string &file, const std::string &folder);
 
     struct picture_data
     {
         glm::ivec2         res;
         std::vector<float> colour;
 
-        [[nodiscard]] inline cr::image as_image()
-        {
-            return cr::image(colour, res.x, res.y);
-        }
+        [[nodiscard]] inline cr::image as_image() { return cr::image(colour, res.x, res.y); }
     };
 
     [[nodiscard]] picture_data load_picture(const std::string &file);

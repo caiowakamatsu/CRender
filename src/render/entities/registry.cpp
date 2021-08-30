@@ -35,6 +35,7 @@ cr::registry::registry()
     entities.prepare<cr::entity::embree_ctx>();
     entities.prepare<cr::entity::model_gpu_data>();
     entities.prepare<cr::entity::model_materials>();
+    entities.prepare<cr::entity::emissive_triangles>();
 
     // Create the camera
     _camera_entity = entities.create();
@@ -48,7 +49,7 @@ cr::registry::registry()
       sun_dir_local_coords.bi_tangent);
 }
 
-void cr::registry::register_model(const cr::asset_loader::model_data &data)
+void cr::registry::register_model(const cr::asset_loader::loaded_model &data)
 {
     // Expand the data we have have from the indices. Why?
     // Good question - I'm waiting on Intels Embree team to reply to my github issue - And give a
@@ -89,14 +90,25 @@ void cr::registry::register_model(const cr::asset_loader::model_data &data)
             updated_materials[i].info.tex = ecs_handles[handle.value()];
     }
 
+    auto emissive = std::vector<uint32_t>(data.material_indices.size());
+
+    auto emissive_count = 0;
+    for (auto i = 0; i < data.material_indices.size(); i++)
+        if (updated_materials[data.material_indices[i]].info.emission > 0)
+            emissive[emissive_count++] = i;
+
+    auto shrunk = std::vector<uint32_t>(emissive_count);
+    std::memcpy(shrunk.data(), emissive.data(), sizeof(uint32_t) * emissive_count);
+
     entities.emplace<cr::entity::model_materials>(entity, updated_materials, data.material_indices);
     entities.emplace<cr::entity::geometry>(entity, std::move(vertices), std::move(indices), std::move(texture_coords));
     entities.emplace<cr::entity::embree_ctx>(entity, model_instance);
     entities.emplace<cr::entity::instances>(entity, instances);
     entities.emplace<std::string>(entity, data.name);
+    entities.emplace<cr::entity::emissive_triangles>(entity, std::move(shrunk));
 }
 
-void cr::registry::_upload_gpu_meshes(const cr::asset_loader::model_data &data, uint32_t entity)
+void cr::registry::_upload_gpu_meshes(const cr::asset_loader::loaded_model &data, uint32_t entity)
 {
     struct mesh
     {

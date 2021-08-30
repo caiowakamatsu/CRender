@@ -2,22 +2,17 @@
 
 namespace
 {
-    [[nodiscard]] float randf() noexcept
-    {
-        thread_local std::mt19937             gen;
-        std::uniform_real_distribution<float> dist(0.f, 1.f);
-        return dist(gen);
-    }
-
     struct processed_hit
     {
         float     emission;
+        float     bdxf;
+        float     pdf;
         glm::vec3 albedo;
         glm::vec4 colour;
         cr::ray   ray;
     };
     [[nodiscard]] processed_hit
-      process_hit(const cr::ray::intersection_record &record, const cr::ray &ray, cr::scene *scene)
+      process_hit(const cr::ray::intersection_record &record, const cr::ray &ray, cr::scene *scene, cr::random *random)
     {
         auto out = processed_hit();
 
@@ -69,25 +64,25 @@ namespace
         break;
         case cr::material::metal:
         {
-            out.ray.origin = record.intersection_point + record.normal * 0.0001f;
-            auto hemp_samp = cr::sampling::hemp_cos(record.normal, glm::vec2(::randf(), ::randf()));
+            const auto hemp_samp =
+              cr::sampling::hemp_cos(record.normal, glm::vec2(random->next_float(), random->next_float()));
 
+            out.ray.origin    = record.intersection_point + record.normal * 0.0001f;
             out.ray.direction = glm::reflect(ray.direction, record.normal);
-            //            out.ray.direction = glm::normalize(
-            //              (out.ray.direction + record.material->info.roughness * hemp_samp) -
-            //              out.ray.origin);
 
             out.albedo *= record.material->info.reflectiveness;
-            // throughput *= brdf(out_dir, surface_properties, in_dir) * cos_theta / pdf
+            out.bdxf = cr::numbers<float>::inv_pi;
+            out.pdf = glm::cos(glm::dot(out.ray.direction, record.normal)) / cr::numbers<float>::pi;
             break;
         }
         case cr::material::smooth:
             auto cos_hemp_dir =
-              cr::sampling::hemp_cos(record.normal, glm::vec2(::randf(), ::randf()));
+              cr::sampling::hemp_cos(record.normal, glm::vec2(random->next_float(), random->next_float()));
 
             out.ray.origin    = record.intersection_point + record.normal * 0.0001f;
             out.ray.direction = glm::normalize(cos_hemp_dir);
-            break;
+            out.bdxf          = cr::numbers<float>::inv_pi;
+            out.pdf = glm::cos(glm::dot(out.ray.direction, record.normal)) / cr::numbers<float>::pi;
         }
 
         return out;
@@ -105,35 +100,37 @@ cr::renderer::renderer(
       _albedo(res_x, res_y), _depth(res_x, res_y), _res_x(res_x), _res_y(res_y),
       _max_bounces(bounces), _thread_pool(pool), _scene(scene), _raw_buffer(res_x * res_y * 3)
 {
-    _management_thread = std::thread([this]() {
-        while (_run_management)
-        {
-            const auto tasks = _get_tasks();
+    _management_thread = std::thread(
+      [this]()
+      {
+          while (_run_management)
+          {
+              const auto tasks = _get_tasks();
 
-            if (!tasks.empty() && (_current_sample < _spp_target || _spp_target == 0))
-            {
-                _thread_pool->get()->wait_on_tasks(tasks);
-                _current_sample++;
-            }
-            else
-            {
-                if (_current_sample == _spp_target && _current_sample != 0)
-                    cr::logger::info(
-                      "Finished rendering [{}] samples at resolution [X: {}, Y: {}], took: [{}]s",
-                      _spp_target,
-                      _res_x,
-                      _res_y,
-                      _timer.time_since_start());
+              if (!tasks.empty() && (_current_sample < _spp_target || _spp_target == 0))
+              {
+                  _thread_pool->get()->wait_on_tasks(tasks);
+                  _current_sample++;
+              }
+              else
+              {
+                  if (_current_sample == _spp_target && _current_sample != 0)
+                      cr::logger::info(
+                        "Finished rendering [{}] samples at resolution [X: {}, Y: {}], took: [{}]s",
+                        _spp_target,
+                        _res_x,
+                        _res_y,
+                        _timer.time_since_start());
 
-                {
-                    auto guard = std::unique_lock(_pause_mutex);
-                    _pause_cond_var.notify_one();
-                }
-                auto guard = std::unique_lock(_start_mutex);
-                _start_cond_var.wait(guard);
-            }
-        }
-    });
+                  {
+                      auto guard = std::unique_lock(_pause_mutex);
+                      _pause_cond_var.notify_one();
+                  }
+                  auto guard = std::unique_lock(_start_mutex);
+                  _start_cond_var.wait(guard);
+              }
+          }
+      });
 }
 
 cr::renderer::~renderer()
@@ -238,20 +235,27 @@ std::vector<std::function<void()>> cr::renderer::_get_tasks()
     tasks.reserve(_res_y);
 
     for (auto y = 0; y < _res_y; y++)
-        tasks.emplace_back([this, y] {
-            auto fired_rays = size_t(0);
-            for (auto x = 0; x < _res_x; x++) this->_sample_pixel(x, y, fired_rays);
-            _total_rays += fired_rays;
-        });
+        tasks.emplace_back(
+          [this, y]
+          {
+              auto fired_rays = size_t(0);
+              for (auto x = 0; x < _res_x; x++)
+              {
+                  auto seed = _wang_hash(x * y * (_current_sample + 1) * 384);
+                  this->_sample_pixel(x, y, fired_rays, seed);
+              }
+              _total_rays += fired_rays;
+          });
 
     return tasks;
 }
 
-void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
+void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays, uint32_t seed)
 {
-    auto ray = _camera->get_ray(
-      (static_cast<float>(x) + ::randf()) / _res_x,
-      (static_cast<float>(y) + ::randf()) / _res_y,
+    auto random = cr::random(seed);
+    auto ray    = _camera->get_ray(
+      (static_cast<float>(x) + random.next_float()) / _res_x,
+      (static_cast<float>(y) + random.next_float()) / _res_y,
       _aspect_correction);
 
     auto throughput = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -274,29 +278,41 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
 
             const auto miss_sample = _scene->get()->sample_skybox(miss_uv.x, miss_uv.y);
 
-            if (i == 0) albedo = miss_sample;
-
-            final += throughput * miss_sample;
-            break;
-        }
-        else
-        {
-            processed_hit = ::process_hit(intersection, ray, _scene->get());
-
             if (i == 0)
             {
-                albedo = processed_hit.albedo;
-                normal = intersection.normal;
-                depth  = intersection.distance;
+                albedo = miss_sample;
+                final += throughput * miss_sample;
             }
 
-            throughput *= processed_hit.albedo;
-            final += throughput * processed_hit.emission;
-            ray = processed_hit.ray;
+            break;
         }
 
+        processed_hit = ::process_hit(intersection, ray, _scene->get(), &random);
+
+        // Next event estimation
+        // Currently since the scene is small, going through all of the lights is fine
+        //            const auto nee = _scene->get()->sample_lights(intersection);
+
+        if (i == 0)
+        {
+            albedo = processed_hit.albedo;
+            normal = intersection.normal;
+            depth  = intersection.distance;
+        }
+
+        ray = processed_hit.ray;
+        throughput *= processed_hit.albedo;
+        final += processed_hit.bdxf * throughput * processed_hit.emission / processed_hit.pdf;
+
+        // Light NEE
+//        {
+//            auto light_nee = _scene->get()->sample_light(intersection, &random);
+//            final += throughput * light_nee.contribution / light_nee.pdf;
+//        }
+
         // Sun NEE
-        if (_scene->get()->is_sun_enabled()) {
+        if (_scene->get()->is_sun_enabled())
+        {
             auto out_ray = cr::ray(
               intersection.intersection_point + intersection.normal * 0.001f,
               glm::vec3(0.0f));
@@ -307,7 +323,7 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
             sample.sun_transform = _scene->get()->registry()->sun_transform();
             sample.sun           = _scene->get()->registry()->sun();
 
-            const auto pdf_cos = cr::sampling::sun::sample(sample);
+            const auto pdf_cos = cr::sampling::sun::sample(sample, &random);
             out_ray.direction  = pdf_cos.dir;
 
             auto sun_intersection = _scene->get()->cast_ray(out_ray);
@@ -323,6 +339,7 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
 
     // flip Y
     y = _res_y - 1 - y;
+    x = _res_x - 1 - x;
 
     const auto base_index = (x + y * _res_x) * 3;
     _raw_buffer[base_index + 0] += final.x;
@@ -366,4 +383,14 @@ cr::renderer::renderer_stats cr::renderer::current_stats()
     stats.total_rays         = _total_rays;
     stats.running_time       = _timer.time_since_start();
     return stats;
+}
+
+std::uint32_t cr::renderer::_wang_hash(uint32_t val) noexcept
+{
+    val = (val ^ 61) ^ (val >> 16);
+    val *= 9;
+    val = val ^ (val >> 4);
+    val *= 0x27D4EB2D;
+    val = val ^ (val >> 15);
+    return val;
 }

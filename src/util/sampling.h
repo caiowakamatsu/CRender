@@ -3,11 +3,8 @@
 #include <glm/glm.hpp>
 #include <util/numbers.h>
 #include <render/entities/components.h>
+#include <util/random.h>
 
-namespace
-{
-    [[nodiscard]] float randf() noexcept;
-}
 
 namespace cr::sampling
 {
@@ -46,11 +43,15 @@ namespace cr::sampling
         return 1.0f / (cr::numbers<float>::tau * (1.0f - glm::cos(theta_max)));
     }
 
-    [[nodiscard]] inline float hemp_cos_pdf(float cos_theta) { return cos_theta / cr::numbers<float>::pi; }
+    [[nodiscard]] inline float hemp_cos_pdf(float cos_theta)
+    {
+        return cos_theta / cr::numbers<float>::pi;
+    }
 
     namespace sun
     {
-        [[nodiscard]] inline glm::vec3 sky_colour(const glm::vec3 &direction, const cr::entity::sun &sun)
+        [[nodiscard]] inline glm::vec3
+          sky_colour(const glm::vec3 &direction, const cr::entity::sun &sun)
         {
             const auto sun_angle = glm::acos(glm::dot(direction, -sun.direction));
             return (sun_angle < sun.size) ? (sun.colour * sun.intensity) : glm::vec3(0.0f);
@@ -69,12 +70,12 @@ namespace cr::sampling
             float     cosine;
             glm::vec3 dir;
         };
-        [[nodiscard]] inline pdf_cos sample(const incoming& sample)
+        [[nodiscard]] inline pdf_cos sample(const incoming &sample, cr::random *random)
         {
             auto out = pdf_cos();
             out.dir  = sample.sun_transform *
-              map_to_solid_angle(glm::vec2(::randf(), ::randf()), sample.sun.size);
-            out.pdf = solid_angle_mapping_pdf(sample.sun.size);
+              map_to_solid_angle(glm::vec2(random->next_float(), random->next_float()), sample.sun.size);
+            out.pdf    = solid_angle_mapping_pdf(sample.sun.size);
             out.cosine = glm::clamp(glm::dot(sample.normal, out.dir), 0.0f, 1.0f);
             return out;
         }
@@ -104,8 +105,10 @@ namespace cr::sampling
          * Specular G (Geometric Shadowing)
          *
          *                                                          0.5
-         * V(v,l,a) = -----------------------------------------------------------------------------------------
-         *            n * l sqrt((n * v) ^ 2 (1 - a ^ 2) + a ^ 2) + n * v sqrt((n * l) ^ 2 (1 - a ^ 2) + a ^ 2)
+         * V(v,l,a) =
+         * -----------------------------------------------------------------------------------------
+         *            n * l sqrt((n * v) ^ 2 (1 - a ^ 2) + a ^ 2) + n * v sqrt((n * l) ^ 2 (1 - a ^
+         * 2) + a ^ 2)
          *
          */
         [[nodiscard]] inline float specular_g(float NoV, float NoL, float roughness)
@@ -143,18 +146,6 @@ namespace cr::sampling
 
     }    // namespace cook_torrence
 
-    [[nodiscard]] inline glm::vec3 hemp_rand()
-    {
-        while (true)
-        {
-            auto point = glm::vec3(::randf() * 2 - 1, ::randf() * 2 - 1, ::randf() * 2 - 1);
-
-            if (glm::length(point) >= 1) continue;
-
-            return glm::normalize(point);
-        }
-    }
-
     [[nodiscard]] inline glm::vec3 sphere(const glm::vec2 uv)
     {
         const auto cos_theta = 2.0f * uv.x - 1.0f;
@@ -171,6 +162,31 @@ namespace cr::sampling
     {
         const auto p = sphere(uv);
         return normal + p;
+    }
+
+    struct triangle_sample
+    {
+        glm::vec3 point;
+        float     pdf;
+    };
+    [[nodiscard]] inline triangle_sample
+      sample_triangle(const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2, cr::random *random)
+    {
+        auto       tri_sample = triangle_sample();
+        const auto e0         = v1 - v0;
+        const auto e1         = v2 - v0;
+
+        const auto r0 = random->next_float();
+        const auto r1 = random->next_float();
+
+        const auto sqrt_r0 = glm::sqrt(r0);
+
+        const auto beta  = (1.0f - r1) * sqrt_r0;
+        const auto gamma = r1 * sqrt_r0;
+
+        tri_sample.point = v0 + beta * e0 + gamma * e1;
+        tri_sample.pdf   = 1.0f / glm::length(glm::cross(e0, e1)) / 2.0f;
+        return tri_sample;
     }
 
     [[nodiscard]] inline glm::vec3 cos_hemp(const float x, const float y)

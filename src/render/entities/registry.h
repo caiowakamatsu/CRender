@@ -28,10 +28,10 @@ namespace cr
         entt::basic_registry<uint32_t> entities;
 
         /* Load a model into the register after loading it in */
-        void register_model(const cr::asset_loader::model_data &data);
+        void register_model(const cr::asset_loader::loaded_model &data);
 
     private:
-        void _upload_gpu_meshes(const cr::asset_loader::model_data &data, uint32_t entity);
+        void _upload_gpu_meshes(const cr::asset_loader::loaded_model &data, uint32_t entity);
 
         [[nodiscard]] std::vector<float> _zip_mesh_data(
           const std::vector<glm::vec3> &vertices,

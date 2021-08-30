@@ -2,13 +2,6 @@
 
 namespace
 {
-    [[nodiscard]] float randf() noexcept
-    {
-        thread_local std::mt19937                          gen;
-        thread_local std::uniform_real_distribution<float> dist(0.f, 1.f);
-        return dist(gen);
-    }
-
     [[nodiscard]] float intersect_unit_rect(const cr::ray &ray)
     {
         auto den    = glm::dot(ray.direction, glm::vec3(0, 1, 0));
@@ -28,7 +21,7 @@ namespace
     }
 }    // namespace
 
-void cr::scene::add_model(const cr::asset_loader::model_data &model)
+void cr::scene::add_model(const cr::asset_loader::loaded_model &model)
 {
     _entities.register_model(model);
 }
@@ -120,4 +113,54 @@ void cr::scene::set_sun_enabled(bool value)
 bool cr::scene::is_sun_enabled() const noexcept
 {
     return _sun_enabled;
+}
+
+cr::scene::nee_sample cr::scene::sample_light(const cr::ray::intersection_record &record, cr::random *random)
+{
+    auto sample       = nee_sample();
+
+    const auto &view = _entities.entities.view<cr::entity::emissive_triangles>();
+
+    auto sum = glm::vec3(0);
+
+    for (const auto &entity : view)
+    {
+        const auto &instances  = _entities.entities.get<cr::entity::instances>(entity);
+        const auto &embree_ctx = _entities.entities.get<cr::entity::embree_ctx>(entity);
+        const auto &materials  = _entities.entities.get<cr::entity::model_materials>(entity);
+        const auto &emissive   = _entities.entities.get<cr::entity::emissive_triangles>(entity);
+        const auto &geometry   = _entities.entities.get<cr::entity::geometry>(entity);
+
+        const auto tri_pdf = 1.0f / emissive.emissive_indices.size();
+
+        // Pick random triangle to sample
+
+        for (auto i = 0; i < emissive.emissive_indices.size(); i++)
+        {
+            const auto idx = emissive.emissive_indices[i] * 3;
+            const auto v0  = geometry.vert_coords->operator[](idx + 0);
+            const auto v1  = geometry.vert_coords->operator[](idx + 1);
+            const auto v2  = geometry.vert_coords->operator[](idx + 2);
+
+            const auto [sample_point, area_pdf] = cr::sampling::sample_triangle(v0, v1, v2, random);
+
+            const auto sample_pdf = area_pdf * tri_pdf;
+
+            // At this point we have everything we need
+            auto ray = cr::ray(
+              record.intersection_point + record.normal * 0.001f,
+              glm::normalize(sample_point - record.intersection_point));
+
+            const auto current = cr::model::intersect(ray, instances, embree_ctx, materials);
+            if (current.prim_id == idx / 3)
+            {
+                // There was an intersection, add the contribution
+                sample.contribution = current.material->info.emission *
+                  glm::vec3(current.material->info.colour);
+                sample.pdf = tri_pdf;
+            }
+        }
+    }
+
+    return sample;
 }

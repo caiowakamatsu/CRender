@@ -70,7 +70,9 @@ namespace cr
     private:
         [[nodiscard]] std::vector<std::function<void()>> _get_tasks();
 
-        void _sample_pixel(uint64_t x, uint64_t , size_t &fired_rays);
+        [[nodiscard]] static std::uint32_t _wang_hash(uint32_t val) noexcept;
+
+        void _sample_pixel(uint64_t x, uint64_t , size_t &fired_rays, uint32_t seed);
 
         cr::timer _timer;
 

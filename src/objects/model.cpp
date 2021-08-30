@@ -22,6 +22,7 @@ namespace
         ray_hit.ray.tnear  = 0.00001f;
         ray_hit.ray.tfar   = std::numeric_limits<float>::infinity();
         ray_hit.ray.mask   = -1;
+        ray_hit.hit.primID = -1;
         ray_hit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
 
         rtcIntersect1(geometry.scene, &ctx, &ray_hit);
@@ -35,9 +36,9 @@ namespace
         record.normal =
           glm::normalize(glm::vec3(ray_hit.hit.Ng_x, ray_hit.hit.Ng_y, ray_hit.hit.Ng_z));
         record.material = &materials.materials[materials.indices[ray_hit.hit.primID]];
+        record.prim_id  = ray_hit.hit.primID;
 
-        if (glm::dot(record.normal, ray.direction) > 0)
-            record.normal *= -1;
+        if (glm::dot(record.normal, ray.direction) > 0) record.normal *= -1;
 
         rtcInterpolate0(
           geometry.geometry,

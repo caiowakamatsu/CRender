@@ -70,13 +70,23 @@ namespace cr::entity
         }
 
         embree_ctx(RTCDevice device, RTCScene scene, RTCGeometry geometry)
-        : device(device), scene(scene), geometry(geometry)
+            : device(device), scene(scene), geometry(geometry)
         {
         }
 
         RTCDevice   device   = nullptr;
         RTCScene    scene    = nullptr;
         RTCGeometry geometry = nullptr;
+    };
+
+    struct emissive_triangles
+    {
+        emissive_triangles() = default;
+        explicit emissive_triangles(std::vector<uint32_t> indices)
+            : emissive_indices(std::move(indices))
+        {
+        }
+        std::vector<uint32_t> emissive_indices;
     };
 
     struct model_materials
