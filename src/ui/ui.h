@@ -750,10 +750,12 @@ namespace cr::ui
 
                 // Check if it was attempted to be selected
                 if (
-                  ImGui::IsItemHovered() && keys[key_code::KEY_LEFT_CONTROL] == key_state::pressed)
+                  ImGui::IsItemHovered() && (keys[key_code::KEY_LEFT_CONTROL] == key_state::held || keys[key_code::KEY_LEFT_CONTROL] == key_state::repeat) && ImGui::IsMouseDoubleClicked(0))
                 {
-                    if (found_material_selected[i]) { found_material_selected[i] = false; }
-                    else
+
+                    if (found_material_selected[i])
+                        found_material_selected[i] = false;
+                    else if (keys[key_code::KEY_LEFT_SHIFT] == key_state::held)
                     {
                         auto closest_selection = std::int32_t(-1);
 
@@ -788,6 +790,8 @@ namespace cr::ui
                             for (auto j = start; j <= end; j++) found_material_selected[j] = true;
                         }
                     }
+                    else
+                        found_material_selected[i] = true;
                 }
                 ImGui::Indent(4.f);
                 static const auto material_types =
