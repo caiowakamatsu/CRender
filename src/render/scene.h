@@ -43,7 +43,9 @@ namespace cr
 
         struct nee_sample
         {
+            bool intersected;
             glm::vec3 contribution;
+            float distance;
             float pdf;
         };
         [[nodiscard]] nee_sample sample_light(const cr::ray::intersection_record &record, cr::random *random);

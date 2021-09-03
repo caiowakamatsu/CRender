@@ -11,8 +11,11 @@ namespace
         glm::vec4 colour;
         cr::ray   ray;
     };
-    [[nodiscard]] processed_hit
-      process_hit(const cr::ray::intersection_record &record, const cr::ray &ray, cr::scene *scene, cr::random *random)
+    [[nodiscard]] processed_hit process_hit(
+      const cr::ray::intersection_record &record,
+      const cr::ray &                     ray,
+      cr::scene *                         scene,
+      cr::random *                        random)
     {
         auto out = processed_hit();
 
@@ -64,8 +67,9 @@ namespace
         break;
         case cr::material::metal:
         {
-            const auto hemp_samp =
-              cr::sampling::hemp_cos(record.normal, glm::vec2(random->next_float(), random->next_float()));
+            const auto hemp_samp = cr::sampling::hemp_cos(
+              record.normal,
+              glm::vec2(random->next_float(), random->next_float()));
 
             out.ray.origin    = record.intersection_point + record.normal * 0.0001f;
             out.ray.direction = glm::reflect(ray.direction, record.normal);
@@ -76,8 +80,9 @@ namespace
             break;
         }
         case cr::material::smooth:
-            auto cos_hemp_dir =
-              cr::sampling::hemp_cos(record.normal, glm::vec2(random->next_float(), random->next_float()));
+            auto cos_hemp_dir = cr::sampling::hemp_cos(
+              record.normal,
+              glm::vec2(random->next_float(), random->next_float()));
 
             out.ray.origin    = record.intersection_point + record.normal * 0.0001f;
             out.ray.direction = glm::normalize(cos_hemp_dir);
@@ -305,10 +310,13 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays, uin
         final += processed_hit.bdxf * throughput * processed_hit.emission / processed_hit.pdf;
 
         // Light NEE
-//        {
-//            auto light_nee = _scene->get()->sample_light(intersection, &random);
-//            final += throughput * light_nee.contribution / light_nee.pdf;
-//        }
+        {
+            auto light_nee = _scene->get()->sample_light(intersection, &random);
+            if (light_nee.intersected)
+                final += throughput *
+                  ((light_nee.contribution /
+                  light_nee.pdf) * (light_nee.distance * light_nee.distance));
+        }
 
         // Sun NEE
         if (_scene->get()->is_sun_enabled())

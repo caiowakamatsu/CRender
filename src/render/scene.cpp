@@ -118,6 +118,7 @@ bool cr::scene::is_sun_enabled() const noexcept
 cr::scene::nee_sample cr::scene::sample_light(const cr::ray::intersection_record &record, cr::random *random)
 {
     auto sample       = nee_sample();
+    sample.intersected = false;
 
     const auto &view = _entities.entities.view<cr::entity::emissive_triangles>();
 
@@ -133,32 +134,33 @@ cr::scene::nee_sample cr::scene::sample_light(const cr::ray::intersection_record
 
         const auto tri_pdf = 1.0f / emissive.emissive_indices.size();
 
-        // Pick random triangle to sample
+        auto tri = glm::min(static_cast<uint64_t>(random->next_float() * emissive.emissive_indices.size() - 1), emissive.emissive_indices.size() - 1);
 
-        for (auto i = 0; i < emissive.emissive_indices.size(); i++)
+        const auto idx = emissive.emissive_indices[tri] * 3;
+        const auto v0  = geometry.vert_coords->operator[](idx + 0);
+        const auto v1  = geometry.vert_coords->operator[](idx + 1);
+        const auto v2  = geometry.vert_coords->operator[](idx + 2);
+
+        const auto [sample_point, area_pdf] = cr::sampling::sample_triangle(v0, v1, v2, random);
+
+        const auto sample_pdf = area_pdf * tri_pdf;
+
+        // At this point we have everything we need
+        auto ray = cr::ray(
+          record.intersection_point + record.normal * 0.001f,
+          glm::normalize(sample_point - record.intersection_point));
+
+        const auto current = cr::model::intersect(ray, instances, embree_ctx, materials);
+        if (current.prim_id == idx / 3)
         {
-            const auto idx = emissive.emissive_indices[i] * 3;
-            const auto v0  = geometry.vert_coords->operator[](idx + 0);
-            const auto v1  = geometry.vert_coords->operator[](idx + 1);
-            const auto v2  = geometry.vert_coords->operator[](idx + 2);
-
-            const auto [sample_point, area_pdf] = cr::sampling::sample_triangle(v0, v1, v2, random);
-
-            const auto sample_pdf = area_pdf * tri_pdf;
-
-            // At this point we have everything we need
-            auto ray = cr::ray(
-              record.intersection_point + record.normal * 0.001f,
-              glm::normalize(sample_point - record.intersection_point));
-
-            const auto current = cr::model::intersect(ray, instances, embree_ctx, materials);
-            if (current.prim_id == idx / 3)
-            {
-                // There was an intersection, add the contribution
-                sample.contribution = current.material->info.emission *
-                  glm::vec3(current.material->info.colour);
-                sample.pdf = tri_pdf;
-            }
+            // There was an intersection, add the contribution
+            sample.contribution = current.material->info.emission *
+                                  glm::vec3(current.material->info.colour);
+            sample.pdf = tri_pdf;
+            sample.intersected = true;
+            sample.distance = current.distance;
+        } else {
+            sample.intersected = false;
         }
     }
 
