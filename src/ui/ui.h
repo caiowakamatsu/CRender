@@ -755,7 +755,7 @@ namespace cr::ui
 
                     if (found_material_selected[i])
                         found_material_selected[i] = false;
-                    else if (keys[key_code::KEY_LEFT_SHIFT] == key_state::held)
+                    else if (keys[key_code::KEY_LEFT_SHIFT] == key_state::held || keys[key_code::KEY_LEFT_SHIFT] == key_state::repeat)
                     {
                         auto closest_selection = std::int32_t(-1);
 
