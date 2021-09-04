@@ -387,7 +387,8 @@ namespace cr::ui
       cr::renderer *                    renderer,
       cr::draft_renderer *              draft_renderer,
       cr::scene *                       scene,
-      std::unique_ptr<cr::thread_pool> &pool)
+      std::unique_ptr<cr::thread_pool> &pool,
+      glm::vec2 &speed_multipliers)
     {
         static auto resolution   = glm::ivec2();
         static auto bounces      = int(5);
@@ -508,6 +509,17 @@ namespace cr::ui
                       scene->set_sun_enabled(sun_enabled);
                   });
             }
+
+            ImGui::Unindent(4.f);
+        }
+
+        {
+            ImGui::Separator();
+            ImGui::Text("Input Sensitivity (Draft Mode)");
+            ImGui::Indent(4.f);
+
+            ImGui::SliderFloat("Movement (Keyboard)", &speed_multipliers.x, 0.1f, 20.f);
+            ImGui::SliderFloat("Rotation (Mouse)", &speed_multipliers.y, 0.1f, 20.f);
 
             ImGui::Unindent(4.f);
         }
@@ -746,7 +758,10 @@ namespace cr::ui
                 ImGui::Indent(4.f);
                 ImGui::Text(
                   "%s",
-                  (material.info.name + (found_material_selected[i] ? " (Selected)" : "")).c_str());
+                  ((found_material_selected[i] ? "* " : "") + material.info.name).c_str());
+
+                if (!selected && any_selection)
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6, 0.6, 0.6, 1.0));
 
                 // Check if it was attempted to be selected
                 if (
@@ -898,6 +913,9 @@ namespace cr::ui
                                   material.info.colour;
                     }
 
+
+                if (!selected && any_selection)
+                    ImGui::PopStyleColor();
                 ImGui::Unindent(8.f);
             }
 
@@ -1142,7 +1160,7 @@ namespace cr::ui
 
                 glm::decompose(matrix, scale, rotation, translation, skew, perspective);
 
-                ImGui::Text("%s", fmt::format("Translation #{} ##{}", i, i).c_str());
+                ImGui::Text("%s", fmt::format("Translation #{}", i).c_str());
                 ImGui::SameLine();
                 if (ImGui::Button("-")) to_remove.push_back(i);
 
@@ -1235,7 +1253,8 @@ namespace cr::ui
       std::unique_ptr<cr::thread_pool> *                             pool,
       std::unique_ptr<cr::post_processor> *                          post_processor,
       std::array<key_state, static_cast<size_t>(key_code::MAX_KEY)> &keys,
-      bool                                                           draft_mode)
+      bool                                                           draft_mode,
+      glm::vec2 &speed_multipliers)
     {
         ImGui::Begin("Misc");
 
@@ -1268,7 +1287,7 @@ namespace cr::ui
 
         switch (selected_window)
         {
-        case 0: setting_render(renderer->get(), draft_renderer->get(), scene->get(), *pool); break;
+        case 0: setting_render(renderer->get(), draft_renderer->get(), scene->get(), *pool, speed_multipliers); break;
         case 1: setting_export(renderer, post_processor); break;
         case 2: setting_materials(renderer->get(), scene->get(), keys); break;
         case 3: setting_asset_loader(renderer, scene, draft_mode); break;

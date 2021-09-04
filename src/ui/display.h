@@ -86,6 +86,8 @@ namespace cr
         glm::vec2 _mouse_pos_prev {};
         glm::vec2 _mouse_change_prev {};
 
+        glm::vec2 speed_multipliers {1.f, 1.f};
+
         std::optional<uint64_t> _current_entity;
 
         std::array<key_state, static_cast<size_t>(key_code::MAX_KEY)> _key_states {};
