@@ -14,8 +14,174 @@
 #include <render/post/post_processor.h>
 #include "display.h"
 
+namespace cr
+{
+    enum key_code
+    {
+        SPACE             = 32,    // I can't wait to write all of these out
+        APOSTROPHE        = 39,
+        COMMA             = 44,
+        MINUS             = 45,
+        PERIOD            = 46,
+        SLASH             = 47,
+        KEY_0             = 48,
+        KEY_1             = 49,
+        KEY_2             = 50,
+        KEY_3             = 51,
+        KEY_4             = 52,
+        KEY_5             = 53,
+        KEY_6             = 54,
+        KEY_7             = 55,
+        KEY_8             = 56,
+        KEY_9             = 57,    // This is starting to get really annoying
+        SEMICOLON         = 59,
+        EQUAL             = 61,
+        KEY_A             = 65,
+        KEY_B             = 66,
+        KEY_C             = 67,
+        KEY_D             = 68,
+        KEY_E             = 69,
+        KEY_F             = 70,
+        KEY_G             = 71,
+        KEY_H             = 72,
+        KEY_I             = 73,
+        KEY_J             = 74,
+        KEY_K             = 75,
+        KEY_L             = 76,
+        KEY_M             = 77,
+        KEY_N             = 78,
+        KEY_O             = 79,
+        KEY_P             = 80,
+        KEY_Q             = 81,
+        KEY_R             = 82,
+        KEY_S             = 83,
+        KEY_T             = 84,
+        KEY_U             = 85,
+        KEY_V             = 86,
+        KEY_W             = 87,
+        KEY_X             = 88,
+        KEY_Y             = 89,
+        KEY_Z             = 90,
+        KEY_LEFT_BRACKET  = 91,  /* [ */
+        KEY_BACKSLASH     = 92,  /* \ */
+        KEY_RIGHT_BRACKET = 93,  /* ] */
+        KEY_GRAVE_ACCENT  = 96,  /* ` */
+        KEY_WORLD_1       = 161, /* non-US #1 */
+        KEY_WORLD_2       = 162, /* non-US #2 */
+        KEY_ESCAPE        = 256,
+        KEY_ENTER         = 257,
+        KEY_TAB           = 258,
+        KEY_BACKSPACE     = 259,
+        KEY_INSERT        = 260,
+        KEY_DELETE        = 261,
+        KEY_RIGHT         = 262,
+        KEY_LEFT          = 263,
+        KEY_DOWN          = 264,
+        KEY_UP            = 265,
+        KEY_PAGE_UP       = 266,
+        KEY_PAGE_DOWN     = 267,
+        KEY_HOME          = 268,
+        KEY_END           = 269,
+        KEY_CAPS_LOCK     = 280,
+        KEY_SCROLL_LOCK   = 281,
+        KEY_NUM_LOCK      = 282,
+        KEY_PRINT_SCREEN  = 283,
+        KEY_PAUSE         = 284,
+        KEY_F1            = 290,
+        KEY_F2            = 291,
+        KEY_F3            = 292,
+        KEY_F4            = 293,
+        KEY_F5            = 294,
+        KEY_F6            = 295,
+        KEY_F7            = 296,
+        KEY_F8            = 297,
+        KEY_F9            = 298,
+        KEY_F10           = 299,
+        KEY_F11           = 300,
+        KEY_F12           = 301,
+        KEY_F13           = 302,
+        KEY_F14           = 303,
+        KEY_F15           = 304,
+        KEY_F16           = 305,
+        KEY_F17           = 306,
+        KEY_F18           = 307,
+        KEY_F19           = 308,
+        KEY_F20           = 309,
+        KEY_F21           = 310,
+        KEY_F22           = 311,
+        KEY_F23           = 312,
+        KEY_F24           = 313,
+        KEY_F25           = 314,
+        KEY_KP_0          = 320,
+        KEY_KP_1          = 321,
+        KEY_KP_2          = 322,
+        KEY_KP_3          = 323,
+        KEY_KP_4          = 324,
+        KEY_KP_5          = 325,
+        KEY_KP_6          = 326,
+        KEY_KP_7          = 327,
+        KEY_KP_8          = 328,
+        KEY_KP_9          = 329,
+        KEY_KP_DECIMAL    = 330,
+        KEY_KP_DIVIDE     = 331,
+        KEY_KP_MULTIPLY   = 332,
+        KEY_KP_SUBTRACT   = 333,
+        KEY_KP_ADD        = 334,
+        KEY_KP_ENTER      = 335,
+        KEY_KP_EQUAL      = 336,
+        KEY_LEFT_SHIFT    = 340,
+        KEY_LEFT_CONTROL  = 341,
+        KEY_LEFT_ALT      = 342,
+        KEY_LEFT_SUPER    = 343,
+        KEY_RIGHT_SHIFT   = 344,
+        KEY_RIGHT_CONTROL = 345,
+        KEY_RIGHT_ALT     = 346,
+        KEY_RIGHT_SUPER   = 347,
+        KEY_MENU          = 348,
+        MAX_KEY           = 1024,
+    };
+
+    enum class key_state
+    {
+        none,       // no input
+        pressed,    // set on frame key is pressed
+        held,       // set on frame after key is pressed while not released
+        repeat,     // equivalent to held but OS triggered
+        released    // set on frame key is released, cleared after one frame
+    };
+}    // namespace cr
+
 namespace cr::ui
 {
+    namespace widgets
+    {
+        inline bool slider_float_input(const std::string &label, float &value, float min, float max)
+        {
+            // Default is the slider
+            static auto text_labels = std::unordered_set<std::string>();
+
+            const auto is_text = text_labels.find(label) != text_labels.end();
+
+            auto updated = false;
+            if (!is_text)
+                updated = ImGui::SliderFloat(label.c_str(), &value, min, max);
+            else
+            {
+                updated = ImGui::InputFloat(label.c_str(), &value);
+                value   = glm::min(value, max);
+                value   = glm::max(value, min);
+            }
+
+            // check if it's a double click
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+                if (is_text)
+                    text_labels.erase(label);
+                else
+                    text_labels.insert(label);
+            return updated;
+        }
+    }    // namespace widgets
+
     struct init_ctx
     {
         ImGuiDockNodeFlags dock_flags;
@@ -221,7 +387,8 @@ namespace cr::ui
       cr::renderer *                    renderer,
       cr::draft_renderer *              draft_renderer,
       cr::scene *                       scene,
-      std::unique_ptr<cr::thread_pool> &pool)
+      std::unique_ptr<cr::thread_pool> &pool,
+      glm::vec2 &speed_multipliers)
     {
         static auto resolution   = glm::ivec2();
         static auto bounces      = int(5);
@@ -342,6 +509,17 @@ namespace cr::ui
                       scene->set_sun_enabled(sun_enabled);
                   });
             }
+
+            ImGui::Unindent(4.f);
+        }
+
+        {
+            ImGui::Separator();
+            ImGui::Text("Input Sensitivity (Draft Mode)");
+            ImGui::Indent(4.f);
+
+            ImGui::SliderFloat("Movement (Keyboard)", &speed_multipliers.x, 0.1f, 20.f);
+            ImGui::SliderFloat("Rotation (Mouse)", &speed_multipliers.y, 0.1f, 20.f);
 
             ImGui::Unindent(4.f);
         }
@@ -499,7 +677,10 @@ namespace cr::ui
         }
     }
 
-    inline void setting_materials(cr::renderer *renderer, cr::scene *scene)
+    inline void setting_materials(
+      cr::renderer *                                                 renderer,
+      cr::scene *                                                    scene,
+      std::array<key_state, static_cast<size_t>(key_code::MAX_KEY)> &keys)
     {
         const auto models =
           scene->registry()->entities.view<std::string, cr::entity::model_materials>();
@@ -546,18 +727,87 @@ namespace cr::ui
             // This is a cool Imgui thing im going to make (search thing)
             static auto found_material_indices = std::vector<size_t>();
 
+            // noooooo, std::vector<bool>
+            static auto found_material_selected = std::vector<uint8_t>();
+            static auto any_selection           = false;
+
             if (changed || first_time)
+            {
                 found_material_indices = cr::algorithm::find_string_matches<cr::material>(
                   std::string(material_search_string.data()),
                   materials,
                   [](const cr::material &material) { return material.info.name; });
+                found_material_selected.resize(found_material_indices.size(), false);
+            }
 
-            for (const auto index : found_material_indices)
+            any_selection = false;
+            for (auto enabled : found_material_selected)
+                if (enabled)
+                {
+                    any_selection = true;
+                    break;
+                }
+
+            for (auto i = 0; i < found_material_indices.size(); i++)
             {
-                auto &material = materials[index];
+                const auto index    = i;
+                auto &     material = materials[index];
+                const auto selected = found_material_selected[i];
+
                 ImGui::Separator();
                 ImGui::Indent(4.f);
-                ImGui::Text("%s", material.info.name.c_str());
+                ImGui::Text(
+                  "%s",
+                  ((found_material_selected[i] ? "* " : "") + material.info.name).c_str());
+
+                if (!selected && any_selection)
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6, 0.6, 0.6, 1.0));
+
+                // Check if it was attempted to be selected
+                if (
+                  ImGui::IsItemHovered() && (keys[key_code::KEY_LEFT_CONTROL] == key_state::held || keys[key_code::KEY_LEFT_CONTROL] == key_state::repeat) && ImGui::IsMouseDoubleClicked(0))
+                {
+
+                    if (found_material_selected[i])
+                        found_material_selected[i] = false;
+                    else if (keys[key_code::KEY_LEFT_SHIFT] == key_state::held || keys[key_code::KEY_LEFT_SHIFT] == key_state::repeat)
+                    {
+                        auto closest_selection = std::int32_t(-1);
+
+                        // iterate down
+                        for (auto j = i; j >= 0; j--)
+                            if (found_material_selected[j])
+                            {
+                                closest_selection = j;
+                                break;
+                            }
+
+                        // iterate up
+                        for (auto j = i; j < found_material_selected.size(); j++)
+                            if (found_material_selected[j])
+                            {
+                                if (j - i < closest_selection || closest_selection == -1)
+                                    closest_selection = j;
+                                break;
+                            }
+
+                        if (closest_selection == -1)
+                        {
+                            // Dont auto select the other indices
+                            found_material_selected[i] = true;
+                        }
+                        else
+                        {
+                            // Select the indices between the closest one
+                            auto start = glm::min(closest_selection, i);
+                            auto end   = glm::max(closest_selection, i);
+
+                            for (auto j = start; j <= end; j++) found_material_selected[j] = true;
+                        }
+                    }
+                    else
+                        found_material_selected[i] = true;
+                }
                 ImGui::Indent(4.f);
                 static const auto material_types =
                   std::array<std::string, 3>({ "Metal", "Smooth", "Glass" });
@@ -565,12 +815,18 @@ namespace cr::ui
                   : material.info.shade_type == material::smooth                ? 1
                                                                                 : 2;
 
+                auto update_type = false;
                 if (ImGui::BeginCombo(
                       ("Type##" + material.info.name).c_str(),
                       material_types[current_type].c_str()))
                 {
-                    for (auto i = 0; i < material_types.size(); i++)
-                        if (ImGui::Button(material_types[i].c_str())) current_type = i;
+                    for (auto j = 0; j < material_types.size(); j++)
+                        if (ImGui::Button(material_types[j].c_str()))
+                        {
+                            if (current_type != j) update_type = true;
+
+                            current_type = j;
+                        }
                     ImGui::EndCombo();
                 }
 
@@ -580,6 +836,12 @@ namespace cr::ui
                 case 1: material.info.shade_type = material::smooth; break;
                 case 2: material.info.shade_type = material::glass; break;
                 }
+
+                if (update_type && any_selection && selected)
+                    for (auto j = 0; j < found_material_indices.size(); j++)
+                        if (found_material_selected[j])
+                            materials[found_material_indices[j]].info.shade_type =
+                              material.info.shade_type;
 
                 ImGui::Separator();
 
@@ -591,35 +853,69 @@ namespace cr::ui
                     //                      &material.info.roughness,
                     //                      0,
                     //                      1);
-                    ImGui::SliderFloat(
-                      ("Reflectiveness##" + material.info.name).c_str(),
-                      &material.info.reflectiveness,
-                      0,
-                      1);
+                    if (
+                      widgets::slider_float_input(
+                        "Reflectiveness##" + material.info.name,
+                        material.info.reflectiveness,
+                        0,
+                        1) &&
+                      any_selection && selected)
+                    {
+                        for (auto j = 0; j < found_material_indices.size(); j++)
+                            if (found_material_selected[j])
+                                materials[found_material_indices[j]].info.reflectiveness =
+                                  material.info.reflectiveness;
+                    }
                     break;
 
                 case material::smooth: break;
 
                 case material::glass:
-                    ImGui::SliderFloat(
-                      ("IOR##" + material.info.name).c_str(),
-                      &material.info.ior,
-                      1,
-                      2);
+                    if (
+                      widgets::slider_float_input(
+                        "IOR##" + material.info.name,
+                        material.info.ior,
+                        1,
+                        2) &&
+                      any_selection && selected)
+                    {
+                        for (auto j = 0; j < found_material_indices.size(); j++)
+                            if (found_material_selected[j])
+                                materials[found_material_indices[j]].info.ior = material.info.ior;
+                    }
                     break;
                 }
 
-                ImGui::SliderFloat(
-                  ("Emission##" + material.info.name).c_str(),
-                  &material.info.emission,
-                  0,
-                  50);
+                if (
+                  widgets::slider_float_input(
+                    "Emission##" + material.info.name,
+                    material.info.emission,
+                    0,
+                    50) &&
+                  any_selection && selected)
+                {
+                    for (auto j = 0; j < found_material_indices.size(); j++)
+                        if (found_material_selected[j])
+                            materials[found_material_indices[j]].info.emission =
+                              material.info.emission;
+                }
 
                 if (!material.info.tex.has_value())
-                    ImGui::ColorEdit3(
-                      ("Colour##" + material.info.name).c_str(),
-                      glm::value_ptr(material.info.colour));
+                    if (
+                      ImGui::ColorEdit3(
+                        ("Colour##" + material.info.name).c_str(),
+                        glm::value_ptr(material.info.colour)) &&
+                      any_selection && selected)
+                    {
+                        for (auto j = 0; j < found_material_indices.size(); j++)
+                            if (found_material_selected[j])
+                                materials[found_material_indices[j]].info.colour =
+                                  material.info.colour;
+                    }
 
+
+                if (!selected && any_selection)
+                    ImGui::PopStyleColor();
                 ImGui::Unindent(8.f);
             }
 
@@ -864,7 +1160,7 @@ namespace cr::ui
 
                 glm::decompose(matrix, scale, rotation, translation, skew, perspective);
 
-                ImGui::Text("%s", fmt::format("Translation #{} ##{}", i, i).c_str());
+                ImGui::Text("%s", fmt::format("Translation #{}", i).c_str());
                 ImGui::SameLine();
                 if (ImGui::Button("-")) to_remove.push_back(i);
 
@@ -951,12 +1247,14 @@ namespace cr::ui
     }
 
     inline void settings(
-      std::unique_ptr<cr::renderer> *      renderer,
-      std::unique_ptr<cr::draft_renderer> *draft_renderer,
-      std::unique_ptr<cr::scene> *         scene,
-      std::unique_ptr<cr::thread_pool> *   pool,
-      std::unique_ptr<cr::post_processor> *post_processor,
-      bool                                 draft_mode)
+      std::unique_ptr<cr::renderer> *                                renderer,
+      std::unique_ptr<cr::draft_renderer> *                          draft_renderer,
+      std::unique_ptr<cr::scene> *                                   scene,
+      std::unique_ptr<cr::thread_pool> *                             pool,
+      std::unique_ptr<cr::post_processor> *                          post_processor,
+      std::array<key_state, static_cast<size_t>(key_code::MAX_KEY)> &keys,
+      bool                                                           draft_mode,
+      glm::vec2 &speed_multipliers)
     {
         ImGui::Begin("Misc");
 
@@ -989,9 +1287,9 @@ namespace cr::ui
 
         switch (selected_window)
         {
-        case 0: setting_render(renderer->get(), draft_renderer->get(), scene->get(), *pool); break;
+        case 0: setting_render(renderer->get(), draft_renderer->get(), scene->get(), *pool, speed_multipliers); break;
         case 1: setting_export(renderer, post_processor); break;
-        case 2: setting_materials(renderer->get(), scene->get()); break;
+        case 2: setting_materials(renderer->get(), scene->get(), keys); break;
         case 3: setting_asset_loader(renderer, scene, draft_mode); break;
         case 4: setting_stats(renderer->get()); break;
         case 5: setting_style(); break;

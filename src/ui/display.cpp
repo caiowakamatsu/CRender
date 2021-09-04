@@ -217,7 +217,7 @@ void cr::display::start(
         ui::console(messages);
         messages.clear();
 
-        ui::settings(&renderer, &draft_renderer, &scene, &thread_pool, &post_processor, _in_draft_mode);
+        ui::settings(&renderer, &draft_renderer, &scene, &thread_pool, &post_processor, _key_states, _in_draft_mode, speed_multipliers);
 
         ImGui::PopFont();
 
@@ -313,7 +313,7 @@ void cr::display::_update_camera(cr::camera *camera)
       _key_states[static_cast<int>(key_code::KEY_A)] == key_state::repeat)
         translation.x -= 3.0f;
 
-    translation *= static_cast<float>(_timer.since_last_frame()) * 5.75f;
+    translation *= static_cast<float>(_timer.since_last_frame()) * speed_multipliers.x * 5.75f;
 
     if (
       _key_states[static_cast<int>(key_code::KEY_LEFT_SHIFT)] == key_state::held ||
@@ -324,6 +324,7 @@ void cr::display::_update_camera(cr::camera *camera)
 
     rotation.x += _mouse_change_prev.x * 2.0 * _timer.since_last_frame();
     rotation.y -= _mouse_change_prev.y * 2.0 * _timer.since_last_frame();
+    rotation *= speed_multipliers.y;
 
     _mouse_change_prev = {};
 

@@ -323,6 +323,7 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
 
     // flip Y
     y = _res_y - 1 - y;
+    x = _res_x - 1 - x;
 
     const auto base_index = (x + y * _res_x) * 3;
     _raw_buffer[base_index + 0] += final.x;
