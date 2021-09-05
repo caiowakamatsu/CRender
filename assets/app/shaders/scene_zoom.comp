@@ -27,6 +27,8 @@ void main ()
         {
             target.y *= -1;
             target.y += 1;
+            target.x *= -1;
+            target.x += 1;
         }
 
         vec4 output_colour = texture(rendered_scene, target);

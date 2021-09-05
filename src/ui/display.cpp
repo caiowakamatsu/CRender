@@ -306,12 +306,12 @@ void cr::display::_update_camera(cr::camera *camera)
     if (
       _key_states[static_cast<int>(key_code::KEY_D)] == key_state::held ||
       _key_states[static_cast<int>(key_code::KEY_D)] == key_state::repeat)
-        translation.x += 3.0f;
+        translation.x -= 3.0f;
 
     if (
       _key_states[static_cast<int>(key_code::KEY_A)] == key_state::held ||
       _key_states[static_cast<int>(key_code::KEY_A)] == key_state::repeat)
-        translation.x -= 3.0f;
+        translation.x += 3.0f;
 
     translation *= static_cast<float>(_timer.since_last_frame()) * speed_multipliers.x * 5.75f;
 
@@ -322,7 +322,7 @@ void cr::display::_update_camera(cr::camera *camera)
 
     camera->translate(translation);
 
-    rotation.x += _mouse_change_prev.x * 2.0 * _timer.since_last_frame();
+    rotation.x -= _mouse_change_prev.x * 2.0 * _timer.since_last_frame();
     rotation.y -= _mouse_change_prev.y * 2.0 * _timer.since_last_frame();
     rotation *= speed_multipliers.y;
 
