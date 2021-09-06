@@ -134,31 +134,40 @@ cr::scene::nee_sample cr::scene::sample_light(const cr::ray::intersection_record
 
         const auto tri_pdf = 1.0f / emissive.emissive_indices.size();
 
-        auto tri = glm::min(static_cast<uint64_t>(random->next_float() * emissive.emissive_indices.size() - 1), emissive.emissive_indices.size() - 1);
+        auto tri = glm::min(static_cast<uint64_t>(random->next_float() * emissive.emissive_indices.size()), emissive.emissive_indices.size() - 1);
 
         const auto idx = emissive.emissive_indices[tri] * 3;
         const auto v0  = geometry.vert_coords->operator[](idx + 0);
         const auto v1  = geometry.vert_coords->operator[](idx + 1);
         const auto v2  = geometry.vert_coords->operator[](idx + 2);
 
-        const auto [sample_point, area_pdf] = cr::sampling::sample_triangle(v0, v1, v2, random);
+        const auto [sample_point, normal, area_pdf] = cr::sampling::sample_triangle(v0, v1, v2, random);
 
         const auto sample_pdf = area_pdf * tri_pdf;
 
         // At this point we have everything we need
         auto ray = cr::ray(
-          record.intersection_point + record.normal * 0.001f,
+          record.intersection_point + record.normal * cr::numbers<float>::elipson,
           glm::normalize(sample_point - record.intersection_point));
+
 
         const auto current = cr::model::intersect(ray, instances, embree_ctx, materials);
         if (current.prim_id == idx / 3)
         {
+            // geometric term
+            const auto sample_cosine = glm::max(0.0f, glm::dot(record.normal, ray.direction));
+
+            const auto light_cosine = glm::abs(glm::dot(normal, ray.direction));
+            const auto light_dist_2 = glm::dot(sample_point - record.intersection_point, sample_point - record.intersection_point);
+
             // There was an intersection, add the contribution
             sample.contribution = current.material->info.emission *
                                   glm::vec3(current.material->info.colour);
-            sample.pdf = tri_pdf;
+            sample.pdf = sample_pdf;
             sample.intersected = true;
             sample.distance = current.distance;
+            sample.geometry_term = (sample_cosine * light_cosine) / light_dist_2;
+
         } else {
             sample.intersected = false;
         }

@@ -18,7 +18,7 @@ namespace cr
             orthographic,
         };
 
-        camera(glm::vec3 position = glm::vec3(5, 5, 0), float fov = 75, mode camera_mode = mode::perspective);
+        camera(glm::vec3 position = glm::vec3(0, 4, 7.5), float fov = 75, mode camera_mode = mode::perspective);
 
         void translate(const glm::vec3 &translation);
 
@@ -32,8 +32,8 @@ namespace cr
         float scale;
 
         mode current_mode;
-        glm::vec3 position {};
-        glm::vec3 rotation {};
+        glm::vec3 position {0.25, 8, 20};
+        glm::vec3 rotation {-180, 20, 0};
     private:
 
         void _update_cache();

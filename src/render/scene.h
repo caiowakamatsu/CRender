@@ -47,11 +47,12 @@ namespace cr
             glm::vec3 contribution;
             float distance;
             float pdf;
+            float geometry_term;
         };
         [[nodiscard]] nee_sample sample_light(const cr::ray::intersection_record &record, cr::random *random);
 
     private:
-        bool _sun_enabled = true;
+        bool _sun_enabled = false;
 
         std::optional<cr::image> _skybox;
         std::optional<GLuint>    _skybox_texture;

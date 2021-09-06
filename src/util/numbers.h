@@ -18,6 +18,8 @@ namespace cr
         inline constexpr static float inv_e   = 1.0f / 2.71828182845f;
         inline constexpr static float inv_pi  = 1.0f / 3.14159265359f;
         inline constexpr static float inv_tau = 1.0f / 6.28318530717f;
+
+        inline constexpr static float elipson = 0.0001f;
     };
 
     template<>
@@ -31,6 +33,8 @@ namespace cr
         inline constexpr static double inv_e   = 1.0 / 2.71828182845;
         inline constexpr static double inv_pi  = 1.0 / 3.14159265359;
         inline constexpr static double inv_tau = 1.0 / 6.28318530717;
+
+        inline constexpr static double elipson = 0.0001;
     };
 
 }    // namespace cr

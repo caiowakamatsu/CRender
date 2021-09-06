@@ -5,10 +5,10 @@ namespace
     struct processed_hit
     {
         float     emission;
-        float     bdxf;
         float     pdf;
         glm::vec3 albedo;
-        glm::vec4 colour;
+        glm::vec3 bdxf;
+        glm::vec3 Le;
         cr::ray   ray;
     };
     [[nodiscard]] processed_hit process_hit(
@@ -24,13 +24,11 @@ namespace
 
         out.emission = record.material->info.emission;
         if (record.material->info.tex.has_value())
-            out.colour = scene->registry()
+            out.albedo = scene->registry()
                            ->entities.get<cr::image>(record.material->info.tex.value())
                            .get_uv(record.uv.x, record.uv.y);
         else
-            out.colour = record.material->info.colour;
-
-        out.albedo = glm::vec3(out.colour);
+            out.albedo = record.material->info.colour;
 
         switch (record.material->info.shade_type)
         {
@@ -67,16 +65,12 @@ namespace
         break;
         case cr::material::metal:
         {
-            const auto hemp_samp = cr::sampling::hemp_cos(
-              record.normal,
-              glm::vec2(random->next_float(), random->next_float()));
-
             out.ray.origin    = record.intersection_point + record.normal * 0.0001f;
             out.ray.direction = glm::reflect(ray.direction, record.normal);
 
             out.albedo *= record.material->info.reflectiveness;
-            out.bdxf = cr::numbers<float>::inv_pi;
-            out.pdf = glm::cos(glm::dot(out.ray.direction, record.normal)) / cr::numbers<float>::pi;
+            out.bdxf = out.albedo;
+            out.pdf  = 1;
             break;
         }
         case cr::material::smooth:
@@ -84,10 +78,10 @@ namespace
               record.normal,
               glm::vec2(random->next_float(), random->next_float()));
 
-            out.ray.origin    = record.intersection_point + record.normal * 0.0001f;
+            out.ray.origin    = record.intersection_point + record.normal * cr::numbers<float>::elipson;
             out.ray.direction = glm::normalize(cos_hemp_dir);
-            out.bdxf          = cr::numbers<float>::inv_pi;
-            out.pdf = glm::cos(glm::dot(out.ray.direction, record.normal)) / cr::numbers<float>::pi;
+            out.bdxf          = out.albedo / cr::numbers<float>::pi;
+            out.pdf = glm::dot(out.ray.direction, record.normal) / cr::numbers<float>::pi;
         }
 
         return out;
@@ -269,11 +263,10 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays, uin
     auto normal     = glm::vec3(0.0f, 0.0f, 0.0f);
     auto depth      = 0.0f;
 
-    auto total_bounces = 1;
-    for (auto i = 0; i < _max_bounces; i++, total_bounces++)
+    auto early_out = false;
     {
+        // First manual bounce to account for direct lights
         auto intersection  = _scene->get()->cast_ray(ray);
-        auto processed_hit = ::processed_hit();
 
         if (intersection.distance == std::numeric_limits<float>::infinity())
         {
@@ -283,40 +276,46 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays, uin
 
             const auto miss_sample = _scene->get()->sample_skybox(miss_uv.x, miss_uv.y);
 
-            if (i == 0)
-            {
-                albedo = miss_sample;
-                final += throughput * miss_sample;
-            }
+            albedo = miss_sample;
+            final += throughput * miss_sample;
 
-            break;
+            early_out = true;
+        } else
+        {
+            auto processed_hit = ::process_hit(intersection, ray, _scene->get(), &random);
+
+            final += throughput * (processed_hit.emission * processed_hit.albedo);
         }
+    }
+
+    auto total_bounces = 1;
+    for (auto i = 1; i < _max_bounces && !early_out; i++, total_bounces++)
+    {
+        auto intersection  = _scene->get()->cast_ray(ray);
+        auto processed_hit = ::processed_hit();
+
+        if (intersection.distance == std::numeric_limits<float>::infinity())
+            break;
 
         processed_hit = ::process_hit(intersection, ray, _scene->get(), &random);
 
-        // Next event estimation
-        // Currently since the scene is small, going through all of the lights is fine
-        //            const auto nee = _scene->get()->sample_lights(intersection);
-
-        if (i == 0)
-        {
-            albedo = processed_hit.albedo;
-            normal = intersection.normal;
-            depth  = intersection.distance;
-        }
-
         ray = processed_hit.ray;
-        throughput *= processed_hit.albedo;
-        final += processed_hit.bdxf * throughput * processed_hit.emission / processed_hit.pdf;
 
-        // Light NEE
+        auto use_nee = intersection.material->info.shade_type != material::metal;
+//        auto use_nee = false;
+
+        if (use_nee)
         {
+            // Light NEE
             auto light_nee = _scene->get()->sample_light(intersection, &random);
-            if (light_nee.intersected)
-                final += throughput *
-                  ((light_nee.contribution /
-                  light_nee.pdf) * (light_nee.distance * light_nee.distance));
+                        if (light_nee.intersected)
+                            final += 0.5f * (throughput * processed_hit.bdxf * light_nee.geometry_term * light_nee.contribution
+                            / light_nee.pdf);
         }
+
+        const auto cos_theta = glm::dot(intersection.normal, ray.direction);
+        throughput *= processed_hit.bdxf * cos_theta / processed_hit.pdf;
+        final += throughput * (processed_hit.emission * processed_hit.albedo) * (use_nee ? 0.5f : 1.0f);
 
         // Sun NEE
         if (_scene->get()->is_sun_enabled())
@@ -336,7 +335,7 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays, uin
 
             auto sun_intersection = _scene->get()->cast_ray(out_ray);
             if (sun_intersection.distance == std::numeric_limits<float>::infinity())
-                final += throughput * glm::vec3(processed_hit.colour) * pdf_cos.cosine *
+                final += throughput * glm::vec3(processed_hit.albedo) * pdf_cos.cosine *
                   cr::sampling::sun::sky_colour(
                            out_ray.direction,
                            _scene->get()->registry()->sun()) /

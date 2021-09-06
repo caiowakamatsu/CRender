@@ -146,12 +146,29 @@ namespace cr::sampling
 
     }    // namespace cook_torrence
 
+    namespace heuristic
+    {
+        [[nodiscard]] inline float balance(float pdf_nee, float pdf_bsdf)
+        {
+            return pdf_nee / (pdf_nee + pdf_bsdf);
+        }
+
+        [[nodiscard]] inline float power(float pdf_nee, float pdf_bsdf)
+        {
+            const auto nee_sq = pdf_nee * pdf_nee;
+            const auto bsdf_sq = pdf_bsdf * pdf_bsdf;
+
+            return nee_sq / (nee_sq + bsdf_sq);
+        }
+    }
+
+
     [[nodiscard]] inline glm::vec3 sphere(const glm::vec2 uv)
     {
         const auto cos_theta = 2.0f * uv.x - 1.0f;
         const auto sin_theta = glm::sqrt(1.0f - cos_theta * cos_theta);
 
-        const auto phi     = 2.0f * 3.1415f * uv.y;
+        const auto phi     = cr::numbers<float>::tau * uv.y;
         const auto sin_phi = glm::sin(phi);
         const auto cos_phi = glm::cos(phi);
 
@@ -167,6 +184,7 @@ namespace cr::sampling
     struct triangle_sample
     {
         glm::vec3 point;
+        glm::vec3 normal;
         float     pdf;
     };
     [[nodiscard]] inline triangle_sample
@@ -185,7 +203,8 @@ namespace cr::sampling
         const auto gamma = r1 * sqrt_r0;
 
         tri_sample.point = v0 + beta * e0 + gamma * e1;
-        tri_sample.pdf   = 1.0f / glm::length(glm::cross(e0, e1)) / 2.0f;
+        tri_sample.normal = glm::normalize(glm::cross(e0, e1));
+        tri_sample.pdf   = 2.0f / glm::length(glm::cross(e0, e1));
         return tri_sample;
     }
 
