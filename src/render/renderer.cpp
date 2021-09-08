@@ -11,6 +11,7 @@ namespace
 
     struct processed_hit
     {
+        bool is_alpha = false;
         float     emission;
         glm::vec3 albedo;
         glm::vec4 colour;
@@ -31,6 +32,12 @@ namespace
                            .get_uv(record.uv.x, record.uv.y);
         else
             out.colour = record.material->info.colour;
+
+        if (out.colour.w == 0.0)
+        {
+            out.is_alpha = true;
+            return out;
+        }
 
         out.albedo = glm::vec3(out.colour);
 
@@ -283,6 +290,15 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
         {
             processed_hit = ::process_hit(intersection, ray, _scene->get());
 
+            if (processed_hit.is_alpha)
+            {
+                auto point = intersection.intersection_point; // We need to offset by the inverse normal
+                auto offset_point = point + ray.direction * 0.1f;
+
+                ray.origin = offset_point;
+                continue;
+            }
+
             if (i == 0)
             {
                 albedo = processed_hit.albedo;
@@ -311,6 +327,23 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
             out_ray.direction  = pdf_cos.dir;
 
             auto sun_intersection = _scene->get()->cast_ray(out_ray);
+            if (sun_intersection.distance != std::numeric_limits<float>::infinity())
+            {
+                auto processed_intersection = ::process_hit(sun_intersection, ray, _scene->get());
+
+                while (sun_intersection.distance != std::numeric_limits<float>::infinity() && processed_intersection.is_alpha)
+                {
+                    out_ray.origin = sun_intersection.intersection_point + out_ray.direction * 0.1f;
+                    sun_intersection = _scene->get()->cast_ray(out_ray);
+
+                    if (sun_intersection.distance == std::numeric_limits<float>::infinity())
+                        break;
+
+                    processed_intersection = ::process_hit(sun_intersection, ray, _scene->get());
+                }
+            }
+
+
             if (sun_intersection.distance == std::numeric_limits<float>::infinity())
                 final += throughput * glm::vec3(processed_hit.colour) * pdf_cos.cosine *
                   cr::sampling::sun::sky_colour(
