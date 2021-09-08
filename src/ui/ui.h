@@ -592,8 +592,8 @@ namespace cr::ui
                     //                      0,
                     //                      1);
                     ImGui::SliderFloat(
-                      ("Reflectiveness##" + material.info.name).c_str(),
-                      &material.info.reflectiveness,
+                      ("Roughness##" + material.info.name).c_str(),
+                      &material.info.roughness,
                       0,
                       1);
                     break;
@@ -625,11 +625,31 @@ namespace cr::ui
 
             if (ImGui::Button("Update Materials"))
             {
+                // We need to create the emissive indices from the updated materials
                 renderer->update(
-                  [materials = materials, scene, selected = selected_entity] {
+                  [materials = materials, scene, selected = selected_entity]
+                  {
+                      auto &model_mats =
+                        scene->registry()->entities.get<cr::entity::model_materials>(selected);
+
+                      model_mats.materials = materials;
+
+                      auto emissive = std::vector<uint32_t>(model_mats.indices.size());
+
+                      auto emissive_count = 0;
+                      for (auto i = 0; i < model_mats.indices.size(); i++)
+                          if (materials[model_mats.indices[i]].info.emission > 0)
+                              emissive[emissive_count++] = i;
+
+                      auto shrunk = std::vector<uint32_t>(emissive_count);
+                      std::memcpy(
+                        shrunk.data(),
+                        emissive.data(),
+                        sizeof(uint32_t) * emissive_count);
+
                       scene->registry()
-                        ->entities.get<cr::entity::model_materials>(selected)
-                        .materials = materials;
+                        ->entities.get<cr::entity::emissive_triangles>(selected)
+                        .emissive_indices = std::move(shrunk);
                   });
             }
 

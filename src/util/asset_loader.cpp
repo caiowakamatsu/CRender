@@ -231,48 +231,16 @@ cr::asset_loader::loaded_model
         material_data.name = material.name;
         material_data.colour =
           glm::vec4(material.diffuse[0], material.diffuse[1], material.diffuse[2], 1.0f);
-        material_data.shade_type     = cr::material::type::smooth;
-        material_data.emission = 0.0f;
+        material_data.shade_type = cr::material::type::smooth;
+        material_data.emission   = 0.0f;
+        material_data.colour = glm::vec4(0.5, 0.5, 0.5, 1.0f);
 
-        // Texture stuff!
-        auto colour = glm::vec3();
-        if (material.name == "Back_Wall" || material.name == "Material")
-            colour = glm::vec3(1.0);
-        else if (material.name == "Bottom_Plane") {
-            material_data.roughness = .25f;
-            material_data.shade_type = material::type::metal;
-            colour = glm::vec3(0.227);
-        } else if (material.name == "Middle_Plane") {
-            material_data.roughness = .4;
-            material_data.shade_type = material::type::metal;
-            colour = glm::vec3(0.227);
-        } else if (material.name == "Top_Plane") {
-            material_data.roughness = .8f;
-            material_data.shade_type = material::type::metal;
-            colour = glm::vec3(0.227);
-        }
-        else if (material.name == "Big_Cube") {
-            material_data.emission = 1.0f;
-            colour = glm::vec3(0.25, 0, 1.0);
-        }
-        else if (material.name == "Medium_Cube") {
-            material_data.emission = 1.0f;
-            colour = glm::vec3(0.0, 0.1, 1.0);
-        }
-        else if (material.name == "Small_Cube") {
-            material_data.emission = 1.0f;
-            colour = glm::vec3(0.0, 0.95, 1.0);
-        }
-
-        material_data.colour = glm::vec4(colour, 1.0f);
-
-        if (false)
-            if (!material.diffuse_texname.empty())
+        if (!material.diffuse_texname.empty())
+        {
+            if (const auto &it = already_loaded.find(material.diffuse_texname);
+                it == already_loaded.end())
             {
-                if (const auto &it = already_loaded.find(material.diffuse_texname);
-                    it == already_loaded.end())
-                {
-                    const auto texture_name = folder + '\\' + material.diffuse_texname;
+                const auto texture_name = folder + '\\' + material.diffuse_texname;
 
                 auto image_dimensions = glm::ivec3();
                 stbi_set_flip_vertically_on_load(true);
@@ -305,9 +273,13 @@ cr::asset_loader::loaded_model
                     model_data.textures.push_back(std::move(texture_image));
                     material_data.tex = model_data.textures.size() - 1;
                     already_loaded.insert({ material.diffuse_texname, material_data.tex.value() });
-                } else
-                    cr::logger::warn("Failed to find texture [{}], defaulting to blank material", material.diffuse_texname);
-            } else
+                }
+                else
+                    cr::logger::warn(
+                      "Failed to find texture [{}], defaulting to blank material",
+                      material.diffuse_texname);
+            }
+            else
                 material_data.tex = it->second;
         }
 
@@ -332,20 +304,15 @@ cr::asset_loader::loaded_model
 
             if (i > 0 && material_id != shape.mesh.material_ids[i - 1])
             {
-                auto idx = material_index();
+                auto idx  = material_index();
                 idx.begin = current_begin;
-                idx.end = i;
-                model_data.unique_material_indices.insert({material_id, idx});
+                idx.end   = i;
 
                 current_begin = i;
             }
 
             model_data.material_indices.push_back(material_id);
         }
-        auto final_idx = material_index();
-        final_idx.begin = current_begin;
-        final_idx.end = shape.mesh.material_ids.size() - 1;
-        model_data.unique_material_indices.insert({shape.mesh.material_ids[final_idx.end], final_idx});
     }
 
     return model_data;

@@ -33,8 +33,6 @@ namespace cr::asset_loader
         std::vector<uint32_t> material_indices;
         std::vector<uint32_t> texture_indices;
         std::vector<uint32_t> normal_indices;
-
-        std::unordered_map<uint32_t, material_index> unique_material_indices;
     };
 
     [[nodiscard]] loaded_model load_model(const std::string &file, const std::string &folder);

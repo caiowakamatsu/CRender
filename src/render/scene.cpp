@@ -132,6 +132,9 @@ cr::scene::nee_sample cr::scene::sample_light(const cr::ray::intersection_record
         const auto &emissive   = _entities.entities.get<cr::entity::emissive_triangles>(entity);
         const auto &geometry   = _entities.entities.get<cr::entity::geometry>(entity);
 
+        if (emissive.emissive_indices.size() == 0)
+            return sample;
+
         const auto tri_pdf = 1.0f / emissive.emissive_indices.size();
 
         auto tri = glm::min(static_cast<uint64_t>(random->next_float() * emissive.emissive_indices.size()), emissive.emissive_indices.size() - 1);

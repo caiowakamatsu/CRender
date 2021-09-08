@@ -127,9 +127,9 @@ namespace cr::sampling
          * F(v,h,f0,f90) = f0 + (f90 - f0) (1 - v * h) ^ 5
          *
          */
-        [[nodiscard]] inline glm::vec3 specular_f(float u, float f0, float f90)
+        [[nodiscard]] inline float specular_f(float u, float f0, float f90)
         {
-            return f0 + (glm::vec3(f90, f90, f90) - f0) * glm::pow(1.0f - u, 5.0f);
+            return f0 + (f90 - f0) * glm::pow(1.0f - u, 5.0f);
         }
 
         /**
@@ -138,10 +138,10 @@ namespace cr::sampling
          * F(v,h,f0,f90) = f0 + (f90 - f0) (1 - v * h) ^ 5
          *
          */
-        [[nodiscard]] inline glm::vec3 specular_f(float u, const float f0)
+        [[nodiscard]] inline float specular_f(float u, const float f0)
         {
             const auto f = glm::pow(1.0f - u, 5.0f);
-            return glm::vec3(f + f0 * (1.0f - f));
+            return f + f0 * (1.0f - f);
         }
 
     }    // namespace cook_torrence

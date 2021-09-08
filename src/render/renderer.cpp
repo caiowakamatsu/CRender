@@ -12,10 +12,12 @@ namespace
         cr::ray   ray;
     };
     [[nodiscard]] processed_hit process_hit(
-      const cr::ray::intersection_record &record,
-      const cr::ray &                     ray,
-      cr::scene *                         scene,
-      cr::random *                        random)
+      const cr::ray::intersection_record &         record,
+      const cr::ray &                              ray,
+      cr::scene *                                  scene,
+      cr::random *                                 random,
+      std::optional<cr::ray::intersection_record> previous_record        = {},
+      std::optional<::processed_hit>              previous_processed_hit = {})
     {
         auto out = processed_hit();
 
@@ -65,12 +67,23 @@ namespace
         break;
         case cr::material::metal:
         {
-            out.ray.origin    = record.intersection_point + record.normal * 0.0001f;
-            out.ray.direction = glm::reflect(ray.direction, record.normal);
+            auto cos_hemp_dir = cr::sampling::hemp_cos(
+              record.normal,
+              glm::vec2(random->next_float(), random->next_float()));
 
-            out.albedo *= record.material->info.reflectiveness;
-            out.bdxf = out.albedo;
-            out.pdf  = 1;
+            out.ray.origin =
+              record.intersection_point + record.normal * cr::numbers<float>::elipson;
+            out.ray.direction = glm::normalize(cos_hemp_dir);
+
+            out.bdxf = cr::brdf::ggx(
+                         ray,
+                         out.ray,
+                         record.normal,
+                         record.material->info.roughness,
+                         record.material->info.ior) *
+              out.albedo;
+
+            out.pdf = glm::dot(out.ray.direction, record.normal) / cr::numbers<float>::pi;
             break;
         }
         case cr::material::smooth:
@@ -78,10 +91,11 @@ namespace
               record.normal,
               glm::vec2(random->next_float(), random->next_float()));
 
-            out.ray.origin    = record.intersection_point + record.normal * cr::numbers<float>::elipson;
+            out.ray.origin =
+              record.intersection_point + record.normal * cr::numbers<float>::elipson;
             out.ray.direction = glm::normalize(cos_hemp_dir);
             out.bdxf          = out.albedo / cr::numbers<float>::pi;
-            out.pdf = glm::dot(out.ray.direction, record.normal) / cr::numbers<float>::pi;
+            out.pdf           = glm::dot(out.ray.direction, record.normal) / cr::numbers<float>::pi;
         }
 
         return out;
@@ -263,10 +277,15 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays, uin
     auto normal     = glm::vec3(0.0f, 0.0f, 0.0f);
     auto depth      = 0.0f;
 
+    auto previous_intersection  = cr::ray::intersection_record();
+    auto previous_processed_hit = ::processed_hit();
+
     auto early_out = false;
     {
         // First manual bounce to account for direct lights
-        auto intersection  = _scene->get()->cast_ray(ray);
+        auto intersection = _scene->get()->cast_ray(ray);
+
+        previous_intersection = intersection;    // First manual ray
 
         if (intersection.distance == std::numeric_limits<float>::infinity())
         {
@@ -280,9 +299,11 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays, uin
             final += throughput * miss_sample;
 
             early_out = true;
-        } else
+        }
+        else
         {
-            auto processed_hit = ::process_hit(intersection, ray, _scene->get(), &random);
+            auto processed_hit     = ::process_hit(intersection, ray, _scene->get(), &random);
+            previous_processed_hit = processed_hit;
 
             final += throughput * (processed_hit.emission * processed_hit.albedo);
         }
@@ -294,28 +315,40 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays, uin
         auto intersection  = _scene->get()->cast_ray(ray);
         auto processed_hit = ::processed_hit();
 
-        if (intersection.distance == std::numeric_limits<float>::infinity())
-            break;
+        if (intersection.distance == std::numeric_limits<float>::infinity()) break;
 
-        processed_hit = ::process_hit(intersection, ray, _scene->get(), &random);
+        processed_hit = ::process_hit(
+          intersection,
+          ray,
+          _scene->get(),
+          &random,
+          previous_intersection,
+          previous_processed_hit);
 
         ray = processed_hit.ray;
 
-        auto use_nee = intersection.material->info.shade_type != material::metal;
-//        auto use_nee = false;
+        auto use_nee = true;
+
+        if (
+          (intersection.material->info.shade_type == material::metal &&
+           intersection.material->info.roughness < 0.05) ||
+          (intersection.material->info.shade_type == material::glass))
+            use_nee = false;
 
         if (use_nee)
         {
             // Light NEE
             auto light_nee = _scene->get()->sample_light(intersection, &random);
-                        if (light_nee.intersected)
-                            final += 0.5f * (throughput * processed_hit.bdxf * light_nee.geometry_term * light_nee.contribution
-                            / light_nee.pdf);
+            if (light_nee.intersected)
+                final += 0.5f *
+                  (throughput * processed_hit.bdxf * light_nee.geometry_term *
+                   light_nee.contribution / light_nee.pdf);
         }
 
         const auto cos_theta = glm::dot(intersection.normal, ray.direction);
         throughput *= processed_hit.bdxf * cos_theta / processed_hit.pdf;
-        final += throughput * (processed_hit.emission * processed_hit.albedo) * (use_nee ? 0.5f : 1.0f);
+        final +=
+          throughput * (processed_hit.emission * processed_hit.albedo) * (use_nee ? 0.5f : 1.0f);
 
         // Sun NEE
         if (_scene->get()->is_sun_enabled())
@@ -341,6 +374,9 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays, uin
                            _scene->get()->registry()->sun()) /
                   pdf_cos.pdf;
         }
+
+        previous_intersection  = intersection;
+        previous_processed_hit = processed_hit;
     }
     fired_rays += total_bounces;
 

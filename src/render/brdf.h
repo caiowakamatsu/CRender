@@ -7,7 +7,7 @@
 
 namespace cr::brdf
 {
-    [[nodiscard]] inline glm::vec3 ggx(
+    [[nodiscard]] inline float ggx(
       const cr::ray &  incoming,
       const cr::ray &  outgoing,
       const glm::vec3 &normal,
