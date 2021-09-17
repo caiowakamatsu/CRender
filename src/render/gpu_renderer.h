@@ -23,12 +23,18 @@ namespace cr
         [[nodiscard]] GLuint texture() const;
 
     private:
+
+        void kernel_generate();
+
+        void kernel_extend(std::uint32_t fired_rays);
+
+        void kernel_shade(std::uint32_t intersections);
+
         struct rendering_resources
         {
             [[nodiscard]] bool operator==(const rendering_resources &rhs) const noexcept
             {
-                return rhs.resolution == resolution && rhs.mvp == mvp &&
-                  rhs.camera_data == camera_data;
+                return rhs.mvp == mvp && rhs.camera_data == camera_data;
             }
 
             [[nodiscard]] bool operator!=(const rendering_resources &rhs) const noexcept
@@ -36,9 +42,8 @@ namespace cr
                 return !(*this == rhs);
             }
 
-            glm::ivec4 resolution;
-            glm::mat4  mvp;
-            glm::vec3  camera_data;
+            glm::mat4 mvp;
+            glm::vec4 camera_data;
         };
 
         struct gpu_triangle
@@ -55,12 +60,31 @@ namespace cr
 
         struct
         {
+            GLuint generate;
+            GLuint extend;
+            GLuint shade;
+
+            struct
+            {
+                GLuint generate;
+                GLuint extend;
+                GLuint shade;
+            } shaders;
+        } _kernels;
+
+        struct
+        {
+            GLuint scene;
+            GLuint ray;
+            GLuint intersections;
+            GLuint ray_count;
+        } _buffers;
+
+        struct
+        {
             GLuint target;
             GLuint accumulation;
-            GLuint shader;
-            GLuint compute;
 
-            GLuint render_data_buffer;
             GLuint bvh_data_buffer      = ~0;
             GLuint triangle_data_buffer = ~0;
             GLuint material_data_buffer = ~0;

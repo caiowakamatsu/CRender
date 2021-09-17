@@ -422,6 +422,5 @@ void main()
         accumulated += vec4(colour, 1.0f);
         imageStore(accumulation, ivec2(current_pixel), accumulated);
         imageStore(rendered, ivec2(current_pixel), accumulated / float(current_frame + 1));
-//        imageStore(rendered, ivec2(current_pixel), vec4(colour, 1.0f));
     }
 }
