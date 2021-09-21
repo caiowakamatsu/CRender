@@ -12,7 +12,7 @@ int main()
 
     auto draft_renderer = std::make_unique<cr::draft_renderer>(1024, 1024, &scene);
 
-    auto gpu_renderer = std::make_unique<cr::gpu_renderer>(scene.get(), glm::ivec2(1024, 1024));
+    auto gpu_renderer = std::make_unique<cr::gpu_renderer>(scene.get(), glm::ivec2(512, 512));
 
     main_display.start(scene, renderer, thread_pool, draft_renderer, gpu_renderer);
 }

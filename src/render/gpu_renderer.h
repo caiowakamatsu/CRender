@@ -23,12 +23,14 @@ namespace cr
         [[nodiscard]] GLuint texture() const;
 
     private:
-
         void kernel_generate();
 
         void kernel_extend(std::uint32_t fired_rays);
 
-        void kernel_shade(std::uint32_t intersections);
+        void kernel_shade(
+          std::uint32_t intersections,
+          std::uint32_t current_frame,
+          std::uint32_t current_bounce);
 
         struct rendering_resources
         {
@@ -46,6 +48,13 @@ namespace cr
             glm::vec4 camera_data;
         };
 
+        struct gpu_material
+        {
+            glm::vec4 colour;
+            glm::vec4 data1;
+            glm::vec4 tex_type;
+        };
+
         struct gpu_triangle
         {
             /*
@@ -57,6 +66,13 @@ namespace cr
             glm::vec4 v1;
             glm::vec4 v2;
         };
+
+        static void flatten_nodes(
+          std::vector<bvh_node> &               nodes,
+          size_t                                flat_parent_idx,
+          embree_node *                         parent,
+          std::vector<gpu_triangle> &           new_prims,
+          const std::vector<gpu_triangle> &prims);
 
         struct
         {
@@ -82,8 +98,9 @@ namespace cr
 
         struct
         {
-            GLuint target;
-            GLuint accumulation;
+            GLuint throughput;
+            GLuint colour;
+            GLuint final_image;
 
             GLuint bvh_data_buffer      = ~0;
             GLuint triangle_data_buffer = ~0;
@@ -99,8 +116,6 @@ namespace cr
         void _update_resolution();
 
         void _build_bvh();
-
-        void _build_triangle_buffer();
 
         void _build_material_buffer();
 

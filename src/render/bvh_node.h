@@ -36,7 +36,6 @@ namespace cr
       void *                   userPtr)
     {
         assert(dim < 3);
-        assert(prim->geomID == 0);    // Not sure what this is for...
         *lprim                 = bounds_from_prim(*prim);
         *rprim                 = bounds_from_prim(*prim);
 
@@ -124,14 +123,18 @@ namespace cr
     struct embree_node
     {
         bool         is_leaf = false;
-        unsigned int id;
+        std::vector<std::uint32_t> ids;
         embree_node *children[2];
         cr::bbox     bounds[2];
 
         embree_node() = default;
 
-        embree_node(unsigned int id, const cr::bbox &bounds) : is_leaf(true), id(id), bounds()
+        embree_node(const RTCBuildPrimitive *prims, size_t count, const cr::bbox &bounds) : is_leaf(true), bounds()
         {
+            ids.resize(count);
+            for (auto i = 0; i < count; i++)
+                ids[i] = prims[i].primID;
+
             this->bounds[0] = bounds;
             this->bounds[1] = cr::bbox();
         }
@@ -184,10 +187,9 @@ namespace cr
           size_t                   num_prims,
           void *                   user_ptr)
         {
-            assert(num_prims == 1);
             (*(size_t *) user_ptr)++;
             auto ptr = rtcThreadLocalAlloc(allocator, sizeof(embree_node), 16);
-            return (void *) new (ptr) embree_node(primitives->primID, cr::bbox(*primitives));
+            return (void *) new (ptr) embree_node(primitives, num_prims, cr::bbox(*primitives));
         }
     };
 
@@ -197,19 +199,18 @@ namespace cr
         /*
          * Data is represented as so
          * [0..2] - Minimum XYZ
-         * [3] - Leaf node? Bool yes / no
+         * [3] - Primitive count - 0 If not leaf
          * [4..6] - Maximum XYZ
          * [7] - Next node (or primitive) - As int
          */
-        glm::vec4 front= glm::vec4(999.9, 999.f, 999.f, true);
+        glm::vec4 front;
         glm::vec4 back;
 
-        void set_leaf(bool is_leaf) { front[3] = is_leaf; }
+        void set_primitive_count(int count) { std::memcpy(&front.w, &count, sizeof(int)); }
 
-        void set_primitive_id(int id) { std::memcpy(&back[3], &id, sizeof(int)); }
+        void set_child_node_start(int index) { std::memcpy(&back.w, &index, sizeof(int)); }
 
-        void set_child_node_start(int index) { std::memcpy(&back[3], &index, sizeof(int)); }
-//        void set_child_node_start(int index) { data[7] = index; }
+        void set_primitive_first_id(int index) { std::memcpy(&back.w, &index, sizeof(int)); }
 
         bvh_node(const cr::bbox &bounds)
         {
@@ -220,31 +221,8 @@ namespace cr
             back[0] = bounds.max.x;
             back[1] = bounds.max.y;
             back[2] = bounds.max.z;
-        }
 
-        static void
-          flatten_nodes(std::vector<bvh_node> &nodes, size_t flat_parent_idx, embree_node *parent)
-        {
-            const auto child_index = nodes.size();
-            nodes[flat_parent_idx].set_child_node_start(child_index);
-
-            auto children = std::array<embree_node *, 2>({
-              parent->children[0],
-              parent->children[1],
-            });
-
-            for (auto i = 0; i < 2; i++)
-            {
-                auto node = bvh_node(children[i]->bounds[0].merge(children[i]->bounds[1]));
-                node.set_leaf(children[i]->is_leaf);
-                if (children[i]->is_leaf)
-                    node.set_primitive_id(children[i]->id);
-                nodes.emplace_back(node);
-            }
-
-            for (auto i = 0; i < 2; i++)
-                if (!children[i]->is_leaf)
-                    flatten_nodes(nodes, child_index + i, children[i]);
+            set_primitive_count(0);
         }
     };
 }    // namespace cr
