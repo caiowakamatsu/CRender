@@ -1,0 +1,171 @@
+#version 440
+
+#define INF 1.0 / 0.0
+
+layout (local_size_x = 64, local_size_y = 1) in;
+
+// No worrying about BVH stuff yet... lets just get this working first
+struct Ray {
+    vec4 origin; // xyz = origin, w = pixel_id
+    vec4 direction; // xyz = dir, w = unused
+};
+
+struct Intersection {
+    vec4 point; // XYZ = Point, W = Distance
+    vec4 normal; // XYZ = Normal, W = Material_ID (int)
+};
+
+struct Triangle
+{
+/*
+v0 - X-Z = Vertex 0 XYZ, W = Unused
+v1 - X-Z = Vertex 1 XYZ, W = Unused
+v2 - X-Z = Vertex 2 XYZ, W = MaterialID (as int)
+*/
+    vec4 v0;
+    vec4 v1;
+    vec4 v2;
+};
+int triangle_mat_id(Triangle triangle) { return floatBitsToInt(triangle.v2.w); }
+
+/* Uniform Structs */
+struct Bvh
+{
+    vec4 front;// X-Z = Minimum X/Z, W = Primitive count - 0 if not leaf
+    vec4 back;// X-Z = Maximum X/Z, W = Next node (Or primitive ID) (int bits)
+};
+vec3 bvh_min(Bvh b) { return b.front.xyz; }
+vec3 bvh_max(Bvh b) { return b.back.xyz; }
+int bvh_next_node(Bvh b) { return floatBitsToInt(b.back.w); }
+int bvh_primitive_id(Bvh b) { return floatBitsToInt(b.back.w); }
+int bvh_primitive_count(Bvh b) { return floatBitsToInt(b.front.w); }
+bool bvh_is_leaf(Bvh b) { return bool(bvh_primitive_count(b)); }
+
+layout (std430, binding = 0) buffer RayBuffer {
+    Ray rays[];
+};
+
+layout (std430, binding = 1) buffer IntersectionBuffer {
+    Intersection intersections[];
+};
+
+layout (std430, binding = 2) buffer BvhBuffer {
+    Bvh nodes [];
+};
+
+layout (std140, binding = 3) buffer TriangleBuffer {
+    Triangle triangles[];
+};
+
+layout (location = 0) uniform uint ray_count;
+
+float component_max(vec3 v) {
+    return max(max(v.x, v.y), v.z);
+}
+
+float component_min(vec3 v) {
+    return max(max(v.x, v.y), v.z);
+}
+
+bool intersect_aabb(vec3 bmin, vec3 bmax, vec3 o, vec3 id)
+{
+    vec3 t0 = (bmin - o) * id;
+    vec3 t1 = (bmax - o) * id;
+    vec3 tmin = min(t0, t1);
+    vec3 tmax = max(t0, t1);
+
+    return component_max(tmin) <= component_min(tmax);
+}
+
+bool intersect_triangle(Ray r, int prim_id, out Intersection record)
+{
+    vec3 v0 = triangles[prim_id].v0.xyz;
+    vec3 v1 = triangles[prim_id].v1.xyz;
+    vec3 v2 = triangles[prim_id].v2.xyz;
+
+    vec3 e0 = v1 - v0;// Edges / Normal
+    vec3 e1 = v2 - v0;
+    vec3 n = cross(e0, e1);
+    float t = dot(v0 - r.origin.xyz, n) / dot(r.direction.xyz, n);// Plane Intersection
+    vec3 p = r.origin.xyz + r.direction.xyz * t;
+    vec3 p0 = p - v0;// Intersection Pos
+    vec2 b = vec2(dot(p0, e0), dot(p0, e1));// p0 transform with basic vector
+    mat2 a = mat2(dot(e1, e1), -dot(e0, e1), -dot(e0, e1), dot(e0, e0));// adjoint of 2x2 metric tensor
+    float id = 1.0 / (a[0][0] * a[1][1] - a[0][1] * a[1][0]);// denominator of inverse 2x2 metric tensor
+    vec2 uv = id * (a * b);// barycentric coordinate
+
+    record.point.w = t;
+    record.normal.xyz = normalize(n);
+    record.point.xyz = p;
+
+    return 0 < uv.x && 0 < uv.y && uv.x + uv.y < 1 && t > 0;
+}
+
+bool intersect_ray(Ray ray, out Intersection record)
+{
+    uint[64] stack;
+    int stack_ptr = 0;
+
+    stack[stack_ptr++] = ~0;
+    uint stack_top = 0;
+
+    vec3 inv_dir = 1.0 / ray.direction.xyz;
+
+    Intersection best;
+    best.point.w = 100000.0;
+    while (stack_top != ~0)
+    {
+        Bvh node = nodes[stack_top];
+        vec3 min = bvh_min(node);
+        vec3 max = bvh_max(node);
+        if (!intersect_aabb(min, max, ray.origin.xyz, inv_dir))
+        {
+            stack_top = stack[--stack_ptr];
+            continue;
+        }
+
+        int first = bvh_primitive_id(node);
+        int tri_count = bvh_primitive_count(node);
+        if (bool(tri_count))
+        {
+            for (int i = first; i < tri_count + first; ++i)
+            {
+                Intersection temp;
+                if (intersect_triangle(ray, i, temp) && temp.point.w < best.point.w)
+                    best = temp;
+            }
+
+            stack_top = stack[--stack_ptr];
+        }
+        else
+        {
+            stack[stack_ptr++] = bvh_next_node(node) + 1;
+            stack_top = bvh_next_node(node);
+        }
+    }
+    record = best;
+    return best.point.w != 100000.0;
+}
+
+void main()
+{
+    uint idx = gl_GlobalInvocationID.x;
+
+    if (idx >= ray_count) return;
+
+    Ray ray = rays[idx];
+
+    Intersection intersection;
+
+    intersection.point.w = -1.0;
+
+    Intersection temp;
+    if (nodes.length() > 0 && intersect_ray(ray, temp))
+    {
+        intersection = temp;
+        if (dot(intersection.normal.xyz, ray.direction.xyz) > 0)
+            intersection.normal *= -1;
+    }
+
+    intersections[idx] = intersection;
+}

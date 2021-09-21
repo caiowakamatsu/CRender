@@ -1,0 +1,47 @@
+#version 440
+
+layout (local_size_x = 8, local_size_y = 8) in;
+
+struct Ray {
+    vec4 origin; // xyz = origin, w = pixel_id
+    vec4 direction; // xyz = dir, w = unused
+};
+
+layout (std430, binding = 0) buffer RayBuffer {
+    Ray rays[];
+};
+
+layout (std140, binding = 1) uniform RenderData {
+    mat4 camera_matrix;
+    vec4 data; // X,Y = WIDTH, HEIGHT / Z = FOV
+} scene;
+
+layout (binding = 0, rgba32f) uniform image2D throughput_tex;
+
+layout (binding = 1, rgba32f) uniform image2D colour_tex;
+
+layout (binding = 2, rgba32f) uniform image2D final_image_tex;
+
+void main()
+{
+    uvec2 target_pixel = uvec2(gl_GlobalInvocationID.xy);
+    uvec2 image_size = uvec2(floatBitsToInt(scene.data.x), floatBitsToInt(scene.data.y));
+
+    uint idx = target_pixel.x + target_pixel.y * image_size.x;
+
+    if (idx >= rays.length()) return;
+
+    vec2 uv = vec2(target_pixel) / vec2(image_size);
+    uv *= 2.0f;
+    uv -= 1.0f;
+    uv.x *= image_size.x / image_size.y;
+
+    float w = 1.0 / tan(0.5 * scene.data.z);
+    vec3 dir = (scene.camera_matrix * vec4(uv, w, 0.0)).xyz;
+
+    rays[idx].origin    = vec4(scene.camera_matrix[3].xyz, idx);
+    rays[idx].direction = vec4(normalize(dir), 0.0);
+
+    imageStore(throughput_tex, ivec2(target_pixel), vec4(1.0));
+    imageStore(colour_tex, ivec2(target_pixel), vec4(0.0, 0.0, 0.0, 1.0));
+}

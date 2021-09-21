@@ -5,7 +5,6 @@ cmake-build-*
 /build
 CMakeFiles
 _deps
-assets
 # Files
 /out/*
 imgui.ini

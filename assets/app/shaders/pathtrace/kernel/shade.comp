@@ -1,0 +1,302 @@
+#version 440
+
+#define ELIPSON (0.001)
+#define PI (3.141592)
+#define INV_PI (1.0 / PI)
+#define TAU (PI * 2)
+#define INV_TAU (1.0 / TAU)
+
+layout (local_size_x = 64, local_size_y = 1) in;
+
+struct Ray {
+    vec4 origin; // xyz = origin, w = pixel_id
+    vec4 direction; // xyz = dir, w = unused
+};
+
+struct Intersection {
+    vec4 point; // XYZ = Point, W = Distance
+    vec4 normal; // XYZ = Normal, W = Material_ID (int)
+};
+int intersection_mat_id(Intersection intersection) { return int(intersection.normal.w); }
+
+struct Material {
+    vec4 colour; // XYZ = Colour
+    vec4 data; // X = IOR, Y = Roughness, Z = Reflectiveness, W = Emission
+    vec4 tex_type; // XY = UV, Z = texture_id (-1 if no texture), W = Material Type (metal, smooth, glass)
+};
+vec3 material_colour(Material mat) { return mat.colour.xyz; }
+float material_ior(Material mat) { return mat.data.x; }
+float material_roughness(Material mat) { return mat.data.y; }
+float material_reflectiveness(Material mat) { return mat.data.z; }
+float material_emission(Material mat) { return mat.data.w; }
+int material_type(Material mat) { return floatBitsToInt(mat.tex_type.w); }
+vec2 material_uv(Material mat) { return mat.tex_type.xy; }
+int material_texture_id(Material mat) { return floatBitsToInt(mat.tex_type.z); }
+
+layout (std430, binding = 0) buffer RayBuffer {
+    Ray rays[];
+};
+
+layout (std430, binding = 1) buffer IntersectionBuffer {
+    Intersection intersections[];
+};
+
+layout (std430, binding = 2) buffer Atomics {
+    uint out_ray_count;
+};
+
+layout (binding = 0, rgba32f) uniform image2D throughput_tex;
+
+layout (binding = 1, rgba32f) uniform image2D colour_tex;
+
+layout (binding = 2, rgba32f) uniform image2D final_image_tex;
+
+layout (location = 0) uniform ivec2 image_size;
+
+layout (location = 1) uniform uint ray_count;
+
+layout (location = 2) uniform ivec3 image_stats; // X - Current sample, Y - Current bounce, Z - Max bounces
+
+///////////////////
+// UTIL - RANDOM //
+///////////////////
+uint wang_hash(uint seed)
+{
+    seed = (seed ^ uint(61)) ^ (seed >> 16);
+    seed *= 9;
+    seed = seed ^ (seed >> 4);
+    seed *= 0x27d4eb2d;
+    seed = seed ^ (seed >> 15);
+    return seed;
+}
+
+uint rng_state = wang_hash(gl_GlobalInvocationID.x * (image_stats.x + 1) ^ image_stats.x);
+
+uint rand_xorshift()
+{
+    rng_state ^= (rng_state << 13);
+    rng_state ^= (rng_state >> 17);
+    rng_state ^= (rng_state << 5);
+    return rng_state;
+}
+
+float rand1()
+{
+    return rand_xorshift() / 4294967296.0f;
+}
+
+vec2 rand2()
+{
+    return vec2(rand1(), rand1());
+}
+
+vec3 rand3()
+{
+    return vec3(rand1(), rand1(), rand1());
+}
+
+//////////////////////
+// MATHS - SAMPLING //
+//////////////////////
+vec3 sample_cosine_hemisphere(vec3 normal, vec2 uv)
+{
+    float cos_theta = 2.0 * uv.x - 1.0;
+    float sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+
+    float phi = TAU * uv.y;
+
+    float sin_phi = sin(phi);
+    float cos_phi = cos(phi);
+
+    return normal + vec3(sin_theta * cos_phi, cos_theta, sin_theta * sin_phi);
+}
+
+vec3 sample_uniform_hemisphere(vec3 normal, vec2 uv) {
+    float r = sqrt(1.0 - uv.x * uv.x);
+    float phi = 2.0 * PI * uv.y;
+
+    return normal + vec3(cos(phi) * r, sin(phi) * r, uv.x);
+}
+
+////////////////////
+// SAMPLING - GGX //
+////////////////////
+
+float sample_ggx_d(float NoH, float roughness) {
+    float a2 = roughness * roughness;
+    float d = ((NoH * a2 - NoH) * NoH + 1.0);
+
+    return a2 / (d * d * PI);
+}
+
+float sample_ggx_g(float NoV, float NoL, float roughness) {
+    float a2 = roughness * roughness;
+
+    float v = NoL * sqrt(NoV * NoV * (1.0 - a2) + a2);
+    float l = NoV * sqrt(NoL * NoL * (1.0 - a2) + a2);
+
+    return 0.5 / (v + l);
+}
+
+float sample_ggx_f(float u, float f0) {
+    float f = pow(1.0 - u, 5.0);
+    return f + f0 * (1.0 - f);
+}
+
+float sample_ggx(
+        vec3 incoming,
+        vec3 outgoing,
+        vec3 normal,
+        float roughness,
+        float ior) {
+    vec3 h = normalize(outgoing + -incoming);
+    float n_h = dot(normal, h);
+
+    float n_l = max(0.0, dot(normal, outgoing));
+    float l_h = dot(outgoing, h);
+    float n_v = dot(normal, -incoming);
+
+    float d = sample_ggx_d(n_h, roughness);
+    float g = sample_ggx_g(n_l, n_v, roughness);
+    float f = sample_ggx_f(ior, l_h);
+
+    return (d * g * f / max(0.0001, (4 * n_v)));
+}
+
+//////////////
+// MATERIAL //
+//////////////
+struct MaterialEvaulation {
+    float cos_theta;
+    float pdf;
+    vec3 out_dir;
+    vec3 out_pos;
+    vec3 bxdf;
+};
+
+void material_eval_metal(Intersection intersection, Ray ray, Material mat, out MaterialEvaulation eval) {
+    // For metal, uniform sampling is used as Im too lazy to implement GGX importance sampling
+    // This is a "good" enough solution for now
+    eval.out_dir   = normalize(sample_uniform_hemisphere(intersection.normal.xyz, rand2()));
+    eval.pdf       = INV_TAU;
+    eval.cos_theta = dot(eval.out_dir, intersection.normal.xyz);
+    eval.bxdf      =
+        sample_ggx(
+            ray.direction.xyz,
+            eval.out_dir,
+            intersection.normal.xyz,
+            material_roughness(mat),
+            material_ior(mat)) * material_colour(mat);
+}
+
+void material_eval_diffuse(Intersection intersection, Ray ray, Material mat, out MaterialEvaulation eval) {
+    eval.out_dir   = normalize(sample_cosine_hemisphere(intersection.normal.xyz, rand2()));
+    eval.cos_theta = dot(eval.out_dir, intersection.normal.xyz);
+    eval.pdf       = eval.cos_theta * INV_PI;
+    eval.bxdf      = material_colour(mat) * INV_PI;
+}
+
+void material_eval_(Intersection intersection, Ray ray, Material mat, out MaterialEvaulation eval) {
+
+}
+
+MaterialEvaulation material_evaluate(Intersection intersection, Ray ray, Material mat) {
+    MaterialEvaulation eval;
+
+    // I know this is true for all of them
+    eval.out_pos = ray.origin.xyz + ray.direction.xyz * intersection.point.w;
+
+    switch (material_type(mat)) {
+        case 0:
+            material_eval_metal(intersection, ray, mat, eval);
+            break;
+        case 1:
+            material_eval_diffuse(intersection, ray, mat, eval);
+            break;
+        case 2:
+            material_eval_diffuse(intersection, ray, mat, eval);
+            break;
+    }
+
+    return eval;
+}
+
+//////////
+// UTIL //
+//////////
+
+vec3 calc_sky_color(vec3 dir)
+{
+    float t = dir.y * 0.5 + 0.5;
+    return (1.0 - t) * vec3(1) + t * (vec3(0.2, 0.5, 0.7));
+//    float dir_up_cosine = dot(dir, vec3(0, 1, 0));
+//    float dir_sun_angle = acos(dot(dir, -normalize(vec3(0.8, -1.0, 0.0))));
+//    return (dir_sun_angle < (PI / 16.0)) ?
+//        (vec3(1.0, 0.9, 0.7) * 50.0) : vec3(0);
+}
+
+void main()
+{
+    uint idx = gl_GlobalInvocationID.x;
+
+    if (idx >= ray_count) return;
+
+    Intersection intersection = intersections[idx];
+    Ray ray = rays[idx];
+
+    int pixel = int(ray.origin.w);
+    uint x = pixel % image_size.x;
+    uint y = pixel / image_size.x;
+
+    vec3 throughput = imageLoad(throughput_tex, ivec2(x, y)).xyz;
+    vec3 final_colour = imageLoad(colour_tex, ivec2(x, y)).xyz;
+
+    bool should_write = image_stats.y >= (image_stats.z - 1);
+
+    Ray out_ray;
+
+    if (intersection.point.w > 0.0)
+    {
+        out_ray = Ray(vec4(0), vec4(0));
+
+        out_ray.direction.xyz = normalize(sample_cosine_hemisphere(intersection.normal.xyz, rand2()));
+        out_ray.origin        = vec4(intersection.point.xyz + intersection.normal.xyz * ELIPSON, ray.origin.w);
+
+        vec3 albedo = vec3(1, 1, 1);
+
+        /*
+        float sample_ggx(
+        Ray incoming,
+        Ray outgoing,
+        vec3 normal,
+        float roughness,
+        float ior) {
+        */
+
+        vec3 brdf = albedo * sample_ggx(ray.direction.xyz, out_ray.direction.xyz, intersection.normal.xyz, 0.8f, 1.5f);
+//        vec3 brdf = vec3(1, 1, 1) / PI; // Assuming default lambertian material for everything for now
+
+        float cos_theta = dot(out_ray.direction.xyz, intersection.normal.xyz);
+        throughput *= brdf * cos_theta / (dot(out_ray.direction.xyz, intersection.normal.xyz) / PI);
+//        final_colour += throughput;
+        rays[atomicAdd(out_ray_count, 1)] = out_ray;
+    } else {
+        should_write = true;
+
+        final_colour += throughput * calc_sky_color(ray.direction.xyz);
+    }
+
+    imageStore(throughput_tex, ivec2(x, y), vec4(throughput, 1.0));
+    imageStore(colour_tex, ivec2(x, y), vec4(final_colour, 1.0));
+
+    if (should_write)
+    {
+        vec3 previous_frame = imageLoad(final_image_tex, ivec2(x, y)).xyz;
+        float cur_frame = float(image_stats.x);
+        vec3 final = previous_frame * cur_frame / (cur_frame + 1.0) + final_colour / (cur_frame + 1.0);
+        imageStore(final_image_tex, ivec2(x, y), vec4(final, 1.0));
+//        imageStore(final_image_tex, ivec2(x, y), vec4(final_colour, 1.0));
+//        imageStore(final_image_tex, ivec2(x, y), vec4(rand3(), 1.0));
+    }
+
+}

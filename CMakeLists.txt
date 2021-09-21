@@ -7,6 +7,7 @@ project(CRender)
 set(EMBREE_ISA_AVX256 ON)
 
 option(CRENDER_USE_RELATIVE_ASSET_PATH "Enabled during development, for production builds disable" OFF)
+option(CRENDER_USE_TRACY "Enabled use Tracy, for production builds disable" OFF)
 
 if (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC" AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     message(STATUS "Using clang-cl options (MSVC interface)")
@@ -76,7 +77,10 @@ add_executable(CRender src/main.cpp
         src/render/gpu_renderer.h
         src/util/opengl.h
         src/render/bvh_node.h
-        src/math/bbox.h)
+        src/math/bbox.h
+
+        src/tracy/TracyClient.cpp
+        )
 
 target_include_directories(CRender PRIVATE src)
 target_include_directories(CRender PRIVATE external)
@@ -91,4 +95,11 @@ else()
     set(CRENDER_ASSET_PATH_VAR "${CMAKE_SOURCE_DIR}/assets/app/")
 endif()
 
-target_compile_definitions(CRender PUBLIC -DGLFW_INCLUDE_NONE -D__STDC_CONSTANT_MACROS -DIMGUI_IMPL_OPENGL_LOADER_GLAD -DCRENDER_ASSET_PATH="${CRENDER_ASSET_PATH_VAR}")
+if (CRENDER_USE_TRACY)
+    message("Using Tracy")
+    set(CRENDER_TRACY_MACRO -DTRACY-ENABLE)
+else()
+    set(CRENDER_TRACY_MACRO "")
+endif()
+
+target_compile_definitions(CRender PUBLIC -DGLFW_INCLUDE_NONE -D__STDC_CONSTANT_MACROS -DIMGUI_IMPL_OPENGL_LOADER_GLAD ${CRENDER_TRACY_MACRO} -DCRENDER_ASSET_PATH="${CRENDER_ASSET_PATH_VAR}")
