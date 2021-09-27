@@ -2,7 +2,8 @@
 
 #include <stack>
 
-#include <embree3/rtcore.h>
+#include <bvh/sweep_sah_builder.hpp>
+#include <bvh/triangle.hpp>
 
 #include <render/scene.h>
 #include <render/bvh_node.h>

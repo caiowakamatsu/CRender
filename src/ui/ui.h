@@ -120,7 +120,7 @@ namespace cr::ui
 
         {
             //            if (in_draft_mode) draft_renderer->render();
-            gpu_renderer->render(glm::ivec2(1024, 1024));
+            gpu_renderer->render(glm::ivec2(512, 512));
             glUseProgram(compute_program);
 
             glBindTexture(GL_TEXTURE_2D, target_texture);

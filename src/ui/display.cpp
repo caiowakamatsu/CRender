@@ -6,6 +6,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
+#include <tracy/TracyOpenGL.hpp>
+
 cr::display::display()
 {
     glfwSetErrorCallback([](int error, const char *description) {
@@ -25,6 +27,8 @@ cr::display::display()
 
     const auto load_gl = gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
     if (!load_gl) exit("Failed to load GLAD OpenGL functions", 20);
+
+    TracyGpuContext;
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -193,6 +197,7 @@ void cr::display::start(
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         _timer.frame_stop();
+        TracyGpuCollect;
         glfwSwapBuffers(_glfw_window);
 
         if (

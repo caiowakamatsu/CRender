@@ -32,4 +32,10 @@ FetchContent_Declare(
         GIT_TAG 0.9.9.8
 )
 
-FetchContent_MakeAvailable(glfw fmt glm)
+FetchContent_Declare(
+        bvh
+        GIT_REPOSITORY https://github.com/madmann91/bvh
+        GIT_TAG bc3eff9f961ab1d9dd39a3fc9c43ace59a2ea35c
+)
+
+FetchContent_MakeAvailable(glfw fmt glm bvh)

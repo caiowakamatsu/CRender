@@ -85,7 +85,7 @@ add_executable(CRender src/main.cpp
 target_include_directories(CRender PRIVATE src)
 target_include_directories(CRender PRIVATE external)
 
-target_link_libraries(CRender glfw fmt glm embree OpenImageDenoise)
+target_link_libraries(CRender glfw fmt glm embree OpenImageDenoise bvh)
 
 if (CRENDER_USE_RELATIVE_ASSET_PATH)
     message("Using relative asset path")
@@ -97,7 +97,7 @@ endif()
 
 if (CRENDER_USE_TRACY)
     message("Using Tracy")
-    set(CRENDER_TRACY_MACRO -DTRACY-ENABLE)
+    set(CRENDER_TRACY_MACRO -DTRACY_ENABLE)
 else()
     set(CRENDER_TRACY_MACRO "")
 endif()

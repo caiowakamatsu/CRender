@@ -1,8 +1,17 @@
 #include "gpu_renderer.h"
 
+#include <tracy/Tracy.hpp>
+#include <tracy/TracyOpenGL.hpp>
+
+#define WAIT_FENCE
+#ifdef WAIT_FENCE
+#define WAIT_ON
+#endif
+
 cr::gpu_renderer::gpu_renderer(cr::scene *scene, const glm::ivec2 &resolution)
     : _scene(scene), _resolution(resolution)
 {
+    ZoneScopedN("gpu_renderer::ctor");
     // Create the shaders
     _kernels.shaders.generate = cr::opengl::create_shader(
       std::string(CRENDER_ASSET_PATH) + "shaders/pathtrace/kernel/generate.comp",
@@ -104,15 +113,18 @@ cr::gpu_renderer::gpu_renderer(cr::scene *scene, const glm::ivec2 &resolution)
 
 void cr::gpu_renderer::build()
 {
+    ZoneScopedN("gpu_renderer::build");
     _build_bvh();
+    _current_frame = 0;
     //    _build_material_buffer();
 }
 
 void cr::gpu_renderer::render(const glm::ivec2 &resolution)
 {
     // Todo: Update resolution and reload resolution dependent resources
-//    if (resolution != _resolution) _resolution = resolution;
+    //    if (resolution != _resolution) _resolution = resolution;
 
+    ZoneScopedN("gpu_renderer::render");
     kernel_generate();
 
     auto fired = std::uint32_t(_resolution.x * _resolution.y);
@@ -178,10 +190,19 @@ void cr::gpu_renderer::_update_resolution()
 
 void cr::gpu_renderer::_build_bvh()
 {
-    auto primitives = std::vector<RTCBuildPrimitive>();
-    auto sorted_gpu_prims = std::vector<gpu_triangle>();
-    auto gpu_prims = std::vector<gpu_triangle>();
+    ZoneScopedN("gpu_renderer::build_bvh");
 
+    /*
+     *     bvh::SweepSahBuilder<bvh::Bvh<float>> builder(bvh);
+    auto [bboxes, centers] = bvh::compute_bounding_boxes_and_centers(bvh_triangles.data(),
+    bvh_triangles.size()); auto global_bbox = bvh::compute_bounding_boxes_union(bboxes.get(),
+    bvh_triangles.size()); builder.build(global_bbox, bboxes.get(), centers.get(),
+    bvh_triangles.size());
+     */
+    auto bvh = bvh::Bvh<float>();
+
+    auto        triangles  = std::vector<bvh::Triangle<float>>();
+    auto gpu_triangles = std::vector<gpu_triangle>();
     const auto &geometries = _scene->registry()->entities.view<cr::entity::geometry>();
 
     for (auto i = 0; i < geometries.size(); i++)
@@ -189,82 +210,63 @@ void cr::gpu_renderer::_build_bvh()
         const auto &geometry =
           _scene->registry()->entities.get<cr::entity::geometry>(geometries[i]);
 
-        primitives.reserve(primitives.size() + geometry.vert_coords->size() / 3);
-        sorted_gpu_prims.reserve(primitives.size() + geometry.vert_coords->size() / 3);
-        gpu_prims.reserve(primitives.size() + geometry.vert_coords->size() / 3);
+        triangles.reserve(triangles.size() + geometry.vert_coords->size() / 3);
+        gpu_triangles.reserve(gpu_triangles.size() + geometry.vert_coords->size() / 3);
         for (auto j = 0; j < geometry.vert_coords->size() / 3; j++)
         {
-            const auto vertices = std::array<glm::vec3, 3>({
-              (*geometry.vert_coords)[j * 3 + 0],
-              (*geometry.vert_coords)[j * 3 + 1],
-              (*geometry.vert_coords)[j * 3 + 2],
-            });
+            auto verts = std::array<bvh::Vector3<float>, 3>();
 
-            const auto max = glm::max(vertices[0], glm::max(vertices[1], vertices[2]));
-            const auto min = glm::min(vertices[0], glm::min(vertices[1], vertices[2]));
+            auto gpu_tri = gpu_triangle();
+            gpu_tri.v0 = glm::vec4((*geometry.vert_coords)[j * 3 + 0], 0.0);
+            gpu_tri.v1 = glm::vec4((*geometry.vert_coords)[j * 3 + 1], 0.0);
+            gpu_tri.v2 = glm::vec4((*geometry.vert_coords)[j * 3 + 2], 0.0); // Shrug, no material ID yet
 
-            auto gpu_prim = gpu_triangle();
-            gpu_prim.v0 = glm::vec4(vertices[0], 0.0);
-            gpu_prim.v1 = glm::vec4(vertices[1], 0.0);
-            gpu_prim.v2 = glm::vec4(vertices[2], 0.0);
+//            fmt::print("Gpu vertex X: {}, Y: {}, Z: {}\n", (*geometry.vert_coords)[j * 3 + 0].x, (*geometry.vert_coords)[j * 3 + 0].y, (*geometry.vert_coords)[j * 3 + 0].z);
+//            fmt::print("Gpu vertex X: {}, Y: {}, Z: {}\n", (*geometry.vert_coords)[j * 3 + 1].x, (*geometry.vert_coords)[j * 3 + 1].y, (*geometry.vert_coords)[j * 3 + 1].z);
+//            fmt::print("Gpu vertex X: {}, Y: {}, Z: {}\n", (*geometry.vert_coords)[j * 3 + 2].x, (*geometry.vert_coords)[j * 3 + 2].y, (*geometry.vert_coords)[j * 3 + 2].z);
 
-            auto primitive    = RTCBuildPrimitive();
-            primitive.lower_x = min.x;
-            primitive.lower_y = min.y;
-            primitive.lower_z = min.z;
-            primitive.upper_x = max.x;
-            primitive.upper_y = max.y;
-            primitive.upper_z = max.z;
+            gpu_triangles.push_back(gpu_tri);
 
-            primitive.geomID = i;
-            primitive.primID = j;
+            for (auto k = 0; k < 3; k++)
+            {
+                const auto coords = (*geometry.vert_coords)[j * 3 + k];
 
-            gpu_prims.push_back(gpu_prim);
-            primitives.push_back(primitive);
+//                fmt::print("Tri Vertex X: {}, Y: {}, Z: {}\n", coords.x, coords.y, coords.z);
+
+                for (auto l = 0; l < 3; l++)
+                    verts[k].values[l] = coords[l];
+            }
+
+            triangles.emplace_back(verts[0], verts[1], verts[2]);
         }
     }
 
-    // 30MB should be plenty enough
-    primitives.reserve(primitives.size() + 30000000);
+    auto builder          = bvh::SweepSahBuilder<bvh::Bvh<float>>(bvh);
+    builder.max_leaf_size = 1;
+    auto [boxes, centers] = bvh::compute_bounding_boxes_and_centers(triangles.data(), triangles.size());
+    auto global_bbx       = bvh::compute_bounding_boxes_union(boxes.get(), triangles.size());
+    builder.build(global_bbx, boxes.get(), centers.get(), triangles.size());
 
-    auto bvh = rtcNewBVH(_embree_ctx.device);
-
-    auto node_count = size_t(0);
-
-    auto arguments                   = rtcDefaultBuildArguments();
-    arguments.byteSize               = sizeof(arguments);
-    arguments.buildFlags             = RTC_BUILD_FLAG_NONE;
-    arguments.buildQuality           = RTC_BUILD_QUALITY_HIGH;
-    arguments.maxBranchingFactor     = 2;
-    arguments.maxDepth               = 1024;
-    arguments.sahBlockSize           = 1;
-    arguments.minLeafSize            = 1;
-    arguments.maxLeafSize            = 16;
-    arguments.traversalCost          = 1.0f;
-    arguments.intersectionCost       = 1.0f;
-    arguments.bvh                    = bvh;
-    arguments.primitives             = primitives.data();
-    arguments.primitiveCount         = primitives.size();
-    arguments.primitiveArrayCapacity = primitives.capacity();
-    arguments.createNode             = cr::embree_node::create_node;
-    arguments.setNodeChildren        = cr::embree_node::set_children;
-    arguments.setNodeBounds          = cr::embree_node::set_bounds;
-    arguments.createLeaf             = cr::embree_node::create_leaf;
-    arguments.splitPrimitive         = cr::split_primitive;
-    arguments.buildProgress          = nullptr;
-    arguments.userPtr                = &node_count;
-
-    const auto root = static_cast<cr::embree_node *>(rtcBuildBVH(&arguments));
-
-    // Place the BVHs into a single array
+    // Flatten the nodes... but they're pretty good already so almost there.
     auto flat_nodes = std::vector<bvh_node>();
-    flat_nodes.reserve(node_count);
+    flat_nodes.reserve(bvh.node_count);
 
-    auto node = cr::bvh_node(root->bounds[0].merge(root->bounds[1]));
-    flat_nodes.emplace_back(node);
-    flatten_nodes(flat_nodes, 0, root, sorted_gpu_prims, gpu_prims);
+    for (auto i = 0; i < bvh.node_count; i++)
+    {
+        const auto cpu_node = bvh.nodes[i];
+        const auto node_bounds = cpu_node.bounds;
 
-    if (auto buffer = _opengl_handles.bvh_data_buffer; buffer != ~0) glDeleteBuffers(1, &buffer);
+        const auto bounds = cr::bbox(
+          glm::vec3(node_bounds[0], node_bounds[1], node_bounds[2]),
+          glm::vec3(node_bounds[3], node_bounds[4], node_bounds[5]));
+
+        auto gpu_node = bvh_node(bounds);
+        gpu_node.set_primitive_count(cpu_node.primitive_count);
+        gpu_node.set_primitive_first_id(cpu_node.first_child_or_primitive);
+        flat_nodes.push_back(gpu_node);
+    }
+
+      if (auto buffer = _opengl_handles.bvh_data_buffer; buffer != ~0) glDeleteBuffers(1, &buffer);
     glGenBuffers(1, &_opengl_handles.bvh_data_buffer);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, _opengl_handles.bvh_data_buffer);
     glBufferData(
@@ -274,13 +276,14 @@ void cr::gpu_renderer::_build_bvh()
       GL_DYNAMIC_COPY);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-    if (auto buffer = _opengl_handles.triangle_data_buffer; buffer != ~0) glDeleteBuffers(1, &buffer);
+    if (auto buffer = _opengl_handles.triangle_data_buffer; buffer != ~0)
+        glDeleteBuffers(1, &buffer);
     glGenBuffers(1, &_opengl_handles.triangle_data_buffer);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, _opengl_handles.triangle_data_buffer);
     glBufferData(
       GL_SHADER_STORAGE_BUFFER,
-      sorted_gpu_prims.size() * sizeof(float) * 8,
-      sorted_gpu_prims.data(),
+      gpu_triangles.size() * sizeof(float) * 12,
+      gpu_triangles.data(),
       GL_DYNAMIC_COPY);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
@@ -303,6 +306,8 @@ void cr::gpu_renderer::_build_material_buffer()
 
 void cr::gpu_renderer::kernel_generate()
 {
+    ZoneScoped;
+    TracyGpuZone("Generate");
     glUseProgram(_kernels.generate);
 
     // Update the camera data
@@ -331,10 +336,13 @@ void cr::gpu_renderer::kernel_generate()
     glBindImageTexture(2, _opengl_handles.final_image, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
     glDispatchCompute(_resolution.x / 8, _resolution.y / 8, 1);
+    WAIT_ON;
 }
 
 void cr::gpu_renderer::kernel_extend(std::uint32_t fired_rays)
 {
+    ZoneScopedN("gpu_renderer::extend");
+    TracyGpuZone("Extend");
     glUseProgram(_kernels.extend);
 
     // Update the amount of rays here
@@ -353,6 +361,7 @@ void cr::gpu_renderer::kernel_extend(std::uint32_t fired_rays)
     glUniform1ui(0, fired_rays);
 
     glDispatchCompute((_resolution.x * _resolution.y) / 64, 1, 1);
+    WAIT_ON;
 }
 
 void cr::gpu_renderer::kernel_shade(
@@ -360,6 +369,8 @@ void cr::gpu_renderer::kernel_shade(
   std::uint32_t current_frame,
   std::uint32_t current_bounce)
 {
+    ZoneScopedN("gpu_renderer::shade");
+    TracyGpuZone("Shade");
     glUseProgram(_kernels.shade);
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, _buffers.ray);
@@ -381,13 +392,14 @@ void cr::gpu_renderer::kernel_shade(
     glUniform3i(2, current_frame, current_bounce, 2);
 
     glDispatchCompute((_resolution.x * _resolution.y) / 64, 1, 1);
+    WAIT_ON;
 }
 
 void cr::gpu_renderer::flatten_nodes(
-  std::vector<bvh_node> &               nodes,
-  size_t                                flat_parent_idx,
-  cr::embree_node *                     parent,
-  std::vector<gpu_triangle> &           new_prims,
+  std::vector<bvh_node> &          nodes,
+  size_t                           flat_parent_idx,
+  cr::embree_node *                parent,
+  std::vector<gpu_triangle> &      new_prims,
   const std::vector<gpu_triangle> &prims)
 {
     const auto child_index = nodes.size();
@@ -416,5 +428,6 @@ void cr::gpu_renderer::flatten_nodes(
     }
 
     for (auto i = 0; i < 2; i++)
-        if (!children[i]->is_leaf) flatten_nodes(nodes, child_index + i, children[i], new_prims, prims);
+        if (!children[i]->is_leaf)
+            flatten_nodes(nodes, child_index + i, children[i], new_prims, prims);
 }

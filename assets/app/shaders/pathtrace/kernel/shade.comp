@@ -257,34 +257,40 @@ void main()
 
     if (intersection.point.w > 0.0)
     {
-        out_ray = Ray(vec4(0), vec4(0));
-
-        out_ray.direction.xyz = normalize(sample_cosine_hemisphere(intersection.normal.xyz, rand2()));
-        out_ray.origin        = vec4(intersection.point.xyz + intersection.normal.xyz * ELIPSON, ray.origin.w);
-
-        vec3 albedo = vec3(1, 1, 1);
-
-        /*
-        float sample_ggx(
-        Ray incoming,
-        Ray outgoing,
-        vec3 normal,
-        float roughness,
-        float ior) {
-        */
-
-        vec3 brdf = albedo * sample_ggx(ray.direction.xyz, out_ray.direction.xyz, intersection.normal.xyz, 0.8f, 1.5f);
-//        vec3 brdf = vec3(1, 1, 1) / PI; // Assuming default lambertian material for everything for now
-
-        float cos_theta = dot(out_ray.direction.xyz, intersection.normal.xyz);
-        throughput *= brdf * cos_theta / (dot(out_ray.direction.xyz, intersection.normal.xyz) / PI);
-//        final_colour += throughput;
-        rays[atomicAdd(out_ray_count, 1)] = out_ray;
+//        final_colour = vec3(1);
+//        out_ray = Ray(vec4(0), vec4(0));
+//
+//        out_ray.direction.xyz = normalize(sample_cosine_hemisphere(intersection.normal.xyz, rand2()));
+//        out_ray.origin        = vec4(intersection.point.xyz + intersection.normal.xyz * ELIPSON, ray.origin.w);
+//
+//        vec3 albedo = vec3(1, 1, 1);
+//
+//        /*
+//        float sample_ggx(
+//        Ray incoming,
+//        Ray outgoing,
+//        vec3 normal,
+//        float roughness,
+//        float ior) {
+//        */
+//
+//        vec3 brdf = albedo * sample_ggx(ray.direction.xyz, out_ray.direction.xyz, intersection.normal.xyz, 0.8f, 1.5f);
+////        vec3 brdf = vec3(1, 1, 1) / PI; // Assuming default lambertian material for everything for now
+//
+//        float cos_theta = dot(out_ray.direction.xyz, intersection.normal.xyz);
+//        throughput *= brdf * cos_theta / (dot(out_ray.direction.xyz, intersection.normal.xyz) / PI);
+////        final_colour += throughput;
+//        rays[atomicAdd(out_ray_count, 1)] = out_ray;
     } else {
         should_write = true;
 
         final_colour += throughput * calc_sky_color(ray.direction.xyz);
     }
+    should_write = true;
+    float threshold = 100;
+    final_colour = vec3(intersection.normal.w / threshold);
+    if (intersection.normal.w > threshold)
+        final_colour = vec3(0.8, 0.3, 0.2);
 
     imageStore(throughput_tex, ivec2(x, y), vec4(throughput, 1.0));
     imageStore(colour_tex, ivec2(x, y), vec4(final_colour, 1.0));
@@ -294,8 +300,8 @@ void main()
         vec3 previous_frame = imageLoad(final_image_tex, ivec2(x, y)).xyz;
         float cur_frame = float(image_stats.x);
         vec3 final = previous_frame * cur_frame / (cur_frame + 1.0) + final_colour / (cur_frame + 1.0);
-        imageStore(final_image_tex, ivec2(x, y), vec4(final, 1.0));
-//        imageStore(final_image_tex, ivec2(x, y), vec4(final_colour, 1.0));
+//        imageStore(final_image_tex, ivec2(x, y), vec4(final, 1.0));
+        imageStore(final_image_tex, ivec2(x, y), vec4(final_colour, 1.0));
 //        imageStore(final_image_tex, ivec2(x, y), vec4(rand3(), 1.0));
     }
 
