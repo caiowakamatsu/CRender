@@ -257,8 +257,8 @@ void cr::gpu_renderer::_build_bvh()
         const auto node_bounds = cpu_node.bounds;
 
         const auto bounds = cr::bbox(
-          glm::vec3(node_bounds[0], node_bounds[1], node_bounds[2]),
-          glm::vec3(node_bounds[3], node_bounds[4], node_bounds[5]));
+          glm::vec3(node_bounds[0], node_bounds[2], node_bounds[4]),
+          glm::vec3(node_bounds[1], node_bounds[3], node_bounds[5]));
 
         auto gpu_node = bvh_node(bounds);
         gpu_node.set_primitive_count(cpu_node.primitive_count);

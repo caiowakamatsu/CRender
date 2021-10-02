@@ -1,6 +1,9 @@
 #version 440
 
 #define INF 1.0 / 0.0
+#define FLT_MAX 3.402823466e+38
+#define FLT_MIN 1.175494351e-38
+#define ELIPSON 0.001
 
 layout (local_size_x = 64, local_size_y = 1) in;
 
@@ -79,6 +82,7 @@ bool intersect_aabb(vec3 bmin, vec3 bmax, vec3 o, vec3 id, float max_t, out floa
 
     distance = val;
     return distance <= min(component_min(t2), max_t);
+//    return false;
 }
 
 bool intersect_triangle(Ray r, int prim_id, out Intersection record)
@@ -109,22 +113,88 @@ bool intersect_triangle(Ray r, int prim_id, out Intersection record)
 
 bool intersect_ray(Ray ray, out Intersection record, out int travesed_count)
 {
+    vec3 inv_dir = vec3(1.0) / ray.direction.xyz;
     uint[64] stack;
-    int stack_ptr = 0;
+    Bvh root = nodes[0];
 
-    stack[stack_ptr++] = ~0;
-    uint stack_top = 0;
-
-    int nodes_traversed = 0;
-
-    vec3 inv_dir = 1.0 / ray.direction.xyz;
+    uint stack_size = 0;
+    uint top = bvh_primitive_count(root) > 0 ? ~0 : bvh_next_node(root);
 
     Intersection best;
     best.point.w = INF;
+    int nodes_traversed = 0;
+
+    while (true)
+    {
+        if ((top & uint(0x80000000)) != 0) {
+            Bvh leaf = nodes[~top];
+            int first = bvh_primitive_id(leaf);
+            int tri_count = bvh_primitive_count(leaf);
+            for (int i = first; i < tri_count + first; ++i)
+            {
+                Intersection temp;
+                if (intersect_triangle(ray, i, temp) && temp.point.w < best.point.w)
+                best = temp;
+            }
+        } else {
+            Bvh left = nodes[top];
+            Bvh right = nodes[top + 1];
+            nodes_traversed += 2;
+
+            float dist_left;
+            bool hit_left = intersect_aabb(
+                bvh_min(left),
+                bvh_max(left),
+                ray.origin.xyz, inv_dir,
+                best.point.w,
+                dist_left);
+
+            float dist_right;
+            bool hit_right = intersect_aabb(
+                bvh_min(right),
+                bvh_max(right),
+                ray.origin.xyz, inv_dir,
+                best.point.w,
+                dist_right);
+
+            uint first = bvh_primitive_count(left) > 0 ? ~top : bvh_next_node(left);
+            uint second = bvh_primitive_count(right) > 0 ? ~(top + 1) : bvh_next_node(right);
+
+            if (hit_left)
+            {
+                if (hit_right)
+                {
+                    if (dist_left > dist_right)
+                    {
+                        uint tmp = first;
+                        first = second;
+                        second = tmp;
+                    }
+                    stack[stack_size++] = second;
+                }
+                top = first;
+                continue;
+            }
+            else if (hit_right)
+            {
+                top = second;
+                continue;
+            }
+        }
+        if (stack_size == 0) break;
+        top = stack[--stack_size];
+    }
+    travesed_count = nodes_traversed;
+    return best.point.w != INF;
+    int stack_ptr = 0;
+
+    uint stack_top = 1;
+
+
     while (true)
     {
         nodes_traversed += 2;
-            travesed_count = nodes_traversed;
+        travesed_count = nodes_traversed;
 
         Bvh left_node = nodes[stack_top];
         Bvh right_node = nodes[stack_top + 1];
@@ -212,12 +282,13 @@ void main()
 
     int travesed_count = 0;
     Intersection temp;
-    if (nodes.length() > 0 && intersect_ray(ray, temp, travesed_count))
+    intersect_ray(ray, temp, travesed_count);
+    intersection.normal.w = travesed_count;
+    if (nodes.length() > 0)
     {
-        intersection = temp;
-        intersection.normal.w = travesed_count;
-        if (dot(intersection.normal.xyz, ray.direction.xyz) > 0)
-            intersection.normal *= -1;
+//        intersection = temp;
+//        if (dot(intersection.normal.xyz, ray.direction.xyz) > 0)
+//            intersection.normal *= -1;
     }
 
     intersections[idx] = intersection;
