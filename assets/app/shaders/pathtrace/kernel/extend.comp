@@ -111,7 +111,7 @@ bool intersect_triangle(Ray r, int prim_id, out Intersection record)
     return isect;
 }
 
-bool intersect_ray(Ray ray, out Intersection record, out int travesed_count)
+bool intersect_ray(Ray ray, out Intersection record, out int travesed_count, out bool hit_any)
 {
     vec3 inv_dir = vec3(1.0) / ray.direction.xyz;
     uint[64] stack;
@@ -160,6 +160,9 @@ bool intersect_ray(Ray ray, out Intersection record, out int travesed_count)
             uint first = bvh_primitive_count(left) > 0 ? ~top : bvh_next_node(left);
             uint second = bvh_primitive_count(right) > 0 ? ~(top + 1) : bvh_next_node(right);
 
+            if (hit_left || hit_right)
+                hit_any = true;
+
             if (hit_left)
             {
                 if (hit_right)
@@ -181,7 +184,8 @@ bool intersect_ray(Ray ray, out Intersection record, out int travesed_count)
                 continue;
             }
         }
-        if (stack_size == 0) break;
+        if (stack_size == 0)
+            break;
         top = stack[--stack_size];
     }
     travesed_count = nodes_traversed;
@@ -282,8 +286,13 @@ void main()
 
     int travesed_count = 0;
     Intersection temp;
-    intersect_ray(ray, temp, travesed_count);
-    intersection.normal.w = travesed_count;
+    bool hit_any = false;
+    intersect_ray(ray, temp, travesed_count, hit_any);
+//    intersection.normal.w = travesed_count;
+    if (hit_any)
+        intersection.normal.w = 1.0f;
+    else
+        intersection.normal.w = 0.0f;
     if (nodes.length() > 0)
     {
 //        intersection = temp;

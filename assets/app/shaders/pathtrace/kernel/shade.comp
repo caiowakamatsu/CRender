@@ -288,8 +288,8 @@ void main()
     }
     should_write = true;
     float threshold = 100;
-    final_colour = vec3(intersection.normal.w / threshold);
-    if (intersection.normal.w > threshold)
+    final_colour = vec3(0.0);
+    if (intersection.normal.w > 0.0)
         final_colour = vec3(0.3, 0.8, 0.2);
 
     imageStore(throughput_tex, ivec2(x, y), vec4(throughput, 1.0));
