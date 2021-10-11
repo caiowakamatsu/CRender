@@ -15,9 +15,9 @@ int main()
     auto gpu_renderer = std::make_unique<cr::gpu_renderer>(scene.get(), glm::ivec2(512, 512));
 
 //    const auto monkey = cr::asset_loader::load_model("./assets/models/tridel-interior/tridel-interior-test.obj", "./assets/models/tridel-interior");
-    const auto monkey = cr::asset_loader::load_model("./assets/models/monke/untitled.obj", "./assets/models/monke");
-    scene.get()->add_model(monkey);
-    gpu_renderer.get()->build();
+//    const auto monkey = cr::asset_loader::load_model("./assets/models/monke/untitled.obj", "./assets/models/monke");
+//    scene->add_model(monkey);
+//    gpu_renderer->build();
 
     main_display.start(scene, renderer, thread_pool, draft_renderer, gpu_renderer);
 }

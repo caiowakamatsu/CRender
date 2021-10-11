@@ -128,7 +128,7 @@ void cr::gpu_renderer::render(const glm::ivec2 &resolution)
     kernel_generate();
 
     auto fired = std::uint32_t(_resolution.x * _resolution.y);
-    for (auto i = 0; i < 2; i++)
+    for (auto i = 0; i < 2 && fired > 0; i++)
     {
         kernel_extend(fired);
 
@@ -192,13 +192,118 @@ void cr::gpu_renderer::_build_bvh()
 {
     ZoneScopedN("gpu_renderer::build_bvh");
 
+    auto primitives = std::vector<RTCBuildPrimitive>();
+    auto sorted_gpu_prims = std::vector<gpu_triangle>();
+    auto gpu_prims = std::vector<gpu_triangle>();
+
+    const auto &geometries = _scene->registry()->entities.view<cr::entity::geometry>();
+
+    for (auto i = 0; i < geometries.size(); i++)
+    {
+        const auto &geometry =
+          _scene->registry()->entities.get<cr::entity::geometry>(geometries[i]);
+
+        primitives.reserve(primitives.size() + geometry.vert_coords->size() / 3);
+        sorted_gpu_prims.reserve(primitives.size() + geometry.vert_coords->size() / 3);
+        gpu_prims.reserve(primitives.size() + geometry.vert_coords->size() / 3);
+        for (auto j = 0; j < geometry.vert_coords->size() / 3; j++)
+        {
+            const auto vertices = std::array<glm::vec3, 3>({
+                                                             (*geometry.vert_coords)[j * 3 + 0],
+                                                             (*geometry.vert_coords)[j * 3 + 1],
+                                                             (*geometry.vert_coords)[j * 3 + 2],
+                                                           });
+
+            const auto max = glm::max(vertices[0], glm::max(vertices[1], vertices[2]));
+            const auto min = glm::min(vertices[0], glm::min(vertices[1], vertices[2]));
+
+            auto gpu_prim = gpu_triangle();
+            gpu_prim.v0 = glm::vec4(vertices[0], 0.0);
+            gpu_prim.v1 = glm::vec4(vertices[1], 0.0);
+            gpu_prim.v2 = glm::vec4(vertices[2], 0.0);
+
+            auto primitive    = RTCBuildPrimitive();
+            primitive.lower_x = min.x;
+            primitive.lower_y = min.y;
+            primitive.lower_z = min.z;
+            primitive.upper_x = max.x;
+            primitive.upper_y = max.y;
+            primitive.upper_z = max.z;
+
+            primitive.geomID = i;
+            primitive.primID = j;
+
+            gpu_prims.push_back(gpu_prim);
+            primitives.push_back(primitive);
+        }
+    }
+
+    // 30MB should be plenty enough
+    primitives.reserve(primitives.size() + 30000000);
+
+    auto bvh = rtcNewBVH(_embree_ctx.device);
+
+    auto node_count = size_t(0);
+
+    auto arguments                   = rtcDefaultBuildArguments();
+    arguments.byteSize               = sizeof(arguments);
+    arguments.buildFlags             = RTC_BUILD_FLAG_NONE;
+    arguments.buildQuality           = RTC_BUILD_QUALITY_HIGH;
+    arguments.maxBranchingFactor     = 2;
+    arguments.maxDepth               = 1024;
+    arguments.sahBlockSize           = 1;
+    arguments.minLeafSize            = 1;
+    arguments.maxLeafSize            = 16;
+    arguments.traversalCost          = 1.0f;
+    arguments.intersectionCost       = 1.0f;
+    arguments.bvh                    = bvh;
+    arguments.primitives             = primitives.data();
+    arguments.primitiveCount         = primitives.size();
+    arguments.primitiveArrayCapacity = primitives.capacity();
+    arguments.createNode             = cr::embree_node::create_node;
+    arguments.setNodeChildren        = cr::embree_node::set_children;
+    arguments.setNodeBounds          = cr::embree_node::set_bounds;
+    arguments.createLeaf             = cr::embree_node::create_leaf;
+    arguments.splitPrimitive         = cr::split_primitive;
+    arguments.buildProgress          = nullptr;
+    arguments.userPtr                = &node_count;
+
+    const auto root = static_cast<cr::embree_node *>(rtcBuildBVH(&arguments));
+
+    // Place the BVHs into a single array
+    auto flat_nodes = std::vector<bvh_node>();
+    flat_nodes.reserve(node_count);
+
+    auto node = cr::bvh_node(root->bounds[0].merge(root->bounds[1]));
+    flat_nodes.emplace_back(node);
+    flatten_nodes(flat_nodes, 0, root, sorted_gpu_prims, gpu_prims);
+
+    if (auto buffer = _opengl_handles.bvh_data_buffer; buffer != ~0) glDeleteBuffers(1, &buffer);
+    glGenBuffers(1, &_opengl_handles.bvh_data_buffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, _opengl_handles.bvh_data_buffer);
+    glBufferData(
+      GL_SHADER_STORAGE_BUFFER,
+      flat_nodes.size() * sizeof(float) * 8,
+      flat_nodes.data(),
+      GL_DYNAMIC_COPY);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    if (auto buffer = _opengl_handles.triangle_data_buffer; buffer != ~0) glDeleteBuffers(1, &buffer);
+    glGenBuffers(1, &_opengl_handles.triangle_data_buffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, _opengl_handles.triangle_data_buffer);
+    glBufferData(
+      GL_SHADER_STORAGE_BUFFER,
+      sorted_gpu_prims.size() * sizeof(float) * 12,
+      sorted_gpu_prims.data(),
+      GL_DYNAMIC_COPY);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
     /*
      *     bvh::SweepSahBuilder<bvh::Bvh<float>> builder(bvh);
     auto [bboxes, centers] = bvh::compute_bounding_boxes_and_centers(bvh_triangles.data(),
     bvh_triangles.size()); auto global_bbox = bvh::compute_bounding_boxes_union(bboxes.get(),
     bvh_triangles.size()); builder.build(global_bbox, bboxes.get(), centers.get(),
     bvh_triangles.size());
-     */
     auto bvh = bvh::Bvh<float>();
 
     auto        triangles  = std::vector<bvh::Triangle<float>>();
@@ -220,10 +325,6 @@ void cr::gpu_renderer::_build_bvh()
             gpu_tri.v0 = glm::vec4((*geometry.vert_coords)[j * 3 + 0], 0.0);
             gpu_tri.v1 = glm::vec4((*geometry.vert_coords)[j * 3 + 1], 0.0);
             gpu_tri.v2 = glm::vec4((*geometry.vert_coords)[j * 3 + 2], 0.0); // Shrug, no material ID yet
-
-//            fmt::print("Gpu vertex X: {}, Y: {}, Z: {}\n", (*geometry.vert_coords)[j * 3 + 0].x, (*geometry.vert_coords)[j * 3 + 0].y, (*geometry.vert_coords)[j * 3 + 0].z);
-//            fmt::print("Gpu vertex X: {}, Y: {}, Z: {}\n", (*geometry.vert_coords)[j * 3 + 1].x, (*geometry.vert_coords)[j * 3 + 1].y, (*geometry.vert_coords)[j * 3 + 1].z);
-//            fmt::print("Gpu vertex X: {}, Y: {}, Z: {}\n", (*geometry.vert_coords)[j * 3 + 2].x, (*geometry.vert_coords)[j * 3 + 2].y, (*geometry.vert_coords)[j * 3 + 2].z);
 
             gpu_triangles.push_back(gpu_tri);
 
@@ -286,6 +387,7 @@ void cr::gpu_renderer::_build_bvh()
       gpu_triangles.data(),
       GL_DYNAMIC_COPY);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    */
 }
 
 void cr::gpu_renderer::_build_material_buffer()
@@ -405,29 +507,24 @@ void cr::gpu_renderer::flatten_nodes(
     const auto child_index = nodes.size();
     nodes[flat_parent_idx].set_child_node_start(child_index);
 
-    auto children = std::array<embree_node *, 2>({
-      parent->children[0],
-      parent->children[1],
-    });
-
     for (auto i = 0; i < 2; i++)
     {
-        auto node = bvh_node(children[i]->bounds[0].merge(children[i]->bounds[1]));
-        if (children[i]->is_leaf)
+        auto node = bvh_node(parent->children[i]->bounds[0].merge(parent->children[i]->bounds[1]));
+        if (parent->children[i]->is_leaf)
         {
-            for (auto &id : children[i]->ids)
+            for (auto &id : parent->children[i]->ids)
             {
                 const auto triangle = prims[id];
                 new_prims.push_back(triangle);
                 id = new_prims.size() - 1;
             }
-            node.set_primitive_count(children[i]->ids.size());
-            node.set_primitive_first_id(children[i]->ids[0]);
+            node.set_primitive_count(parent->children[i]->ids.size());
+            node.set_primitive_first_id(parent->children[i]->ids[0]);
         }
         nodes.emplace_back(node);
     }
 
     for (auto i = 0; i < 2; i++)
-        if (!children[i]->is_leaf)
-            flatten_nodes(nodes, child_index + i, children[i], new_prims, prims);
+        if (!parent->children[i]->is_leaf)
+            flatten_nodes(nodes, child_index + i, parent->children[i], new_prims, prims);
 }
