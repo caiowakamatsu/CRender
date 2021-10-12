@@ -89,6 +89,8 @@ Index of this file:
 #include <stddef.h>         // intptr_t
 #else
 #include <stdint.h>         // intptr_t
+
+#include <util/numbers.h>
 #endif
 
 // Visual Studio warnings
@@ -3249,7 +3251,7 @@ static void ShowDemoWindowPopups()
         if (ImGui::BeginPopupContextItem("item context menu"))
         {
             if (ImGui::Selectable("Set to zero")) value = 0.0f;
-            if (ImGui::Selectable("Set to PI")) value = 3.1415f;
+            if (ImGui::Selectable("Set to PI")) value = cr::numbers<float>::pi;
             ImGui::SetNextItemWidth(-FLT_MIN);
             ImGui::DragFloat("##Value", &value, 0.1f, 0.0f, 0.0f);
             ImGui::EndPopup();
