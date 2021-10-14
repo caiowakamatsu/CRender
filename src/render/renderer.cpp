@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include <util/numbers.h>
 
 namespace
 {
@@ -276,8 +277,8 @@ void cr::renderer::_sample_pixel(uint64_t x, uint64_t y, size_t &fired_rays)
         if (intersection.distance == std::numeric_limits<float>::infinity())
         {
             const auto miss_uv = glm::vec2(
-              0.5f + atan2f(ray.direction.z, ray.direction.x) / (2 * 3.1415f),
-              0.5f - asinf(ray.direction.y) / 3.1415f);
+              0.5f + atan2f(ray.direction.z, ray.direction.x)*(cr::numbers<float>::inv_tau),
+              0.5f - asinf(ray.direction.y) * cr::numbers<float>::inv_pi);
 
             const auto miss_sample = _scene->get()->sample_skybox(miss_uv.x, miss_uv.y);
 

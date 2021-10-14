@@ -92,12 +92,10 @@ namespace cr::sampling
          */
         [[nodiscard]] inline float specular_d(float NoH, float roughness)
         {
-            constexpr auto pi = 3.141592f;
-
             const auto a2 = roughness * roughness;
             const auto d  = ((NoH * a2 - NoH) * NoH + 1.0f);
 
-            return a2 / (d * d * pi);
+            return a2 / (d * d * cr::numbers<float>::pi);
         }
 
         /**
@@ -160,7 +158,7 @@ namespace cr::sampling
         const auto cos_theta = 2.0f * uv.x - 1.0f;
         const auto sin_theta = glm::sqrt(1.0f - cos_theta * cos_theta);
 
-        const auto phi     = 2.0f * 3.1415f * uv.y;
+        const auto phi     = cr::numbers<float>::tau * uv.y;
         const auto sin_phi = glm::sin(phi);
         const auto cos_phi = glm::cos(phi);
 
@@ -176,7 +174,7 @@ namespace cr::sampling
     [[nodiscard]] inline glm::vec3 cos_hemp(const float x, const float y)
     {
         const auto r     = sqrtf(x);
-        const auto theta = 6.283f * y;
+        const auto theta = cr::numbers<float>::tau * y;
 
         const auto u = r * cosf(theta);
         const auto v = r * sinf(theta);
