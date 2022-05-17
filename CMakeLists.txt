@@ -1,92 +1,60 @@
-cmake_minimum_required(VERSION 3.16)
-set(CMAKE_CXX_STANDARD 17)
-set_property(GLOBAL PROPERTY ALLOW_DUPLICATE_CUSTOM_TARGETS 1)
+#########################
+# PROJECT CONFIGURATION #
+#########################
+cmake_minimum_required(VERSION 3.21)
+set(CMAKE_CXX_STANDARD 20)
 
-project(CRender)
-
-set(EMBREE_ISA_AVX256 ON)
-
-option(CRENDER_USE_RELATIVE_ASSET_PATH "Enabled during development, for production builds disable" OFF)
-
-if (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC" AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    message(STATUS "Using clang-cl options (MSVC interface)")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR- /arch:AVX /MT /W4 /EHa /EHs")
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    message(STATUS "Using Clang/GCC compiler options")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-    if ((CMAKE_BUILD_TYPE MATCHES Release) OR (CMAKE_BUILD_TYPE MATCHES RelWithDbgInfo))
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
-    endif ()
-endif ()
-
-find_package(embree 3.0 REQUIRED)
-find_package(OpenImageDenoise 1.4.0 REQUIRED)
+project(crebon)
 
 add_subdirectory(external)
 
-FILE(GLOB ImGuiSources src/imgui/*)
+find_package(embree 3.12.1 REQUIRED)
 
-add_executable(CRender src/main.cpp
-        src/glad/glad.h
-        src/glad/glad.c
-        ${ImGuiSources}
-        src/imgui/imnodes.h
-        src/imgui/imnodes.cpp
-        src/ui/display.cpp
-        src/ui/display.h
-        src/ui/user_settings.h
-        src/ui/themes.h
-        src/util/exception.h
-        src/render/renderer.cpp
-        src/render/renderer.h
-        src/objects/image.h
-        src/util/colour.h
-        src/render/ray.cpp
-        src/render/ray.h
-        src/render/camera.cpp
-        src/render/camera.h
-        src/objects/bit.h
-        src/render/scene.cpp
-        src/render/scene.h
-        src/util/algorithm.h
-        src/render/material/material.cpp
-        src/render/material/material.h
-        src/util/asset_loader.cpp
-        src/util/asset_loader.h
-        src/objects/thread_pool.cpp
-        src/objects/thread_pool.h
-        src/ui/nodes/node_editor.cpp
-        src/ui/nodes/node_editor.h
-        src/util/sampling.h
-        src/objects/model.cpp
-        src/objects/model.h
-        src/ui/ui.h
-        src/render/entities/components.h
-        src/render/entities/registry.cpp
-        src/render/entities/registry.h 
-        src/render/draft/draft_renderer.cpp 
-        src/render/draft/draft_renderer.h 
-        src/render/timer.cpp 
-        src/render/timer.h 
-        src/util/logger.h 
-        src/util/logger.cpp 
-        src/util/numbers.h 
-        src/render/brdf.h 
-        src/util/denoise.h
-        src/render/post/post_processor.cpp
-        src/render/post/post_processor.h)
+##########
+# TARGET #
+##########
+add_executable(crebon
+        source/main.cpp
+        source/compute/compute_device.hpp
+        source/types.hpp
+        source/compute/cpu_compute.cpp
+        source/compute/cpu_compute.hpp
+        source/scene/ray.hpp
+        source/scene/scene.hpp
+        source/scene/triangular_scene.cpp
+        source/scene/triangular_scene.hpp
+        source/scene/configuration.hpp
+        source/material/material.hpp
+        source/util/sampling.hpp
+        source/util/random.hpp
+        source/util/image.hpp
+        source/scene/sphere_scene.cpp
+        source/scene/sphere_scene.hpp
+        source/ui/display.cpp
+        source/ui/display.hpp
+        source/util/glad.c
+        external/imgui/backends/imgui_impl_glfw.cpp
+        external/imgui/backends/imgui_impl_opengl3.cpp
+        external/imgui/imgui.cpp
+        external/imgui/imgui_draw.cpp
+        external/imgui/imgui_widgets.cpp
+        external/imgui/imgui_tables.cpp
+        source/ui/components/component.hpp
+        source/ui/components/preview.cpp
+        source/ui/components/preview.hpp
+        source/ui/components/console.cpp
+        source/ui/components/console.hpp
+        source/ui/components/settings.cpp
+        source/ui/components/settings.hpp
+        source/ui/input_devices.cpp
+        source/ui/input_devices.hpp source/util/atomic_image.hpp source/util/gltf.hpp source/material/brdf.hpp source/material/brdf.cpp)
 
-target_include_directories(CRender PRIVATE src)
-target_include_directories(CRender PRIVATE external)
+#############
+# LIBRARIES #
+#############
+target_link_libraries(crebon PRIVATE glm fmt embree glfw)
 
-target_link_libraries(CRender glfw fmt glm embree OpenImageDenoise)
+target_include_directories(crebon PRIVATE source external external/imgui)
+# The external/imgui is a workaround to get imgui to compile
 
-if (CRENDER_USE_RELATIVE_ASSET_PATH)
-    message("Using relative asset path")
-    set(CRENDER_ASSET_PATH_VAR "./assets/app/")
-else()
-    message("Using none-relative asset path")
-    set(CRENDER_ASSET_PATH_VAR "${CMAKE_SOURCE_DIR}/assets/app/")
-endif()
-
-target_compile_definitions(CRender PUBLIC -DGLFW_INCLUDE_NONE -D__STDC_CONSTANT_MACROS -DIMGUI_IMPL_OPENGL_LOADER_GLAD -DCRENDER_ASSET_PATH="${CRENDER_ASSET_PATH_VAR}")
+target_compile_definitions(crebon PRIVATE -DIMGUI_HAS_DOCKING -DGLFW_INCLUDE_NONE -DIMGUI_IMPL_OPENGL_LOADER_GLAD)

@@ -1,10 +1,9 @@
-option(EMBREE_ISPC_SUPPORT "" OFF)
+include(FetchContent)
 
 option(GLFW_BUILD_TESTS "" OFF)
 option(GLFW_BUILD_DOCS "" OFF)
 option(GLFW_INSTALL "" OFF)
 option(GLFW_BUILD_EXAMPLES "" OFF)
-
 option(FMT_PEDANTIC  "" OFF)
 option(FMT_WERROR   "" OFF)
 option(FMT_DOC   "" OFF)
@@ -32,4 +31,4 @@ FetchContent_Declare(
         GIT_TAG 0.9.9.8
 )
 
-FetchContent_MakeAvailable(glfw fmt glm)
+FetchContent_MakeAvailable(fmt glm glfw)
