@@ -476,14 +476,6 @@ namespace cr::gltf {
 			}
 		}();
 
-		// Tinygltf check if material has image
-		const auto albedo = material_albedo(&material->additionalValues);
-		auto albedo_value = glm::vec3(1.0f, 1.0f, 1.0f);
-		if (albedo.has_value())
-			albedo_value = albedo.value();
-
-		const auto mat_type = material_type(material);
-
 		loaded = std::make_unique<cr::gltf_material>(roughness, metalness, emission, base_colour);
 
 		return loaded;

@@ -75,12 +75,12 @@ namespace cr {
 		[[nodiscard]] float aspect() const noexcept { return static_cast<float>(_width) / static_cast<float>(_height); }
 
 		using MinMaxPair = std::pair<glm::ivec2, glm::ivec2>;
-		[[nodiscard]] moodycamel::ConcurrentQueue<MinMaxPair> get_tasks(size_t device_count) const {
+		[[nodiscard]] std::vector<MinMaxPair> get_tasks(size_t device_count) const {
 			// If you have a scene that's too small and this breaks, that's on you :)
 			const auto chunk_width = _width / device_count;
 			const auto chunk_height = _height / device_count;
 
-			auto tasks = moodycamel::ConcurrentQueue<MinMaxPair>();
+			auto tasks = std::vector<MinMaxPair>();
 
 			// Create tasks
 			for (size_t x = 0; x < device_count; x++) {
@@ -90,7 +90,7 @@ namespace cr {
 					const auto max_x = min_x + chunk_width;
 					const auto max_y = min_y + chunk_height;
 
-					tasks.try_enqueue(MinMaxPair(glm::ivec2(min_x, min_y), glm::ivec2(max_x, max_y)));
+					tasks.push_back(MinMaxPair(glm::ivec2(min_x, min_y), glm::ivec2(max_x, max_y)));
 				}
 			}
 

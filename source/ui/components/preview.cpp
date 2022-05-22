@@ -17,6 +17,10 @@ cr::component::preview::Options cr::component::preview::Component::display(Displ
 	static auto first = true;
 
 	auto window_size = ImGui::GetContentRegionAvail();
+        if (window_size.x < 0 || window_size.y < 0) {
+            ImGui::End();
+            return {}; // During initialisation sometimes the window size is negative
+        }
 
 		if (first) {
 			glGenTextures(1, &texture);

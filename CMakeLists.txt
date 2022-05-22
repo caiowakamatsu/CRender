@@ -1,7 +1,7 @@
 #########################
 # PROJECT CONFIGURATION #
 #########################
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.19)
 set(CMAKE_CXX_STANDARD 20)
 
 project(crebon)
@@ -15,23 +15,9 @@ find_package(embree 3.12.1 REQUIRED)
 ##########
 add_executable(crebon
         source/main.cpp
-        source/compute/compute_device.hpp
-        source/types.hpp
-        source/compute/cpu_compute.cpp
-        source/compute/cpu_compute.hpp
-        source/scene/ray.hpp
-        source/scene/scene.hpp
         source/scene/triangular_scene.cpp
-        source/scene/triangular_scene.hpp
-        source/scene/configuration.hpp
-        source/material/material.hpp
-        source/util/sampling.hpp
-        source/util/random.hpp
-        source/util/image.hpp
         source/scene/sphere_scene.cpp
-        source/scene/sphere_scene.hpp
         source/ui/display.cpp
-        source/ui/display.hpp
         source/util/glad.c
         external/imgui/backends/imgui_impl_glfw.cpp
         external/imgui/backends/imgui_impl_opengl3.cpp
@@ -41,13 +27,11 @@ add_executable(crebon
         external/imgui/imgui_tables.cpp
         source/ui/components/component.hpp
         source/ui/components/preview.cpp
-        source/ui/components/preview.hpp
         source/ui/components/console.cpp
-        source/ui/components/console.hpp
         source/ui/components/settings.cpp
-        source/ui/components/settings.hpp
         source/ui/input_devices.cpp
-        source/ui/input_devices.hpp source/util/atomic_image.hpp source/util/gltf.hpp source/material/brdf.hpp source/material/brdf.cpp)
+        source/material/brdf.cpp
+        source/render/cpu_renderer.cpp)
 
 #############
 # LIBRARIES #

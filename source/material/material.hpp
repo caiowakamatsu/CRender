@@ -32,13 +32,6 @@ namespace cr
 
 	class material {
 	public:
-		enum class type
-		{
-			gltf,
-			diffuse,
-			metal,
-		};
-
 		[[nodiscard]] virtual evaluted_ray evalute_ray(const glm::vec3 &incident, const glm::vec3 &normal, const glm::vec3 &point, cr::random* random) const noexcept = 0;
 
 		[[nodiscard]] virtual evaluation evalute(const glm::vec3 &incident, const glm::vec3 &outgoing, const glm::vec3 &normal, const glm::vec2 &uv) const noexcept = 0;
@@ -95,7 +88,7 @@ namespace cr
 		}
 
 		[[nodiscard]] glm::vec3 emission(const glm::vec2 &uv) const noexcept override {
-			return _base_colour.sample(uv.x, uv.y);
+			return _emissiveness.sample(uv.x, uv.y);
 		}
 	};
 }
