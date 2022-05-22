@@ -100,8 +100,10 @@ v3.1.0
 
 v3.2.0 
 - [ ] Native minecraft world loading
+
 v3.3.0
 - [ ] Vulkan RTX integration 
+
 v3.4.0
 - [ ] React based UI
 
