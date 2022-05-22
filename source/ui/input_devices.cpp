@@ -4,7 +4,7 @@
 
 #include "input_devices.hpp"
 
-cr::keyboard::keyboard() {
+cr::keyboard::keyboard() : _keys() {
 
 }
 
