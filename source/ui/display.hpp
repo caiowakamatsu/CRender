@@ -6,6 +6,7 @@
 #define CREBON_DISPLAY_HPP
 
 #include <mutex>
+#include <variant>
 
 #include <ui/input_devices.hpp>
 
@@ -13,6 +14,12 @@
 
 #include <GLFW/glfw3.h>
 #include <fmt/format.h>
+
+#include <ui/components/preview.hpp>
+#include <ui/components/console.hpp>
+#include <ui/components/settings.hpp>
+
+#include <ui/components/component.hpp>
 
 namespace cr {
 	class display {
@@ -40,6 +47,12 @@ namespace cr {
 		size_t _width;
 		size_t _height;
 		GLFWwindow *_window;
+
+                using preview = component::interface<component::preview>;
+                using console = component::interface<component::console>;
+                using settings = component::interface<component::settings>;
+
+                std::optional<std::variant<preview, console, settings>> _selected_component;
 
 		static void _glfw_cursor_position_callback(GLFWwindow *window, double x, double y);
 

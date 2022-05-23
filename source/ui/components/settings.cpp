@@ -4,7 +4,8 @@
 
 #include "settings.hpp"
 
-#include <imgui/imgui.h>
+#include <ui/components/render_target.h>
+#include <ui/components/component.hpp>
 
 cr::component::settings::Options
 cr::component::settings::Component::display(DisplayContents contents) const {
@@ -13,6 +14,11 @@ cr::component::settings::Component::display(DisplayContents contents) const {
 
 	ImGui::Text("Settings");
 	ImGui::Separator();
+
+        static auto radio = false;
+        if (false) {
+          [[maybe_unused]] auto resolution = cr::component::interface<render_target>().display({});
+        }
 
 	ImGui::End();
 
