@@ -14,6 +14,7 @@
 
 namespace cr::component {
 
+// Todo: at some point make this fully configurable / reusable
 class settings {
 public:
   struct Options {};
