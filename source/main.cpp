@@ -25,15 +25,23 @@
 #include <imgui.h>
 
 int main() {
-  auto display = cr::display(1920 * 2, 1080 * 2);
+  auto display = cr::display(1920, 1080);
 
   auto configuration = cr::scene_configuration(
       glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), 1024, 1024, 80.2f, 5);
   auto configuration_mutex = std::mutex();
   auto get_configuration = [&configuration,
-      &configuration_mutex]() -> cr::scene_configuration {
+                            &configuration_mutex]() -> cr::scene_configuration {
     std::lock_guard lk(configuration_mutex);
     return configuration;
+  };
+
+  auto new_sky_options = std::optional<cr::component::skybox::Options>();
+  auto new_sky_options_mutex = std::mutex();
+  auto get_new_sky_options = [&new_sky_options,
+                              &new_sky_options_mutex]() -> std::optional<cr::component::skybox::Options> {
+    std::lock_guard lk(new_sky_options_mutex);
+    return new_sky_options;
   };
 
   auto scenes = std::vector<cr::scene<cr::triangular_scene>>();
@@ -43,19 +51,23 @@ int main() {
 
   auto reset_sample_count = std::atomic<bool>(false);
   auto sample_count = uint64_t(0);
-//  auto triangular_scene =
-//      cr::triangular_scene("./assets/SM_Deccer_Cubes_Textured.glb");
-//  auto scene = cr::scene<cr::triangular_scene>(&triangular_scene);
+  //  auto triangular_scene =
+  //      cr::triangular_scene("./assets/SM_Deccer_Cubes_Textured.glb");
+  //  auto scene = cr::scene<cr::triangular_scene>(&triangular_scene);
 
-  auto cpu_renderer = cr::cpu_renderer();
+  auto cpu_renderer = cr::cpu_renderer(0, {});
 
   auto render_thread =
-      std::thread([&rendering, &scenes, &get_configuration, &frame,
-                   &sample_count, &reset_sample_count, &cpu_renderer] {
+      std::thread([&] {
         const auto cpu_thread_count = std::thread::hardware_concurrency();
         fmt::print("count {}", cpu_thread_count);
         while (rendering) {
           auto configuration = get_configuration();
+          auto new_sky_options = get_new_sky_options();
+
+          if (new_sky_options) {
+            cpu_renderer.sky.use_settings(new_sky_options.value());
+          }
 
           auto tasks = configuration.get_tasks(cpu_thread_count);
 
@@ -65,23 +77,25 @@ int main() {
           }
 
           {
-            auto data = cr::render_data {
+            auto data = cr::render_data{
                 .samples = sample_count,
                 .buffer = &frame,
-                .intersect = [&scenes](const cr::ray &ray) {
-                  auto result = std::optional<cr::intersection>();
+                .intersect =
+                    [&scenes](const cr::ray &ray) {
+                      auto result = std::optional<cr::intersection>();
 
-                  for (auto &scene : scenes) {
-                    auto intersection = scene.intersect(ray);
-                    if (intersection) {
-                      if (!result || result->distance > intersection->distance) {
-                        result = intersection;
+                      for (auto &scene : scenes) {
+                        auto intersection = scene.intersect(ray);
+                        if (intersection) {
+                          if (!result ||
+                              result->distance > intersection->distance) {
+                            result = intersection;
+                          }
+                        }
                       }
-                    }
-                  }
 
-                  return result;
-                }, // im not sure if this is the best way to do this
+                      return result;
+                    }, // im not sure if this is the best way to do this
                 .config = configuration,
             };
 
@@ -89,7 +103,6 @@ int main() {
 
             cpu_renderer.wait();
           }
-
 
           sample_count += 1;
         }
@@ -145,11 +158,17 @@ int main() {
           configuration.height(), configuration.fov(), configuration.bounces());
     }
 
-    {
-      display.render({
-          .frame = &frame,
-          .lines = &lines,
-      });
+    const auto input = display.render({
+        .frame = &frame,
+        .lines = &lines,
+    });
+
+    if (input.skybox.has_value()) {
+      std::lock_guard lk(new_sky_options_mutex);
+
+      reset_sample_count = true;
+
+      new_sky_options = input.skybox.value();
     }
   }
   // Todo: handle exiting if we're sampling properly (signal the threads to die)

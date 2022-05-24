@@ -134,7 +134,7 @@ bool cr::display::should_close() const noexcept {
   return glfwWindowShouldClose(_window);
 }
 
-void cr::display::render(render_data data) {
+cr::display::user_input cr::display::render(render_data data) {
   glClearColor(.2f, 0.2f, 0.2f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
@@ -145,19 +145,27 @@ void cr::display::render(render_data data) {
   auto ui_ctx = ::init();
   ::root_node(ui_ctx);
 
+  auto input = user_input();
+
   [[maybe_unused]] const auto preview =
       _components.preview.display({.frame = data.frame});
 
   [[maybe_unused]] const auto console =
       _components.console.display({.lines = data.lines});
 
-  [[maybe_unused]] const auto settings = _components.settings.display({});
+  const auto settings = _components.settings.display({});
+  input.render_target = settings.render_target;
+  input.image_export = settings.image_export;
+  input.asset_loader = settings.asset_loader;
+  input.skybox = settings.skybox;
 
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
   glfwSwapBuffers(_window);
   glfwPollEvents();
+
+  return input;
 }
 
 void cr::display::_glfw_cursor_position_callback(GLFWwindow *window, double x,

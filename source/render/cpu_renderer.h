@@ -31,10 +31,12 @@ namespace cr {
       const glm::ivec2 second;
       const render_data * const data;
     };
-    static void _thread_dispatch(thread_render_data data);
+    void _thread_dispatch(thread_render_data data);
 
   public:
-    cpu_renderer();
+    sky sky;
+
+    explicit cpu_renderer(int thread_count, component::skybox::Options options);
 
     void render(const cr::render_data& data, std::span<std::pair<glm::ivec2, glm::ivec2>> tiles);
 

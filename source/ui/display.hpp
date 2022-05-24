@@ -34,7 +34,9 @@ namespace cr {
 			cr::atomic_image *frame;
 			std::vector<std::string> *lines;
 		};
-		void render(render_data data);
+                struct user_input : public component::settings::Options{
+                };
+		[[nodiscard]] user_input render(render_data data);
 
 		[[nodiscard]] bool key_down(cr::keyboard::key_code key) const noexcept;
 

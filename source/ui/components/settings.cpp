@@ -28,18 +28,36 @@ cr::component::settings::Component::display(DisplayContents contents) {
     }
   };
 
+  auto opts = Options();
+
   if (sub_menu("Render Target", sub_settings::render_target)) {
-    [[maybe_unused]] const auto render_target_settings = _sub_settings.render_target.display({});
+    const auto render_target_settings = _sub_settings.render_target.display({});
+    if (ImGui::Button("Apply")) {
+      opts.render_target = render_target_settings;
+    }
   }
 
   if (sub_menu("Image Export", sub_settings::image_export)) {
-    [[maybe_unused]] const auto image_export_settings = _sub_settings.image_export.display({});
+    const auto image_export_settings = _sub_settings.image_export.display({});
+    if (ImGui::Button("Apply")) {
+      opts.image_export = image_export_settings;
+    }
   }
 
-//  if (sub_menu("Asset Loader", sub_settings::asset_loader)) {
-//    [[maybe_unused]] const auto asset_loader_settings = _sub_settings.asset_loader.display({});
-//  }
+  if (sub_menu("Asset Loader", sub_settings::asset_loader)) {
+    const auto asset_loader_settings = _sub_settings.asset_loader.display({});
+    if (ImGui::Button("Apply")) {
+      opts.asset_loader = asset_loader_settings;
+    }
+  }
+
+  if (sub_menu("Skybox", sub_settings::skybox)) {
+    const auto skybox_settings = _sub_settings.skybox.display({});
+    if (ImGui::Button("Apply")) {
+      opts.skybox = skybox_settings;
+    }
+  }
 
   ImGui::End();
-  return {};
+  return opts;
 }

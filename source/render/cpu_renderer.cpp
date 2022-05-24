@@ -13,7 +13,10 @@ struct ray_extension {
   glm::vec3 emission;
   cr::ray next_ray;
 };
-[[nodiscard]] std::optional<ray_extension> extend_ray(const cr::ray &ray, std::function<std::optional<cr::intersection>(const cr::ray &)> intersect, cr::random *random) {
+[[nodiscard]] std::optional<ray_extension> extend_ray(
+    const cr::ray &ray,
+    std::function<std::optional<cr::intersection>(const cr::ray &)> intersect,
+    cr::random *random) {
   if (const auto isect_optional = intersect(ray); isect_optional.has_value()) {
     const auto isect = isect_optional.value();
 
@@ -24,10 +27,10 @@ struct ray_extension {
         material->evalute_ray(ray.direction, isect.normal, point, random);
     const auto evaluated =
         material->evalute(ray.direction, ray_evaluation.ray.direction,
-                           isect.normal, isect.texcoord);
+                          isect.normal, isect.texcoord);
     const auto cos_theta = glm::dot(-ray.direction, isect.normal);
 
-    return ray_extension {
+    return ray_extension{
         .cos_theta = cos_theta,
         .pdf = ray_evaluation.pdf,
         .bxdf = evaluated.bxdf,
@@ -58,70 +61,75 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
       auto had_intersection = false;
 
       // do primary ray manually
-      if (const auto extension_opt = ::extend_ray(ray, data.data->intersect, &random); extension_opt.has_value()) {
+      if (const auto extension_opt =
+              ::extend_ray(ray, data.data->intersect, &random);
+          extension_opt.has_value()) {
         current_extension = extension_opt.value();
 
         accumulated += current_extension.emission;
 
         had_intersection = true;
       } else {
-        const auto uv = glm::vec2(
-            0.5f + std::atan2f(ray.direction.z, ray.direction.x) / (2.0f * glm::pi<float>()),
-            0.5f - std::asin(ray.direction.y) / glm::pi<float>());
-        const auto sky = cr::sky::at(uv);
+        const auto uv =
+            glm::vec2(0.5f + std::atan2f(ray.direction.z, ray.direction.x) /
+                                 (2.0f * glm::pi<float>()),
+                      0.5f - std::asin(ray.direction.y) / glm::pi<float>());
 
-        accumulated = sky;
+        accumulated = sky.at(uv);;
       }
 
       if (had_intersection) {
         for (size_t depth = 1; depth < data.data->config.bounces(); depth++) {
           ray = current_extension.next_ray;
-          throughput *= current_extension.bxdf * current_extension.cos_theta / current_extension.pdf;
+          throughput *= current_extension.bxdf * current_extension.cos_theta /
+                        current_extension.pdf;
 
-          if (const auto extension_opt = ::extend_ray(ray, data.data->intersect, &random); extension_opt.has_value()) {
+          if (const auto extension_opt =
+                  ::extend_ray(ray, data.data->intersect, &random);
+              extension_opt.has_value()) {
             current_extension = extension_opt.value();
 
             accumulated += throughput * current_extension.emission;
           } else {
-            const auto uv = glm::vec2(
-                0.5f + std::atan2f(ray.direction.z, ray.direction.x) / (2.0f * glm::pi<float>()),
-                0.5f - std::asin(ray.direction.y) / glm::pi<float>());
-            const auto sky = cr::sky::at(uv);
+            const auto uv =
+                glm::vec2(0.5f + std::atan2f(ray.direction.z, ray.direction.x) /
+                                     (2.0f * glm::pi<float>()),
+                          0.5f - std::asin(ray.direction.y) / glm::pi<float>());
 
-            accumulated += throughput * sky;
+            accumulated += throughput * sky.at(uv);;
             break;
           }
         }
       }
 
-
-
       // Who needs safe math, we have isnan!
-      if (!(std::isnan(accumulated.x) || std::isnan(accumulated.y) || std::isnan(accumulated.z))) {
-        const auto sample = glm::vec3(data.data->buffer->get(x, y)) * static_cast<float>(data.data->samples);
-        const auto averaged = glm::vec4((sample + accumulated) / (data.data->samples + 1.0f), 1.0f);
+      if (!(std::isnan(accumulated.x) || std::isnan(accumulated.y) ||
+            std::isnan(accumulated.z))) {
+        const auto sample = glm::vec3(data.data->buffer->get(x, y)) *
+                            static_cast<float>(data.data->samples);
+        const auto averaged = glm::vec4(
+            (sample + accumulated) / (data.data->samples + 1.0f), 1.0f);
         data.data->buffer->set(x, y, averaged);
       }
     }
   }
 }
 
-cpu_renderer::cpu_renderer() : _pool() {
-
-}
-
-void cpu_renderer::render(const cr::render_data &data, std::span<std::pair<glm::ivec2, glm::ivec2>> tiles) {
-  for (const auto &tile : tiles)
-  {
-    _pool.push_task(_thread_dispatch, thread_render_data {
-                                          .random_seed = static_cast<uint64_t>(rand()),
-                                          .first = tile.first,
-                                          .second = tile.second,
-                                          .data = &data,
-                                      });
+void cpu_renderer::render(const cr::render_data &data,
+                          std::span<std::pair<glm::ivec2, glm::ivec2>> tiles) {
+  for (const auto &tile : tiles) {
+    _pool.push_task([&, this]() {
+      _thread_dispatch({
+          .random_seed = static_cast<uint64_t>(rand()),
+          .first = tile.first,
+          .second = tile.second,
+          .data = &data,
+      });
+    });
   }
 }
-void cpu_renderer::wait() {
-  _pool.wait_for_tasks();
-}
-}
+void cpu_renderer::wait() { _pool.wait_for_tasks(); }
+
+cpu_renderer::cpu_renderer(int thread_count, component::skybox::Options options)
+    : _pool(thread_count), sky(options) {}
+} // namespace cr

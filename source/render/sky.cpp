@@ -7,7 +7,7 @@
 #include <numbers>
 
 namespace {
-#define EPSILON 1e-5
+#define EPSILON 1e-5f
 
 #define SAMPLES_NUMS 16
 using namespace glm;
@@ -15,25 +15,6 @@ using float2 = glm::vec2;
 using float3 = glm::vec3;
 using float4 = glm::vec4;
 float saturate(float x){ return clamp(x, 0.0f, 1.0f); }
-
-struct ScatteringParams
-{
-  float sunRadius;
-  float sunRadiance;
-
-  float mieG;
-  float mieHeight;
-
-  float rayleighHeight;
-
-  float3 waveLambdaMie;
-  float3 waveLambdaOzone;
-  float3 waveLambdaRayleigh;
-
-  float earthRadius;
-  float earthAtmTopRadius;
-  float3 earthCenter;
-};
 
 float3 ComputeSphereNormal(float2 coord, float phiStart, float phiLength, float thetaStart, float thetaLength)
 {
@@ -65,17 +46,6 @@ float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, 
   return minimaxIntersections;
 }
 
-float3 ComputeWaveLambdaRayleigh(float3 lambda)
-{
-  const float n = 1.0003f;
-  const float N = 2.545E25;
-  const float pn = 0.035f;
-  const float n2 = n * n;
-  const float pi3 = std::numbers::pi_v<float> * std::numbers::pi_v<float> * std::numbers::pi_v<float>;
-  const float rayleighConst = (8.0f * pi3 * pow(n2 - 1.0f,2.0f)) / (3.0f * N) * ((6.0f + 3.0f * pn) / (6.0f - 7.0f * pn));
-  return rayleighConst / (lambda * lambda * lambda * lambda);
-}
-
 float ComputePhaseMie(float theta, float g)
 {
   float g2 = g * g;
@@ -95,14 +65,14 @@ float ChapmanApproximation(float X, float h, float cosZenith)
 
   if (cosZenith >= 0.0)
   {
-    return c_exp_h / (c * cosZenith + 1.0);
+    return c_exp_h / (c * cosZenith + 1.0f);
   }
   else
   {
-    float x0 = sqrt(1.0 - cosZenith * cosZenith) * (X + h);
+    float x0 = sqrt(1.0f - cosZenith * cosZenith) * (X + h);
     float c0 = sqrt(x0);
 
-    return 2.0 * c0 * exp(X - x0) - c_exp_h / (1.0 - c * cosZenith);
+    return 2.0f * c0 * exp(X - x0) - c_exp_h / (1.0f - c * cosZenith);
   }
 }
 
@@ -111,13 +81,13 @@ float GetOpticalDepthSchueler(float h, float H, float earthRadius, float cosZeni
   return H * ChapmanApproximation(earthRadius / H, h / H, cosZenith);
 }
 
-float3 GetTransmittance(ScatteringParams setting, float3 L, float3 V)
+float3 GetTransmittance(cr::component::skybox::Options setting, float3 L, float3 V)
 {
   float ch = GetOpticalDepthSchueler(L.y, setting.rayleighHeight, setting.earthRadius, V.y);
   return exp(-(setting.waveLambdaMie + setting.waveLambdaRayleigh) * ch);
 }
 
-float2 ComputeOpticalDepth(ScatteringParams setting, float3 samplePoint, float3 V, float3 L, float neg)
+float2 ComputeOpticalDepth(cr::component::skybox::Options setting, float3 samplePoint, float3 V, float3 L, float neg)
 {
   float rl = length(samplePoint);
   float h = rl - setting.earthRadius;
@@ -132,7 +102,7 @@ float2 ComputeOpticalDepth(ScatteringParams setting, float3 samplePoint, float3 
   return float2(opticalDepthSun, opticalDepthCamera);
 }
 
-void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float3 V, float3 L, bool infinite, float3 &transmittance, float3 &insctrMie, float3 &insctrRayleigh)
+void AerialPerspective(cr::component::skybox::Options setting, float3 start, float3 end, float3 V, float3 L, bool infinite, float3 &transmittance, float3 &insctrMie, float3 &insctrRayleigh)
 {
   float inf_neg = infinite ? 1.0 : -1.0;
 
@@ -142,7 +112,7 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 
   float sampleLength = length(sampleStep);
 
-  float3 scattering = float3(0.0);
+  auto scattering = float3(0.0);
   float2 lastOpticalDepth = ComputeOpticalDepth(setting, end, V, L, inf_neg);
 
   for (int i = 1; i < SAMPLES_NUMS; i++, samplePoint -= sampleStep)
@@ -164,7 +134,7 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
   insctrRayleigh = scattering * setting.waveLambdaRayleigh * sampleLength;
 }
 
-float ComputeSkyboxChapman(ScatteringParams setting, float3 eye, float3 V, float3 L, float3 &transmittance, float3 &insctrMie, float3 &insctrRayleigh)
+float ComputeSkyboxChapman(cr::component::skybox::Options setting, float3 eye, float3 V, float3 L, float3 &transmittance, float3 &insctrMie, float3 &insctrRayleigh)
 {
   bool neg = true;
 
@@ -189,17 +159,17 @@ float ComputeSkyboxChapman(ScatteringParams setting, float3 eye, float3 V, float
   return intersectionTest ? 1.0 : 0.0;
 }
 
-float4 ComputeSkyInscattering(ScatteringParams setting, float3 eye, float3 V, float3 L)
+float4 ComputeSkyInscattering(cr::component::skybox::Options setting, float3 eye, float3 V, float3 L)
 {
-  float3 insctrMie = float3(0.0);
-  float3 insctrRayleigh = float3(0.0);
-  float3 insctrOpticalLength = float3(1.0);
+  auto insctrMie = float3(0.0);
+  auto insctrRayleigh = float3(0.0);
+  auto insctrOpticalLength = float3(1.0);
   float intersectionTest = ComputeSkyboxChapman(setting, eye, V, L, insctrOpticalLength, insctrMie, insctrRayleigh);
 
   float phaseTheta = dot(V, L);
   float phaseMie = ComputePhaseMie(phaseTheta, setting.mieG);
   float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
-  float phaseNight = 1.0 - saturate(insctrOpticalLength.x * EPSILON);
+  float phaseNight = 1.0f - saturate(insctrOpticalLength.x * EPSILON);
 
   float3 insctrTotalMie = insctrMie * phaseMie;
   float3 insctrTotalRayleigh = insctrRayleigh * phaseRayleigh;
@@ -207,7 +177,7 @@ float4 ComputeSkyInscattering(ScatteringParams setting, float3 eye, float3 V, fl
   float3 sky = (insctrTotalMie + insctrTotalRayleigh) * setting.sunRadiance;
 
   float angle = saturate((1.0f - phaseTheta) * setting.sunRadius);
-  float cosAngle = cos(angle * std::numbers::pi_v<float> * 0.5);
+  float cosAngle = cos(angle * std::numbers::pi_v<float> * 0.5f);
   float edge = ((angle >= 0.9) ? smoothstep(0.9f, 1.0f, angle) : 0.0f);
 
   float3 limbDarkening = GetTransmittance(setting, -L, V);
@@ -218,16 +188,6 @@ float4 ComputeSkyInscattering(ScatteringParams setting, float3 eye, float3 V, fl
   return float4(sky, phaseNight * intersectionTest);
 }
 
-float3 TonemapACES(float3 x)
-{
-  const float A = 2.51f;
-  const float B = 0.03f;
-  const float C = 2.43f;
-  const float D = 0.59f;
-  const float E = 0.14f;
-  return (x * (A * x + B)) / (x * (C * x + D) + E);
-}
-
 float noise(float2 uv)
 {
   const auto a = glm::vec3(uv.x, uv.y, uv.x);
@@ -236,35 +196,25 @@ float noise(float2 uv)
 }
 } // namespace
 
-namespace cr::sky {
-glm::vec3 at(const glm::vec2 &upside_down_uv, const glm::vec2 &sun_pos) {
+namespace cr {
+glm::vec3 sky::at(const glm::vec2 &upside_down_uv, const glm::vec2 &sun_pos) {
   vec2 mouse = float2(0.5, 0.7);
   const auto uv = -upside_down_uv + 1.0f;
 
   float3 V = ComputeSphereNormal(uv, 0.0, std::numbers::pi_v<float> * 2.0f, 0.0, std::numbers::pi_v<float>);
   float3 L = ComputeSphereNormal(float2(mouse.x, mouse.y), 0.0, std::numbers::pi_v<float> * 2.0f, 0.0, std::numbers::pi_v<float>);
 
-  ScatteringParams setting {};
-  setting.sunRadius = 500.0;
-  setting.sunRadiance = 20.0;
-  setting.mieG = 0.76;
-  setting.mieHeight = 1200.0;
-  setting.rayleighHeight = 8000.0;
-  setting.earthRadius = 6360000.0;
-  setting.earthAtmTopRadius = 6420000.0;
-  setting.earthCenter = float3(0, -setting.earthRadius, 0);
-  setting.waveLambdaMie = float3(2e-7);
-
-  // wavelength with 680nm, 550nm, 450nm
-  setting.waveLambdaRayleigh = ComputeWaveLambdaRayleigh(float3(680e-9, 550e-9, 450e-9));
-
-  // see https://www.shadertoy.com/view/MllBR2
-  setting.waveLambdaOzone = float3(1.36820899679147, 3.31405330400124, 0.13601728252538) * 0.6e-6f * 2.504f;
-
   float3 eye = float3(0,1000.0,0);
-  float3 sky = ComputeSkyInscattering(setting, eye, V, L);
+  float3 sky = ComputeSkyInscattering(_options, eye, V, L);
 
   return sky;
+}
+
+sky::sky(component::skybox::Options options) : _options(options) {
+
+}
+void sky::use_settings(component::skybox::Options options) {
+  _options = options;
 }
 
 } // namespace cr::sky
