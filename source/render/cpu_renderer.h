@@ -6,42 +6,43 @@
 #define CREBON_CPU_RENDERER_H
 
 #include <render/sky.hpp>
-#include <util/atomic_image.hpp>
 #include <scene/scene.hpp>
+#include <util/atomic_image.hpp>
 
 #include <thread-pool/thread_pool.hpp>
 
 #include <span>
 
 namespace cr {
-  struct render_data {
-    const size_t samples;
-    cr::atomic_image *buffer;
-    std::function<std::optional<cr::intersection>(const cr::ray &)> intersect;
-    const cr::scene_configuration config;
+struct render_data {
+  const size_t samples;
+  cr::atomic_image *buffer;
+  std::function<std::optional<cr::intersection>(const cr::ray &)> intersect;
+  const cr::scene_configuration config;
+};
+
+class cpu_renderer {
+private:
+  thread_pool _pool;
+
+  struct thread_render_data {
+    const uint64_t random_seed;
+    const glm::ivec2 first;
+    const glm::ivec2 second;
+    const render_data *const data;
   };
+  void _thread_dispatch(thread_render_data data);
 
-  class cpu_renderer {
-  private:
-    thread_pool _pool;
+public:
+  sky sky;
 
-    struct thread_render_data {
-      const uint64_t random_seed;
-      const glm::ivec2 first;
-      const glm::ivec2 second;
-      const render_data * const data;
-    };
-    void _thread_dispatch(thread_render_data data);
+  explicit cpu_renderer(int thread_count, component::skybox::Options options);
 
-  public:
-    sky sky;
+  void render(const cr::render_data &data,
+              std::span<std::pair<glm::ivec2, glm::ivec2>> tiles);
 
-    explicit cpu_renderer(int thread_count, component::skybox::Options options);
-
-    void render(const cr::render_data& data, std::span<std::pair<glm::ivec2, glm::ivec2>> tiles);
-
-    void wait();
-  };
-}
+  void wait();
+};
+} // namespace cr
 
 #endif // CREBON_CPU_RENDERER_H

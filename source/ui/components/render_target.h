@@ -9,18 +9,18 @@
 #include <imgui.h>
 
 namespace cr::component {
-  class render_target {
-  public:
-    struct Options {
-      glm::ivec2 resolution;
-    };
-    struct DisplayContents {
-    };
-
-    struct Component {
-      [[nodiscard]] render_target::Options display(DisplayContents contents) const;
-    };
+class render_target {
+public:
+  struct Options {
+    glm::ivec2 resolution;
   };
-}
+  struct DisplayContents {};
+
+  struct Component {
+    [[nodiscard]] render_target::Options
+    display(DisplayContents contents) const;
+  };
+};
+} // namespace cr::component
 
 #endif // CREBON_RENDER_TARGET_H

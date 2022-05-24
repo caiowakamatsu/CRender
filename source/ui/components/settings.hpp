@@ -7,9 +7,9 @@
 
 #include <optional>
 
-#include <ui/components/render_target.h>
-#include <ui/components/export.hpp>
 #include <ui/components/asset_loader.hpp>
+#include <ui/components/export.hpp>
+#include <ui/components/render_target.h>
 #include <ui/components/skybox.hpp>
 
 #include <ui/components/component.hpp>
@@ -41,7 +41,7 @@ public:
       component::interface<component::image_export> image_export;
       component::interface<component::asset_loader> asset_loader;
       component::interface<component::skybox> skybox;
-    } _sub_settings {};
+    } _sub_settings{};
 
     std::optional<sub_settings> _selected;
 

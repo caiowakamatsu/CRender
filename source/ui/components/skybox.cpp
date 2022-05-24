@@ -34,17 +34,16 @@ skybox::Component::display(skybox::DisplayContents contents) const {
 
   auto dir = glm::vec3();
   if (use_angles) {
-    dir = glm::normalize(glm::vec3(
-        std::cos(elevation) * std::cos(azimuth),
-        std::sin(elevation),
-        std::cos(elevation) * std::sin(azimuth)));
+    dir = glm::normalize(glm::vec3(std::cos(elevation) * std::cos(azimuth),
+                                   std::sin(elevation),
+                                   std::cos(elevation) * std::sin(azimuth)));
   } else {
     dir = glm::normalize(sun_dir);
   }
   // translate sun_dir from a direction to cartesian coordinates
   const auto uv = glm::vec2(
-                      0.5f + std::atan2f(dir.z, dir.x) / (2.0f * std::numbers::pi_v<float>),
-                      0.5f - std::asin(dir.y) / std::numbers::pi_v<float>);
+      0.5f + std::atan2f(dir.z, dir.x) / (2.0f * std::numbers::pi_v<float>),
+      0.5f - std::asin(dir.y) / std::numbers::pi_v<float>);
   options.sun_pos = uv;
 
   ImGui::NewLine();
@@ -58,4 +57,4 @@ skybox::Component::display(skybox::DisplayContents contents) const {
 
   return options;
 }
-}
+} // namespace cr::component

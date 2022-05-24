@@ -21,6 +21,6 @@ struct asset_loader {
     [[nodiscard]] asset_loader::Options display(DisplayContents contents) const;
   };
 };
-}
+} // namespace cr::component
 
 #endif // CREBON_ASSET_LOADER_HPP

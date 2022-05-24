@@ -13,14 +13,16 @@ namespace cr {
 class sky {
 private:
   component::skybox::Options _options;
+
 public:
   explicit sky(component::skybox::Options options);
 
-  [[nodiscard]] glm::vec3 at(const glm::vec2 &uv, const glm::vec2 &sun_pos = {0.5f, 0.2f});
+  [[nodiscard]] glm::vec3 at(const glm::vec2 &uv,
+                             const glm::vec2 &sun_pos = {0.5f, 0.2f});
 
   void use_settings(component::skybox::Options options);
 };
 
-}
+} // namespace cr
 
 #endif // CREBON_SKYBOX_HPP

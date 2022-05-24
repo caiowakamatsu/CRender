@@ -18,8 +18,7 @@ cr::component::settings::Component::display(DisplayContents contents) {
       if (_selected == setting) {
         _selected = std::nullopt;
         return false;
-      }
-      else {
+      } else {
         _selected = setting;
         return true;
       }

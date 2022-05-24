@@ -75,7 +75,8 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
                                  (2.0f * glm::pi<float>()),
                       0.5f - std::asin(ray.direction.y) / glm::pi<float>());
 
-        accumulated = sky.at(uv);;
+        accumulated = sky.at(uv);
+        ;
       }
 
       if (had_intersection) {
@@ -96,7 +97,8 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
                                      (2.0f * glm::pi<float>()),
                           0.5f - std::asin(ray.direction.y) / glm::pi<float>());
 
-            accumulated += throughput * sky.at(uv);;
+            accumulated += throughput * sky.at(uv);
+            ;
             break;
           }
         }

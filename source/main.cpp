@@ -51,9 +51,10 @@ int main() {
 
   auto reset_sample_count = std::atomic<bool>(false);
   auto sample_count = uint64_t(0);
-  //  auto triangular_scene =
-  //      cr::triangular_scene("./assets/SM_Deccer_Cubes_Textured.glb");
-  //  auto scene = cr::scene<cr::triangular_scene>(&triangular_scene);
+  auto triangular_scene =
+      cr::triangular_scene("./assets/models/SM_Deccer_Cubes_Textured.glb");
+  scenes.emplace_back(&triangular_scene);
+
 
   auto cpu_renderer = cr::cpu_renderer(0, {});
 

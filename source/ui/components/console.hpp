@@ -5,23 +5,22 @@
 #ifndef CREBON_CONSOLE_HPP
 #define CREBON_CONSOLE_HPP
 
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace cr::component {
-	class console {
-	public:
-		struct Options {
-		};
+class console {
+public:
+  struct Options {};
 
-		struct DisplayContents {
-			std::vector<std::string> *lines;
-		};
+  struct DisplayContents {
+    std::vector<std::string> *lines;
+  };
 
-		struct Component {
-			[[nodiscard]] console::Options display(DisplayContents contents) const;
-		};
-	};
-}
+  struct Component {
+    [[nodiscard]] console::Options display(DisplayContents contents) const;
+  };
+};
+} // namespace cr::component
 
-#endif //CREBON_CONSOLE_HPP
+#endif // CREBON_CONSOLE_HPP

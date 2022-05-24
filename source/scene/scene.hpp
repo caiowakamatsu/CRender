@@ -7,30 +7,30 @@
 
 #include <optional>
 
-#include <scene/ray.hpp>
-#include <scene/configuration.hpp>
 #include <material/material.hpp>
+#include <scene/configuration.hpp>
+#include <scene/ray.hpp>
 
 namespace cr {
-	struct intersection {
-		int id;
-		float distance;
-		cr::material *material;
-		glm::vec3 normal;
-		glm::vec2 texcoord;
-	};
+struct intersection {
+  int id;
+  float distance;
+  cr::material *material;
+  glm::vec3 normal;
+  glm::vec2 texcoord;
+};
 
-	template<typename T>
-	class scene {
-	private:
-		T *_scene;
-	public:
-		explicit scene(T *scene) : _scene(scene) {}
+template <typename T> class scene {
+private:
+  T *_scene;
 
-		[[nodiscard]] std::optional<cr::intersection> intersect(const cr::ray &ray) {
-			return _scene->intersect(ray);
-		}
-	};
-}
+public:
+  explicit scene(T *scene) : _scene(scene) {}
 
-#endif //CREBON_SCENE_HPP
+  [[nodiscard]] std::optional<cr::intersection> intersect(const cr::ray &ray) {
+    return _scene->intersect(ray);
+  }
+};
+} // namespace cr
+
+#endif // CREBON_SCENE_HPP
