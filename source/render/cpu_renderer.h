@@ -5,6 +5,7 @@
 #ifndef CREBON_CPU_RENDERER_H
 #define CREBON_CPU_RENDERER_H
 
+#include <render/sky.hpp>
 #include <util/atomic_image.hpp>
 #include <scene/scene.hpp>
 

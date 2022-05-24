@@ -18,6 +18,7 @@ asset_loader::Component::display(asset_loader::DisplayContents contents) const {
         continue;
 
     }
+    ImGui::EndCombo();
   }
 
   return {};

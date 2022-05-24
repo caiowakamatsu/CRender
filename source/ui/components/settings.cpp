@@ -36,9 +36,10 @@ cr::component::settings::Component::display(DisplayContents contents) {
     [[maybe_unused]] const auto image_export_settings = _sub_settings.image_export.display({});
   }
 
-  if (sub_menu("Asset Loader", sub_settings::asset_loader)) {
-    [[maybe_unused]] const auto asset_loader_settings = _sub_settings.asset_loader.display({});
-  }
+//  if (sub_menu("Asset Loader", sub_settings::asset_loader)) {
+//    [[maybe_unused]] const auto asset_loader_settings = _sub_settings.asset_loader.display({});
+//  }
 
+  ImGui::End();
   return {};
 }

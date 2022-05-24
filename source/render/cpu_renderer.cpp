@@ -65,8 +65,10 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
 
         had_intersection = true;
       } else {
-        const auto t = ray.direction.y * 0.5f + 0.5f;
-        const auto sky = glm::mix(glm::vec3(0.2f, 0.2f, 0.8f), glm::vec3(1.0f), t);
+        const auto uv = glm::vec2(
+            0.5f + std::atan2f(ray.direction.z, ray.direction.x) / (2.0f * glm::pi<float>()),
+            0.5f - std::asin(ray.direction.y) / glm::pi<float>());
+        const auto sky = cr::sky::at(uv);
 
         accumulated = sky;
       }
@@ -81,8 +83,10 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
 
             accumulated += throughput * current_extension.emission;
           } else {
-            const auto t = ray.direction.y * 0.5f + 0.5f;
-            const auto sky = glm::mix(glm::vec3(0.2f, 0.2f, 0.8f), glm::vec3(1.0f), t);
+            const auto uv = glm::vec2(
+                0.5f + std::atan2f(ray.direction.z, ray.direction.x) / (2.0f * glm::pi<float>()),
+                0.5f - std::asin(ray.direction.y) / glm::pi<float>());
+            const auto sky = cr::sky::at(uv);
 
             accumulated += throughput * sky;
             break;
@@ -102,7 +106,7 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
   }
 }
 
-cpu_renderer::cpu_renderer() : _pool(4) {
+cpu_renderer::cpu_renderer() : _pool() {
 
 }
 
