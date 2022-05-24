@@ -34,6 +34,8 @@ public:
     float earthRadius = 6360000.0f;
     float earthAtmTopRadius = 6420000.0f;
 
+    glm::vec2 sun_pos = glm::vec2(0.5, 0.7);
+
     glm::vec3 earthCenter = glm::vec3(0, - 6360000.0f, 0);
     glm::vec3 waveLambdaMie = glm::vec3(2e-7f);
     glm::vec3 waveLambdaOzone = glm::vec3(1.36820899679147, 3.31405330400124, 0.13601728252538) * 0.6e-6f * 2.504f;

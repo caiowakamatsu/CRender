@@ -198,7 +198,7 @@ float noise(float2 uv)
 
 namespace cr {
 glm::vec3 sky::at(const glm::vec2 &upside_down_uv, const glm::vec2 &sun_pos) {
-  vec2 mouse = float2(0.5, 0.7);
+  vec2 mouse = _options.sun_pos;
   const auto uv = -upside_down_uv + 1.0f;
 
   float3 V = ComputeSphereNormal(uv, 0.0, std::numbers::pi_v<float> * 2.0f, 0.0, std::numbers::pi_v<float>);
