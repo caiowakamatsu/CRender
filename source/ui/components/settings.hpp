@@ -5,22 +5,39 @@
 #ifndef CREBON_SETTINGS_HPP
 #define CREBON_SETTINGS_HPP
 
+#include <optional>
+
+#include <ui/components/render_target.h>
+#include <ui/components/export.hpp>
+
+#include <ui/components/component.hpp>
+
 namespace cr::component {
 
-	class settings {
-	public:
-		struct Options {
+class settings {
+public:
+  struct Options {};
+  struct DisplayContents {};
 
-		};
-		struct DisplayContents {
+  struct Component {
+  private:
+    enum class sub_settings {
+      render_target,
+      image_export,
+    };
 
-		};
-
-		struct Component {
-			[[nodiscard]] settings::Options display(DisplayContents contents) const;
-		};
-	};
-}
+    struct {
+      component::interface<component::render_target> render_target;
+      component::interface<component::image_export> image_export;
+    } _sub_settings;
 
 
-#endif //CREBON_SETTINGS_HPP
+    std::optional<sub_settings> _selected;
+
+  public:
+    [[nodiscard]] settings::Options display(DisplayContents contents);
+  };
+};
+} // namespace cr::component
+
+#endif // CREBON_SETTINGS_HPP

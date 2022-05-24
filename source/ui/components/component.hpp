@@ -14,7 +14,7 @@ namespace cr::component {
 	public:
 		interface() = default;
 
-		[[nodiscard]] typename T::Options display(typename T::DisplayContents contents) const {
+		[[nodiscard]] typename T::Options display(typename T::DisplayContents contents) {
 			return _impl.display(contents);
 		}
 	};

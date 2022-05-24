@@ -145,20 +145,6 @@ void cr::display::render(render_data data) {
   auto ui_ctx = ::init();
   ::root_node(ui_ctx);
 
-  const auto tab_item = [this](auto element){
-
-  };
-
-  if (_selected_component.has_value()) {
-    auto &selected = _selected_component.value();
-    std::visit([](auto &&component){
-      using T = std::decay_t<decltype(component)>;
-      if constexpr(std::is_same_v<T, preview>) {
-
-      }
-    }, selected);
-  }
-
   [[maybe_unused]] const auto preview =
       _components.preview.display({.frame = data.frame});
 

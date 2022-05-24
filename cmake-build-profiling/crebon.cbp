@@ -404,6 +404,12 @@
 		<Unit filename="C:/Users/howto/CLionProjects/CRender/source/ui/components/console.hpp">
 			<Option target="crebon"/>
 		</Unit>
+		<Unit filename="C:/Users/howto/CLionProjects/CRender/source/ui/components/export.cpp">
+			<Option target="crebon"/>
+		</Unit>
+		<Unit filename="C:/Users/howto/CLionProjects/CRender/source/ui/components/export.hpp">
+			<Option target="crebon"/>
+		</Unit>
 		<Unit filename="C:/Users/howto/CLionProjects/CRender/source/ui/components/preview.cpp">
 			<Option target="crebon"/>
 		</Unit>

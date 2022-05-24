@@ -48,11 +48,11 @@ namespace cr {
 		size_t _height;
 		GLFWwindow *_window;
 
-                using preview = component::interface<component::preview>;
-                using console = component::interface<component::console>;
-                using settings = component::interface<component::settings>;
-
-                std::optional<std::variant<preview, console, settings>> _selected_component;
+                struct {
+                  component::interface<component::preview> preview {};
+                  component::interface<component::console> console {};
+                  component::interface<component::settings> settings {};
+                } _components {};
 
 		static void _glfw_cursor_position_callback(GLFWwindow *window, double x, double y);
 

@@ -31,7 +31,7 @@ add_executable(crebon
         source/ui/components/settings.cpp
         source/ui/input_devices.cpp
         source/material/brdf.cpp
-        source/render/cpu_renderer.cpp source/ui/components/render_target.cpp source/ui/components/render_target.h)
+        source/render/cpu_renderer.cpp source/ui/components/render_target.cpp source/ui/components/render_target.h source/ui/components/export.cpp source/ui/components/export.hpp)
 
 #############
 # LIBRARIES #
