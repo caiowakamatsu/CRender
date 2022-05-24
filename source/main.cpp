@@ -25,36 +25,32 @@
 #include <imgui.h>
 
 int main() {
-  auto pool = thread_pool(std::thread::hardware_concurrency());
-
   auto display = cr::display(1920 * 2, 1080 * 2);
 
   auto configuration = cr::scene_configuration(
       glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), 1024, 1024, 80.2f, 5);
   auto configuration_mutex = std::mutex();
-
-  auto reset_sample_count = std::atomic<bool>(false);
-
-  auto triangular_scene =
-      cr::triangular_scene("./assets/SM_Deccer_Cubes_Textured.glb");
-  auto scene = cr::scene<cr::triangular_scene>(&triangular_scene);
-
-  auto frame = cr::atomic_image(configuration.width(), configuration.height());
-
-  auto rendering = std::atomic<bool>(true);
-
   auto get_configuration = [&configuration,
-                            &configuration_mutex]() -> cr::scene_configuration {
+      &configuration_mutex]() -> cr::scene_configuration {
     std::lock_guard lk(configuration_mutex);
     return configuration;
   };
 
+  auto scenes = std::vector<cr::scene<cr::triangular_scene>>();
+  auto frame = cr::atomic_image(configuration.width(), configuration.height());
+
+  auto rendering = std::atomic<bool>(true);
+
+  auto reset_sample_count = std::atomic<bool>(false);
   auto sample_count = uint64_t(0);
+//  auto triangular_scene =
+//      cr::triangular_scene("./assets/SM_Deccer_Cubes_Textured.glb");
+//  auto scene = cr::scene<cr::triangular_scene>(&triangular_scene);
 
   auto cpu_renderer = cr::cpu_renderer();
 
   auto render_thread =
-      std::thread([&rendering, &scene, &get_configuration, &frame,
+      std::thread([&rendering, &scenes, &get_configuration, &frame,
                    &sample_count, &reset_sample_count, &cpu_renderer] {
         const auto cpu_thread_count = std::thread::hardware_concurrency();
         fmt::print("count {}", cpu_thread_count);
@@ -68,18 +64,32 @@ int main() {
             reset_sample_count = false;
           }
 
-          auto data = cr::render_data {
-              .samples = sample_count,
-              .buffer = &frame,
-              .intersect = [&scene](const cr::ray &ray) {
-                return scene.intersect(ray);
-              }, // im not sure if this is the best way to do this
-              .config = configuration,
-          };
+          {
+            auto data = cr::render_data {
+                .samples = sample_count,
+                .buffer = &frame,
+                .intersect = [&scenes](const cr::ray &ray) {
+                  auto result = std::optional<cr::intersection>();
 
-          cpu_renderer.render(data, tasks);
+                  for (auto &scene : scenes) {
+                    auto intersection = scene.intersect(ray);
+                    if (intersection) {
+                      if (!result || result->distance > intersection->distance) {
+                        result = intersection;
+                      }
+                    }
+                  }
 
-          cpu_renderer.wait();
+                  return result;
+                }, // im not sure if this is the best way to do this
+                .config = configuration,
+            };
+
+            cpu_renderer.render(data, tasks);
+
+            cpu_renderer.wait();
+          }
+
 
           sample_count += 1;
         }

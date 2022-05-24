@@ -9,6 +9,7 @@
 
 #include <ui/components/render_target.h>
 #include <ui/components/export.hpp>
+#include <ui/components/asset_loader.hpp>
 
 #include <ui/components/component.hpp>
 
@@ -25,13 +26,14 @@ public:
     enum class sub_settings {
       render_target,
       image_export,
+      asset_loader,
     };
 
     struct {
       component::interface<component::render_target> render_target;
       component::interface<component::image_export> image_export;
-    } _sub_settings;
-
+      component::interface<component::asset_loader> asset_loader;
+    } _sub_settings {};
 
     std::optional<sub_settings> _selected;
 

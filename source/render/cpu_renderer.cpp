@@ -102,7 +102,7 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
   }
 }
 
-cpu_renderer::cpu_renderer() : _pool() {
+cpu_renderer::cpu_renderer() : _pool(4) {
 
 }
 

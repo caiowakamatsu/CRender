@@ -1,0 +1,26 @@
+//
+// Created by howto on 24/5/2022.
+//
+
+#ifndef CREBON_ASSET_LOADER_HPP
+#define CREBON_ASSET_LOADER_HPP
+
+#include <filesystem>
+#include <string>
+#include <string_view>
+
+namespace cr::component {
+struct asset_loader {
+
+  struct Options {
+    std::optional<std::filesystem::path> load;
+    std::string extension;
+  };
+  struct DisplayContents {};
+  struct Component {
+    [[nodiscard]] asset_loader::Options display(DisplayContents contents) const;
+  };
+};
+}
+
+#endif // CREBON_ASSET_LOADER_HPP

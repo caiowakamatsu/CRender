@@ -10,19 +10,17 @@
 #include <mutex>
 
 namespace cr::component {
-	struct preview {
-	public:
-		struct Options {
-		};
-		struct DisplayContents {
-			cr::atomic_image *frame;
-		};
+struct preview {
+public:
+  struct Options {};
+  struct DisplayContents {
+    cr::atomic_image *frame;
+  };
 
-		struct Component {
-			[[nodiscard]] preview::Options display(DisplayContents contents) const;
-		};
-	};
-}
+  struct Component {
+    [[nodiscard]] preview::Options display(DisplayContents contents) const;
+  };
+};
+} // namespace cr::component
 
-
-#endif //CREBON_PREVIEW_HPP
+#endif // CREBON_PREVIEW_HPP
