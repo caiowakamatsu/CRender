@@ -35,6 +35,7 @@ int main() {
 
   auto scenes = std::vector<cr::scene<cr::triangular_scene>>();
   auto frame = cr::atomic_image(configuration.width(), configuration.height());
+  auto frame_mutex = std::mutex();
 
   auto rendering = std::atomic<bool>(true);
 
@@ -44,61 +45,64 @@ int main() {
       cr::triangular_scene("./assets/models/SM_Deccer_Cubes_Textured.glb");
   scenes.emplace_back(&triangular_scene);
 
-
   auto cpu_renderer = cr::cpu_renderer(0, {});
 
-  auto render_thread =
-      std::thread([&] {
-        const auto cpu_thread_count = std::thread::hardware_concurrency();
-        fmt::print("count {}", cpu_thread_count);
-        while (rendering) {
-          auto [config, input] = [&](){
-            std::lock_guard lk(configuration_mutex);
-            return std::make_tuple(configuration, settings);
-          }();
+  auto render_thread = std::thread([&] {
+    const auto cpu_thread_count = std::thread::hardware_concurrency();
+    fmt::print("count {}", cpu_thread_count);
+    while (rendering) {
+      auto [config, input] = [&]() {
+        std::lock_guard lk(configuration_mutex);
+        return std::make_tuple(configuration, settings);
+      }();
 
-          if (input.skybox.has_value()) {
-            cpu_renderer.sky.use_settings(input.skybox.value());
-          }
+      if (input.skybox.has_value()) {
+        cpu_renderer.sky.use_settings(input.skybox.value());
+      }
 
-          auto tasks = configuration.get_tasks(cpu_thread_count);
+      if (input.render_target.has_value()) {
+        std::lock_guard lk(frame_mutex);
+        frame = cr::atomic_image(input.render_target->resolution.x, input.render_target->resolution.y);
+      }
 
-          if (reset_sample_count) {
-            sample_count = 0;
-            reset_sample_count = false;
-          }
+      auto tasks = configuration.get_tasks(cpu_thread_count);
 
-          {
-            auto data = cr::render_data{
-                .samples = sample_count,
-                .buffer = &frame,
-                .intersect =
-                    [&scenes](const cr::ray &ray) {
-                      auto result = std::optional<cr::intersection>();
+      if (reset_sample_count) {
+        sample_count = 0;
+        reset_sample_count = false;
+      }
 
-                      for (auto &scene : scenes) {
-                        auto intersection = scene.intersect(ray);
-                        if (intersection) {
-                          if (!result ||
-                              result->distance > intersection->distance) {
-                            result = intersection;
-                          }
-                        }
+      {
+        auto data = cr::render_data{
+            .samples = sample_count,
+            .buffer = &frame,
+            .intersect =
+                [&scenes](const cr::ray &ray) {
+                  auto result = std::optional<cr::intersection>();
+
+                  for (auto &scene : scenes) {
+                    auto intersection = scene.intersect(ray);
+                    if (intersection) {
+                      if (!result ||
+                          result->distance > intersection->distance) {
+                        result = intersection;
                       }
+                    }
+                  }
 
-                      return result;
-                    }, // im not sure if this is the best way to do this
-                .config = configuration,
-            };
+                  return result;
+                }, // im not sure if this is the best way to do this
+            .config = configuration,
+        };
 
-            cpu_renderer.render(data, tasks);
+        cpu_renderer.render(data, tasks);
 
-            cpu_renderer.wait();
-          }
+        cpu_renderer.wait();
+      }
 
-          sample_count += 1;
-        }
-      });
+      sample_count += 1;
+    }
+  });
 
   auto mouse_pos_initialized = false;
   auto previous_mouse_pos = glm::vec2();
@@ -135,14 +139,18 @@ int main() {
       const auto delta = previous_mouse_pos - mouse_pos;
     }
 
-    const auto input = display.render({
-        .frame = &frame,
-        .lines = &lines,
-    });
+    const auto input = [&]() {
+      std::lock_guard frame_lk(frame_mutex);
+      return display.render({
+          .frame = &frame,
+          .lines = &lines,
+      });
+    }();
 
     auto update_anything = false;
     update_anything |= origin != glm::vec3() || rotation != glm::vec3();
     update_anything |= input.skybox.has_value();
+    update_anything |= input.render_target.has_value();
 
     if (update_anything) {
       std::lock_guard lk(configuration_mutex);
@@ -153,10 +161,17 @@ int main() {
       const auto translated_point =
           configuration.rotation_matrix() * glm::vec4(origin, 1.0f);
 
+      const auto new_width = input.render_target.has_value()
+                                 ? input.render_target->resolution.x
+                                 : configuration.width();
+      const auto new_height = input.render_target.has_value()
+                                  ? input.render_target->resolution.y
+                                  : configuration.height();
+
       configuration = cr::scene_configuration(
           glm::vec3(translated_point) + configuration.origin(),
-          rotation + configuration.rotation(), configuration.width(),
-          configuration.height(), configuration.fov(), configuration.bounces());
+          rotation + configuration.rotation(), new_width, new_height,
+          configuration.fov(), configuration.bounces());
 
       settings = input;
     }
