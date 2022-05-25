@@ -29,20 +29,9 @@ int main() {
 
   auto configuration = cr::scene_configuration(
       glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), 1024, 1024, 80.2f, 5);
-  auto configuration_mutex = std::mutex();
-  auto get_configuration = [&configuration,
-                            &configuration_mutex]() -> cr::scene_configuration {
-    std::lock_guard lk(configuration_mutex);
-    return configuration;
-  };
+  auto settings = cr::display::user_input();
 
-  auto new_sky_options = std::optional<cr::component::skybox::Options>();
-  auto new_sky_options_mutex = std::mutex();
-  auto get_new_sky_options = [&new_sky_options,
-                              &new_sky_options_mutex]() -> std::optional<cr::component::skybox::Options> {
-    std::lock_guard lk(new_sky_options_mutex);
-    return new_sky_options;
-  };
+  auto configuration_mutex = std::mutex();
 
   auto scenes = std::vector<cr::scene<cr::triangular_scene>>();
   auto frame = cr::atomic_image(configuration.width(), configuration.height());
@@ -63,11 +52,13 @@ int main() {
         const auto cpu_thread_count = std::thread::hardware_concurrency();
         fmt::print("count {}", cpu_thread_count);
         while (rendering) {
-          auto configuration = get_configuration();
-          auto new_sky_options = get_new_sky_options();
+          auto [config, input] = [&](){
+            std::lock_guard lk(configuration_mutex);
+            return std::make_tuple(configuration, settings);
+          }();
 
-          if (new_sky_options) {
-            cpu_renderer.sky.use_settings(new_sky_options.value());
+          if (input.skybox.has_value()) {
+            cpu_renderer.sky.use_settings(input.skybox.value());
           }
 
           auto tasks = configuration.get_tasks(cpu_thread_count);
@@ -144,7 +135,16 @@ int main() {
       const auto delta = previous_mouse_pos - mouse_pos;
     }
 
-    if (origin != glm::vec3(0.0f) || rotation != glm::vec3(0.0f)) {
+    const auto input = display.render({
+        .frame = &frame,
+        .lines = &lines,
+    });
+
+    auto update_anything = false;
+    update_anything |= origin != glm::vec3() || rotation != glm::vec3();
+    update_anything |= input.skybox.has_value();
+
+    if (update_anything) {
       std::lock_guard lk(configuration_mutex);
 
       reset_sample_count = true;
@@ -157,19 +157,8 @@ int main() {
           glm::vec3(translated_point) + configuration.origin(),
           rotation + configuration.rotation(), configuration.width(),
           configuration.height(), configuration.fov(), configuration.bounces());
-    }
 
-    const auto input = display.render({
-        .frame = &frame,
-        .lines = &lines,
-    });
-
-    if (input.skybox.has_value()) {
-      std::lock_guard lk(new_sky_options_mutex);
-
-      reset_sample_count = true;
-
-      new_sky_options = input.skybox.value();
+      settings = input;
     }
   }
   // Todo: handle exiting if we're sampling properly (signal the threads to die)
