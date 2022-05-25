@@ -85,26 +85,26 @@ Todo: Better usage guide
 <!-- ROADMAP -->
 ## Roadmap
 
-v3.0.0 (Rewrite caused version to bump to 3)
-- [ ] UI
-- [ ] Image exporting 
-- [ ] Denoising 
-- [ ] Obj support
-- [ ] Low res preview mode
+v4.0.0 (Rewrite caused version to bump to 3)
+- [ ] UI (3.0.0)
+- [ ] Image exporting (3.0.0)
+- [ ] Denoising (3.1.0)
+- [ ] Obj support (3.2.0)
+- [ ] Low res preview mode (3.3.0)
 
-v3.1.0
-- [ ] Multi model support
-- [ ] Headless mode
-- [ ] Scene saving / loading
-- [ ] Render dump (stop a render midway)
+v5.0.0
+- [ ] Multi model support (4.1.0)
+- [ ] Headless mode (4.2.0)
+- [ ] Scene saving / loading (4.3.0)
+- [ ] Render dump (stop a render midway) (4.4.0)
 
-v3.2.0 
+v6.0.0
+- [ ] Vulkan RTX integration
+
+v7.0.0 
 - [ ] Native minecraft world loading
 
-v3.3.0
-- [ ] Vulkan RTX integration 
-
-v3.4.0
+v8.0.0
 - [ ] React based UI
 
 See the [open enhancement issues](https://github.com/LegendWasTaken/CRender/labels/enhancement) for a full list of proposed features.
