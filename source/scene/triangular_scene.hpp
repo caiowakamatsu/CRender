@@ -16,6 +16,8 @@
 #include <embree3/rtcore_geometry.h>
 #include <embree3/rtcore_scene.h>
 
+#include <util/logger.hpp>
+
 namespace cr {
 class triangular_scene {
 private:
@@ -31,12 +33,14 @@ private:
 
   std::vector<std::unique_ptr<cr::material>> _materials;
 
+  cr::logger *_logger = nullptr;
+
   void _load_model(const std::filesystem::path &path);
 
   void _load_glb(const std::filesystem::path &path);
 
 public:
-  explicit triangular_scene(const std::filesystem::path &path);
+  explicit triangular_scene(const std::filesystem::path &path, cr::logger *logger);
 
   ~triangular_scene();
 

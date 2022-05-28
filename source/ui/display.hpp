@@ -11,6 +11,7 @@
 #include <ui/input_devices.hpp>
 
 #include <util/image.hpp>
+#include <util/logger.hpp>
 
 #include <GLFW/glfw3.h>
 #include <fmt/format.h>
@@ -25,7 +26,7 @@
 namespace cr {
 class display {
 public:
-  display(size_t width, size_t height);
+  display(size_t width, size_t height, cr::logger *logger);
 
   ~display();
 
@@ -33,7 +34,7 @@ public:
 
   struct render_data {
     cr::atomic_image *frame;
-    std::vector<std::string> *lines;
+    std::vector<std::pair<cr::logger::level, std::string>> *lines;
     cr::component::stats::DisplayContents stats;
   };
   struct user_input : public component::settings::Options {};
@@ -50,6 +51,8 @@ private:
   size_t _width;
   size_t _height;
   GLFWwindow *_window;
+
+  cr::logger *_logger;
 
   struct {
     component::interface<component::preview> preview{};

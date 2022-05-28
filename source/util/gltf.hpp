@@ -12,6 +12,8 @@
 
 #include <tinygltf/tinygltf.h>
 
+#include <util/logger.hpp>
+
 #include <stb/stb_image.h>
 
 #include <optional>
@@ -54,9 +56,10 @@ struct loaded_node {
 };
 [[nodiscard]] loaded_node get_vertices(const tinygltf::Model &model,
                                        const tinygltf::Node &node,
-                                       const glm::mat4 &transform) {
+                                       const glm::mat4 &transform,
+                                       cr::logger *logger) {
   const auto &mesh = model.meshes[node.mesh];
-  fmt::print("loading mesh {}\n", mesh.name);
+  logger->info("Loading mesh {}", mesh.name);
 
   auto joined_vertices = std::vector<glm::vec3>();
   auto joined_normals = std::vector<glm::vec3>();
@@ -73,7 +76,7 @@ struct loaded_node {
 
       if (accessor.componentType != TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT ||
           accessor.type != TINYGLTF_TYPE_SCALAR) {
-        fmt::print("failed to read view {}\n", view.name);
+        logger->error("Failed to read view {}", view.name);
         exit(-1);
       }
 
@@ -97,7 +100,7 @@ struct loaded_node {
     {
       const auto &it = primitive.attributes.find("POSITION");
       if (it == primitive.attributes.end()) {
-        fmt::print("failed to find position in attribute\n");
+        logger->error("Failed to find position attribute");
         exit(-2);
       }
       const auto attribute_idx = it->second;
@@ -107,7 +110,7 @@ struct loaded_node {
 
       if (accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT ||
           accessor.type != TINYGLTF_TYPE_VEC3) {
-        fmt::print("failed to read view {}\n", view.name);
+        logger->error("Failed to read view {}", view.name);
         exit(-1);
       }
 
@@ -128,7 +131,7 @@ struct loaded_node {
     {
       const auto &it = primitive.attributes.find("TEXCOORD_0");
       if (it == primitive.attributes.end()) {
-        fmt::print("failed to find texcoord_0 in attribute\n");
+        logger->error("Failed to find texcoord attribute");
         exit(-2);
       }
       const auto attribute_idx = it->second;
@@ -138,7 +141,7 @@ struct loaded_node {
 
       if (accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT ||
           accessor.type != TINYGLTF_TYPE_VEC2) {
-        fmt::print("failed to read view {}\n", view.name);
+        logger->error("Failed to read view {}", view.name);
         exit(-1);
       }
 
@@ -159,7 +162,7 @@ struct loaded_node {
     {
       const auto &it = primitive.attributes.find("NORMAL");
       if (it == primitive.attributes.end()) {
-        fmt::print("failed to find normal in attribute\n");
+        logger->error("Failed to find normal attribute");
         exit(-2);
       }
       const auto attribute_idx = it->second;
@@ -169,7 +172,7 @@ struct loaded_node {
 
       if (accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT ||
           accessor.type != TINYGLTF_TYPE_VEC3) {
-        fmt::print("failed to read view {}\n", view.name);
+        logger->error("Failed to read view {}", view.name);
         exit(-1);
       }
 
@@ -265,7 +268,7 @@ material_albedo(tinygltf::ParameterMap *additionalValues) {
 
 [[nodiscard]] std::optional<cr::image> material_albedo_texture(
     tinygltf::Material *material, std::span<tinygltf::Texture> textures,
-    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers) {
+    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers, cr::logger *logger) {
 
   if (material->pbrMetallicRoughness.baseColorTexture.index != -1) {
     const auto texture =
@@ -277,7 +280,7 @@ material_albedo(tinygltf::ParameterMap *additionalValues) {
     if (image.mimeType.find("png") != std::string::npos) {
 
       if (image.component != 4) {
-        fmt::print("failed to load png image should have 4 channels\n");
+        logger->error("Base colour texture is not RGBA");
         return std::nullopt;
       }
 
@@ -295,7 +298,7 @@ material_albedo(tinygltf::ParameterMap *additionalValues) {
 
 [[nodiscard]] std::optional<cr::image> material_emissive_texture(
     tinygltf::Material *material, std::span<tinygltf::Texture> textures,
-    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers) {
+    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers, cr::logger *logger) {
 
   if (material->emissiveTexture.index != -1) {
     const auto texture = textures[material->emissiveTexture.index];
@@ -308,7 +311,7 @@ material_albedo(tinygltf::ParameterMap *additionalValues) {
     if (image.mimeType.find("png") != std::string::npos) {
 
       if (image.component != 4) {
-        fmt::print("failed to load png image should have 4 channels\n");
+        logger->error("failed to load png image should have 4 channels");
         return std::nullopt;
       }
 
@@ -346,7 +349,7 @@ material_roughness(tinygltf::Material *material) {
 
 [[nodiscard]] std::optional<cr::image> material_roughness_texture(
     tinygltf::Material *material, std::span<tinygltf::Texture> textures,
-    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers) {
+    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers, cr::logger *logger) {
 
   if (material->pbrMetallicRoughness.metallicRoughnessTexture.index != -1) {
     const auto texture =
@@ -355,7 +358,7 @@ material_roughness(tinygltf::Material *material) {
     // Todo: use sampler somehow...?
     if (image.mimeType.find("png") != std::string::npos) {
       if (image.component != 4) {
-        fmt::print("failed to load png image should have 4 channels\n");
+        logger->error("failed to load png image should have 4 channels\n");
         return std::nullopt;
       }
 
@@ -384,7 +387,7 @@ material_metalness(tinygltf::Material *material) {
 
 [[nodiscard]] std::optional<cr::image> material_metalness_texture(
     tinygltf::Material *material, std::span<tinygltf::Texture> textures,
-    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers) {
+    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers, cr::logger *logger) {
 
   if (material->pbrMetallicRoughness.metallicRoughnessTexture.index != -1) {
     const auto texture =
@@ -393,7 +396,7 @@ material_metalness(tinygltf::Material *material) {
     // Todo: use sampler somehow...?
     if (image.mimeType.find("png") != std::string::npos) {
       if (image.component != 4) {
-        fmt::print("failed to load png image should have 4 channels\n");
+        logger->error("failed to load png image should have 4 channels\n");
         return std::nullopt;
       }
 
@@ -417,66 +420,62 @@ material_metalness(tinygltf::Material *material) {
 
 [[nodiscard]] std::unique_ptr<cr::material> load_material(
     tinygltf::Material *material, std::span<tinygltf::Texture> textures,
-    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers) {
+    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers, cr::logger *logger) {
   // 0.299 ∙ Red + 0.587 ∙ Green + 0.114 ∙ Blue
   auto loaded = std::unique_ptr<cr::material>();
 
   const auto roughness_scaler = material_roughness(material);
   const auto roughness_texture =
-      material_roughness_texture(material, textures, images, samplers);
+      material_roughness_texture(material, textures, images, samplers, logger);
   const auto roughness = [&]() {
     if (roughness_scaler.has_value())
       return cr::sampleable<float>(roughness_scaler.value());
     else if (roughness_texture.has_value())
       return cr::sampleable<float>(roughness_texture.value());
     else {
-      fmt::print("failed to load any roughness data for material {}\n",
-                 material->name);
+      logger->warning("no roughness found for material {}", material->name);
       return cr::sampleable<float>(0.0f);
     }
   }();
 
   const auto metalness_scaler = material_metalness(material);
   const auto metalness_texture =
-      material_metalness_texture(material, textures, images, samplers);
+      material_metalness_texture(material, textures, images, samplers, logger);
   const auto metalness = [&]() {
     if (metalness_scaler.has_value())
       return cr::sampleable<float>(metalness_scaler.value());
     else if (metalness_texture.has_value())
       return cr::sampleable<float>(metalness_texture.value());
     else {
-      fmt::print("failed to load any roughness data for material {}\n",
-                 material->name);
+      logger->warning("no metalness found for material {}", material->name);
       return cr::sampleable<float>(0.0f);
     }
   }();
 
   const auto emission_scalers = material_emission(material->emissiveFactor);
   const auto emissive_texture =
-      material_emissive_texture(material, textures, images, samplers);
+      material_emissive_texture(material, textures, images, samplers, logger);
   const auto emission = [&]() {
     if (emission_scalers.has_value())
       return cr::sampleable<glm::vec3>(emission_scalers.value());
     else if (emissive_texture.has_value())
       return cr::sampleable<glm::vec3>(emissive_texture.value());
     else {
-      fmt::print("failed to load any emission data for material {}\n",
-                 material->name);
+      logger->warning("no emission found for material {}", material->name);
       return cr::sampleable<glm::vec3>(glm::vec3(0.0f));
     }
   }();
 
   const auto base_colour_scalers = material_albedo(&material->additionalValues);
   const auto base_colour_texture =
-      material_albedo_texture(material, textures, images, samplers);
+      material_albedo_texture(material, textures, images, samplers, logger);
   const auto base_colour = [&]() {
     if (base_colour_scalers.has_value())
       return cr::sampleable<glm::vec3>(base_colour_scalers.value());
     else if (base_colour_texture.has_value())
       return cr::sampleable<glm::vec3>(base_colour_texture.value());
     else {
-      fmt::print("failed to load any base colour data for material {}\n",
-                 material->name);
+      logger->warning("no base colour found for material {}", material->name);
       return cr::sampleable<glm::vec3>(glm::vec3(0.0f, 0.0f, 0.0f));
     }
   }();

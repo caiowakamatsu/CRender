@@ -98,10 +98,10 @@ inline void root_node(init_ctx ui_ctx) {
 }
 } // namespace
 
-cr::display::display(size_t width, size_t height)
-    : _width(width), _height(height) {
+cr::display::display(size_t width, size_t height, cr::logger *logger)
+    : _width(width), _height(height), _logger(logger) {
   if (!glfwInit()) {
-    fmt::print("failed to initialize glfw");
+    logger->error("Failed to initialize GLFW");
     exit(-1);
   }
 
@@ -113,7 +113,7 @@ cr::display::display(size_t width, size_t height)
 
   _window = glfwCreateWindow(_width, _height, "CRender", NULL, NULL);
   if (!_window) {
-    fmt::print("failed to create window");
+    logger->error("Failed to create GLFW window");
     exit(-1);
   }
 

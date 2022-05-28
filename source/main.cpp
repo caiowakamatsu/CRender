@@ -22,12 +22,14 @@
 
 #include <cgltf/cgltf.h>
 
-#include <imgui.h>
+#include <util/logger.hpp>
 
 int main() {
+  auto logger = cr::logger();
+
   auto render_target_options = cr::component::render_target::Options();
 
-  auto display = cr::display(1920, 1080);
+  auto display = cr::display(1920, 1080, &logger);
 
   auto configuration = cr::scene_configuration(
       glm::vec3(0, 0, -20), glm::vec3(0, 0, 0), 1024, 1024, 80.2f, render_target_options.ray_depth);
@@ -42,7 +44,7 @@ int main() {
   auto reset_sample_count = std::atomic<bool>(false);
   auto sample_count = uint64_t(0);
   auto triangular_scene =
-      cr::triangular_scene("./assets/models/SM_Deccer_Cubes_Textured.glb");
+      cr::triangular_scene("./assets/models/SM_Deccer_Cubes_Textured.glb", &logger);
   scenes.emplace_back(&triangular_scene);
 
   auto intersect_scenes =
@@ -113,9 +115,11 @@ int main() {
 
     const auto input = [&]() {
       //      std::lock_guard frame_lk(frame_mutex);
+      auto logs = logger.logs();
+
       return display.render({
           .frame = &frame,
-          .lines = &lines,
+          .lines = &logs,
           .stats = {
               .samples_per_second = static_cast<int>(total_sample_count / render_time),
               .total_samples = static_cast<int>(total_sample_count),

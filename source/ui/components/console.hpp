@@ -8,13 +8,15 @@
 #include <string>
 #include <vector>
 
+#include <util/logger.hpp>
+
 namespace cr::component {
 class console {
 public:
   struct Options {};
 
   struct DisplayContents {
-    std::vector<std::string> *lines;
+    std::vector<std::pair<cr::logger::level, std::string>> *lines;
   };
 
   struct Component {
