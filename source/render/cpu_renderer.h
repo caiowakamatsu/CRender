@@ -12,10 +12,10 @@
 #include <thread-pool/thread_pool.hpp>
 
 #include <span>
+#include <atomic>
 
 namespace cr {
 struct render_data {
-  const size_t samples;
   cr::atomic_image *buffer;
   std::function<std::optional<cr::intersection>(const cr::ray &)> intersect;
   const cr::scene_configuration config;
@@ -23,6 +23,9 @@ struct render_data {
 
 class cpu_renderer {
 private:
+  std::atomic<bool> _rendering;
+  std::atomic<size_t> _sample_count;
+  std::thread _render_thread;
   thread_pool _pool;
 
   struct thread_render_data {
@@ -38,10 +41,10 @@ public:
 
   explicit cpu_renderer(int thread_count, component::skybox::Options options);
 
-  void render(const cr::render_data &data,
-              std::span<std::pair<glm::ivec2, glm::ivec2>> tiles);
+  void start(cr::render_data data,
+             std::span<std::pair<glm::ivec2, glm::ivec2>> tiles);
 
-  void wait();
+  void stop();
 };
 } // namespace cr
 

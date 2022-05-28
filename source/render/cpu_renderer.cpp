@@ -108,30 +108,44 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
       if (!(std::isnan(accumulated.x) || std::isnan(accumulated.y) ||
             std::isnan(accumulated.z))) {
         const auto sample = glm::vec3(data.data->buffer->get(x, y)) *
-                            static_cast<float>(data.data->samples);
+                            static_cast<float>(_sample_count.load());
         const auto averaged = glm::vec4(
-            (sample + accumulated) / (data.data->samples + 1.0f), 1.0f);
+            (sample + accumulated) / (_sample_count.load() + 1.0f), 1.0f);
         data.data->buffer->set(x, y, averaged);
       }
     }
   }
 }
 
-void cpu_renderer::render(const cr::render_data &data,
-                          std::span<std::pair<glm::ivec2, glm::ivec2>> tiles) {
-  for (const auto &tile : tiles) {
-    _pool.push_task([&, this]() {
-      _thread_dispatch({
-          .random_seed = static_cast<uint64_t>(rand()),
-          .first = tile.first,
-          .second = tile.second,
-          .data = &data,
-      });
-    });
-  }
-}
-void cpu_renderer::wait() { _pool.wait_for_tasks(); }
-
 cpu_renderer::cpu_renderer(int thread_count, component::skybox::Options options)
-    : _pool(thread_count), sky(options) {}
+    : _pool(thread_count), sky(options), _rendering(false), _sample_count(0) {}
+
+void cpu_renderer::start(render_data data,
+                         std::span<std::pair<glm::ivec2, glm::ivec2>> tiles) {
+  _rendering = true;
+  _sample_count = 0;
+  _render_thread = std::thread([this, tiles, data]() {
+    while (_rendering) {
+      for (const auto &tile : tiles) {
+        _pool.push_task([&, this]() {
+          _thread_dispatch({
+                               .random_seed = static_cast<uint64_t>(rand()),
+                               .first = tile.first,
+                               .second = tile.second,
+                               .data = &data,
+                           });
+        });
+      }
+      _pool.wait_for_tasks();
+      _sample_count += 1;
+    }
+    _pool.wait_for_tasks();
+  });
+
+}
+void cpu_renderer::stop() {
+  _rendering = false;
+  _render_thread.join();
+}
+
 } // namespace cr
