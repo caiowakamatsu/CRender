@@ -13,8 +13,7 @@ namespace cr::component {
 struct asset_loader {
 
   struct Options {
-    std::optional<std::filesystem::path> load;
-    std::string extension;
+    std::filesystem::path load;
   };
   struct DisplayContents {};
   struct Component {

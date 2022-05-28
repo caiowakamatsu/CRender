@@ -45,7 +45,7 @@ cr::component::settings::Component::display(DisplayContents contents) {
 
   if (sub_menu("Asset Loader", sub_settings::asset_loader)) {
     const auto asset_loader_settings = _sub_settings.asset_loader.display({});
-    if (ImGui::Button("Apply")) {
+    if (ImGui::Button("Load")) {
       opts.asset_loader = asset_loader_settings;
     }
   }

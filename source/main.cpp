@@ -35,6 +35,7 @@ int main() {
       glm::vec3(0, 0, -20), glm::vec3(0, 0, 0), 1024, 1024, 80.2f, render_target_options.ray_depth);
   auto settings = cr::display::user_input();
 
+  auto triangular_scenes = std::vector<std::unique_ptr<cr::triangular_scene>>();
   auto scenes = std::vector<cr::scene<cr::triangular_scene>>();
   auto frame = cr::atomic_image(configuration.width(), configuration.height());
   auto frame_mutex = std::mutex();
@@ -43,9 +44,9 @@ int main() {
 
   auto reset_sample_count = std::atomic<bool>(false);
   auto sample_count = uint64_t(0);
-  auto triangular_scene =
-      cr::triangular_scene("./assets/models/SM_Deccer_Cubes_Textured.glb", &logger);
-  scenes.emplace_back(&triangular_scene);
+//  auto triangular_scene =
+//      cr::triangular_scene("./assets/models/SM_Deccer_Cubes_Textured.glb", &logger);
+//  scenes.emplace_back(&triangular_scene);
 
   auto intersect_scenes =
       [&](const cr::ray &ray) -> std::optional<cr::intersection> {
@@ -134,6 +135,7 @@ int main() {
     update_anything |= origin != glm::vec3() || rotation != glm::vec3();
     update_anything |= input.skybox.has_value();
     update_anything |= input.render_target.has_value();
+    update_anything |= input.asset_loader.has_value();
 
     if (update_anything) {
       cpu_renderer.stop();
@@ -161,6 +163,12 @@ int main() {
 
       if (input.skybox.has_value()) {
         cpu_renderer.sky.use_settings(input.skybox.value());
+      }
+
+      if (input.asset_loader.has_value()) {
+        auto scene = std::make_unique<cr::triangular_scene>(input.asset_loader->load, &logger);
+        triangular_scenes.push_back(std::move(scene));
+        scenes.emplace_back(triangular_scenes.back().get());
       }
 
       tasks = configuration.get_tasks(std::thread::hardware_concurrency());
