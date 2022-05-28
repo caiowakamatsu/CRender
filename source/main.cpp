@@ -171,6 +171,11 @@ int main() {
         scenes.emplace_back(triangular_scenes.back().get());
       }
 
+      if (input.image_export.has_value()) {
+        // Export image
+
+      }
+
       tasks = configuration.get_tasks(std::thread::hardware_concurrency());
       cpu_renderer.start(cr::render_data {
               .buffer = &frame,

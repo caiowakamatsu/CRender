@@ -38,7 +38,7 @@ cr::component::settings::Component::display(DisplayContents contents) {
 
   if (sub_menu("Image Export", sub_settings::image_export)) {
     const auto image_export_settings = _sub_settings.image_export.display({});
-    if (ImGui::Button("Apply")) {
+    if (ImGui::Button("Export")) {
       opts.image_export = image_export_settings;
     }
   }
