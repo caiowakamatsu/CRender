@@ -28,6 +28,8 @@ private:
   std::thread _render_thread;
   thread_pool _pool;
 
+  int _target_sample_count;
+
   struct thread_render_data {
     const uint64_t random_seed;
     const glm::ivec2 first;
@@ -39,7 +41,7 @@ private:
 public:
   sky sky;
 
-  explicit cpu_renderer(int thread_count, component::skybox::Options options);
+  explicit cpu_renderer(int thread_count, component::skybox::Options options, int target_sample_count);
 
   void start(cr::render_data data,
              std::span<std::pair<glm::ivec2, glm::ivec2>> tiles);

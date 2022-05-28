@@ -117,8 +117,8 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
   }
 }
 
-cpu_renderer::cpu_renderer(int thread_count, component::skybox::Options options)
-    : _pool(thread_count), sky(options), _rendering(false), _sample_count(0) {}
+cpu_renderer::cpu_renderer(int thread_count, component::skybox::Options options, int target_sample_count)
+    : _pool(thread_count), sky(options), _rendering(false), _sample_count(0), _target_sample_count(target_sample_count) {}
 
 void cpu_renderer::start(render_data data,
                          std::span<std::pair<glm::ivec2, glm::ivec2>> tiles) {
@@ -138,14 +138,19 @@ void cpu_renderer::start(render_data data,
       }
       _pool.wait_for_tasks();
       _sample_count += 1;
+      if (_target_sample_count > 0 && _sample_count >= _target_sample_count) {
+        _rendering = false;
+      }
     }
-    _pool.wait_for_tasks();
   });
 
 }
 void cpu_renderer::stop() {
   _rendering = false;
-  _render_thread.join();
+  // Could have finished and reached the target
+  if (_render_thread.joinable()) {
+    _render_thread.join();
+  }
 }
 
 } // namespace cr

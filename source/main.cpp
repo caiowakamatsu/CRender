@@ -25,10 +25,12 @@
 #include <imgui.h>
 
 int main() {
+  auto render_target_options = cr::component::render_target::Options();
+
   auto display = cr::display(1920, 1080);
 
   auto configuration = cr::scene_configuration(
-      glm::vec3(0, 0, -20), glm::vec3(0, 0, 0), 1024, 1024, 80.2f, 5);
+      glm::vec3(0, 0, -20), glm::vec3(0, 0, 0), 1024, 1024, 80.2f, render_target_options.ray_depth);
   auto settings = cr::display::user_input();
 
   auto scenes = std::vector<cr::scene<cr::triangular_scene>>();
@@ -60,7 +62,7 @@ int main() {
   };
 
   auto cpu_renderer =
-      cr::cpu_renderer(int(std::thread::hardware_concurrency()), {});
+      cr::cpu_renderer(int(std::thread::hardware_concurrency()), {}, render_target_options.samples_per_pixel);
 
   auto tasks = configuration.get_tasks(std::thread::hardware_concurrency());
   cpu_renderer.start(

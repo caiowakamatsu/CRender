@@ -12,7 +12,9 @@ namespace cr::component {
 class render_target {
 public:
   struct Options {
-    glm::ivec2 resolution;
+    glm::ivec2 resolution = {1920, 1080};
+    int ray_depth = 5;
+    int samples_per_pixel = 0;
   };
   struct DisplayContents {};
 
