@@ -25,8 +25,11 @@ class cpu_renderer {
 private:
   std::atomic<bool> _rendering;
   std::atomic<size_t> _sample_count;
+  std::atomic<size_t> _ray_count;
   std::thread _render_thread;
   thread_pool _pool;
+
+  std::chrono::high_resolution_clock::time_point _start_time;
 
   int _target_sample_count;
 
@@ -47,6 +50,12 @@ public:
              std::span<std::pair<glm::ivec2, glm::ivec2>> tiles);
 
   void stop();
+
+  [[nodiscard]] size_t total_samples() const;
+
+  [[nodiscard]] double total_time() const;
+
+  [[nodiscard]] size_t total_rays() const;
 };
 } // namespace cr
 

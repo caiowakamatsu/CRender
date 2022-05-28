@@ -18,6 +18,7 @@
 #include <ui/components/console.hpp>
 #include <ui/components/preview.hpp>
 #include <ui/components/settings.hpp>
+#include <ui/components/stats.hpp>
 
 #include <ui/components/component.hpp>
 
@@ -33,6 +34,7 @@ public:
   struct render_data {
     cr::atomic_image *frame;
     std::vector<std::string> *lines;
+    cr::component::stats::DisplayContents stats;
   };
   struct user_input : public component::settings::Options {};
   [[nodiscard]] user_input render(render_data data);
@@ -53,6 +55,7 @@ private:
     component::interface<component::preview> preview{};
     component::interface<component::console> console{};
     component::interface<component::settings> settings{};
+    component::interface<component::stats> stats{};
   } _components{};
 
   static void _glfw_cursor_position_callback(GLFWwindow *window, double x,

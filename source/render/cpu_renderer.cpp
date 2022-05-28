@@ -49,6 +49,7 @@ namespace cr {
 void cpu_renderer::_thread_dispatch(thread_render_data data) {
   auto random = cr::random(data.random_seed);
 
+  size_t total_rays = 0;
   for (size_t y = data.first.y; y < data.second.y; y++) {
     for (size_t x = data.first.x; x < data.second.x; x++) {
       auto throughput = glm::vec3(1.0f);
@@ -78,6 +79,7 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
         accumulated = sky.at(uv);
         ;
       }
+      total_rays += 1;
 
       if (had_intersection) {
         for (size_t depth = 1; depth < data.data->config.bounces(); depth++) {
@@ -85,6 +87,7 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
           throughput *= current_extension.bxdf * current_extension.cos_theta /
                         current_extension.pdf;
 
+          total_rays += 1;
           if (const auto extension_opt =
                   ::extend_ray(ray, data.data->intersect, &random);
               extension_opt.has_value()) {
@@ -115,25 +118,31 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
       }
     }
   }
+
+  _ray_count += total_rays;
 }
 
-cpu_renderer::cpu_renderer(int thread_count, component::skybox::Options options, int target_sample_count)
-    : _pool(thread_count), sky(options), _rendering(false), _sample_count(0), _target_sample_count(target_sample_count) {}
+cpu_renderer::cpu_renderer(int thread_count, component::skybox::Options options,
+                           int target_sample_count)
+    : _pool(thread_count), sky(options), _rendering(false), _sample_count(0),
+      _ray_count(0), _target_sample_count(target_sample_count) {}
 
 void cpu_renderer::start(render_data data,
                          std::span<std::pair<glm::ivec2, glm::ivec2>> tiles) {
   _rendering = true;
   _sample_count = 0;
+  _start_time = std::chrono::high_resolution_clock::now();
+
   _render_thread = std::thread([this, tiles, data]() {
     while (_rendering) {
       for (const auto &tile : tiles) {
         _pool.push_task([&, this]() {
           _thread_dispatch({
-                               .random_seed = static_cast<uint64_t>(rand()),
-                               .first = tile.first,
-                               .second = tile.second,
-                               .data = &data,
-                           });
+              .random_seed = static_cast<uint64_t>(rand()),
+              .first = tile.first,
+              .second = tile.second,
+              .data = &data,
+          });
         });
       }
       _pool.wait_for_tasks();
@@ -143,7 +152,6 @@ void cpu_renderer::start(render_data data,
       }
     }
   });
-
 }
 void cpu_renderer::stop() {
   _rendering = false;
@@ -151,6 +159,17 @@ void cpu_renderer::stop() {
   if (_render_thread.joinable()) {
     _render_thread.join();
   }
+}
+
+size_t cpu_renderer::total_samples() const { return _sample_count; }
+double cpu_renderer::total_time() const {
+  return std::chrono::duration_cast<std::chrono::duration<double>>(
+             std::chrono::high_resolution_clock::now() - _start_time)
+      .count();
+}
+
+size_t cpu_renderer::total_rays() const {
+  return _ray_count;
 }
 
 } // namespace cr

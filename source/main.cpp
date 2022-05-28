@@ -108,11 +108,21 @@ int main() {
       const auto delta = previous_mouse_pos - mouse_pos;
     }
 
+    const auto total_sample_count = cpu_renderer.total_samples();
+    const auto render_time = cpu_renderer.total_time();
+
     const auto input = [&]() {
       //      std::lock_guard frame_lk(frame_mutex);
       return display.render({
           .frame = &frame,
           .lines = &lines,
+          .stats = {
+              .samples_per_second = static_cast<int>(total_sample_count / render_time),
+              .total_samples = static_cast<int>(total_sample_count),
+              .rays_per_second = static_cast<int>(cpu_renderer.total_rays() / render_time),
+              .total_instances = static_cast<int>(scenes.size()),
+              .total_render_time = render_time
+          }
       });
     }();
 

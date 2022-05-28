@@ -47,7 +47,7 @@ struct init_ctx {
 
 inline void init_dock(const init_ctx &ctx, const std::string &top_left,
                       const std::string &bottom_left,
-                      const std::string &right_panel) {
+                      const std::string &right_panel, const std::string &right_panel_bottom) {
   auto dockspace_id = ImGui::GetID("DockSpace");
   ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ctx.dock_flags);
 
@@ -63,6 +63,9 @@ inline void init_dock(const init_ctx &ctx, const std::string &top_left,
     auto dock_id_right = ImGui::DockBuilderSplitNode(
         dockspace_id, ImGuiDir_Right, 0.2f, nullptr, &dockspace_id);
 
+    auto dock_id_bottom_right = ImGui::DockBuilderSplitNode(
+        dock_id_right, ImGuiDir_Down, 0.22f, nullptr, &dock_id_right); // .22f is a better looking default, trust me...
+
     auto dock_id_down = ImGui::DockBuilderSplitNode(
         dockspace_id, ImGuiDir_Down, 0.2f, nullptr, &dockspace_id);
 
@@ -72,10 +75,13 @@ inline void init_dock(const init_ctx &ctx, const std::string &top_left,
         ImGuiDockNodeFlags_NoTabBar;
     ImGui::DockBuilderGetNode(dockspace_id)->LocalFlags |=
         ImGuiDockNodeFlags_NoTabBar;
+    ImGui::DockBuilderGetNode(dock_id_bottom_right)->LocalFlags |=
+        ImGuiDockNodeFlags_NoTabBar;
 
     ImGui::DockBuilderDockWindow(top_left.c_str(), dockspace_id);
     ImGui::DockBuilderDockWindow(right_panel.c_str(), dock_id_right);
     ImGui::DockBuilderDockWindow(bottom_left.c_str(), dock_id_down);
+    ImGui::DockBuilderDockWindow(right_panel_bottom.c_str(), dock_id_bottom_right);
 
     ImGui::DockBuilderFinish(dockspace_id);
   }
@@ -86,7 +92,7 @@ inline void root_node(init_ctx ui_ctx) {
   ImGui::PopStyleVar(3);
 
   // Set up the dock
-  ::init_dock(ui_ctx, "Preview", "Console", "Settings");
+  ::init_dock(ui_ctx, "Preview", "Console", "Settings", "Stats");
 
   ImGui::End();
 }
@@ -152,6 +158,8 @@ cr::display::user_input cr::display::render(render_data data) {
 
   [[maybe_unused]] const auto console =
       _components.console.display({.lines = data.lines});
+
+  [[maybe_unused]] const auto stats = _components.stats.display(data.stats);
 
   const auto settings = _components.settings.display({});
   input.render_target = settings.render_target;
