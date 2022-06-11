@@ -11,6 +11,7 @@
 #include <ui/components/export.hpp>
 #include <ui/components/render_target.h>
 #include <ui/components/skybox.hpp>
+#include <ui/components/post_processing.hpp>
 
 #include <ui/components/component.hpp>
 
@@ -24,6 +25,7 @@ public:
     std::optional<component::image_export::Options> image_export;
     std::optional<component::asset_loader::Options> asset_loader;
     std::optional<component::skybox::Options> skybox;
+    std::optional<component::post_processing::Options> post_processing;
   };
   struct DisplayContents {};
 
@@ -34,6 +36,7 @@ public:
       image_export,
       asset_loader,
       skybox,
+      post_processing,
     };
 
     struct {
@@ -41,6 +44,7 @@ public:
       component::interface<component::image_export> image_export;
       component::interface<component::asset_loader> asset_loader;
       component::interface<component::skybox> skybox;
+      component::interface<component::post_processing> post_processing;
     } _sub_settings{};
 
     std::optional<sub_settings> _selected;

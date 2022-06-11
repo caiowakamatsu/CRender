@@ -60,9 +60,9 @@ cr::component::preview::Component::display(DisplayContents contents) const {
 
   const auto post_processing = in_post;
   const auto process_pixel =
-      [post_processing]() -> std::function<glm::vec4(glm::vec4)> {
-    if (post_processing) {
-      return [](glm::vec4 pixel) -> glm::vec4 {
+      [post_processing, &contents]() -> std::function<glm::vec4(glm::vec4)> {
+    if (post_processing && contents.gamma_correct) {
+      return [&contents](glm::vec4 pixel) -> glm::vec4 {
         return glm::pow(pixel, glm::vec4(1.0f / 2.2f));
       };
     } else {

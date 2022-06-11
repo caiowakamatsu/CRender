@@ -47,7 +47,8 @@ struct init_ctx {
 
 inline void init_dock(const init_ctx &ctx, const std::string &top_left,
                       const std::string &bottom_left,
-                      const std::string &right_panel, const std::string &right_panel_bottom) {
+                      const std::string &right_panel,
+                      const std::string &right_panel_bottom) {
   auto dockspace_id = ImGui::GetID("DockSpace");
   ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ctx.dock_flags);
 
@@ -64,7 +65,8 @@ inline void init_dock(const init_ctx &ctx, const std::string &top_left,
         dockspace_id, ImGuiDir_Right, 0.2f, nullptr, &dockspace_id);
 
     auto dock_id_bottom_right = ImGui::DockBuilderSplitNode(
-        dock_id_right, ImGuiDir_Down, 0.22f, nullptr, &dock_id_right); // .22f is a better looking default, trust me...
+        dock_id_right, ImGuiDir_Down, 0.22f, nullptr,
+        &dock_id_right); // .22f is a better looking default, trust me...
 
     auto dock_id_down = ImGui::DockBuilderSplitNode(
         dockspace_id, ImGuiDir_Down, 0.2f, nullptr, &dockspace_id);
@@ -81,7 +83,8 @@ inline void init_dock(const init_ctx &ctx, const std::string &top_left,
     ImGui::DockBuilderDockWindow(top_left.c_str(), dockspace_id);
     ImGui::DockBuilderDockWindow(right_panel.c_str(), dock_id_right);
     ImGui::DockBuilderDockWindow(bottom_left.c_str(), dock_id_down);
-    ImGui::DockBuilderDockWindow(right_panel_bottom.c_str(), dock_id_bottom_right);
+    ImGui::DockBuilderDockWindow(right_panel_bottom.c_str(),
+                                 dock_id_bottom_right);
 
     ImGui::DockBuilderFinish(dockspace_id);
   }
@@ -153,8 +156,8 @@ cr::display::user_input cr::display::render(render_data data) {
 
   auto input = user_input();
 
-  [[maybe_unused]] const auto preview =
-      _components.preview.display({.frame = data.frame});
+  [[maybe_unused]] const auto preview = _components.preview.display(
+      {.frame = data.frame, .gamma_correct = data.post_process_preview});
 
   [[maybe_unused]] const auto console =
       _components.console.display({.lines = data.lines});
@@ -166,6 +169,7 @@ cr::display::user_input cr::display::render(render_data data) {
   input.image_export = settings.image_export;
   input.asset_loader = settings.asset_loader;
   input.skybox = settings.skybox;
+  input.post_processing = settings.post_processing;
 
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

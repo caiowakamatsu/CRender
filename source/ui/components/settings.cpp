@@ -57,6 +57,14 @@ cr::component::settings::Component::display(DisplayContents contents) {
     }
   }
 
+  if (sub_menu("Post Processing", sub_settings::post_processing)) {
+    const auto post_processing_settings =
+        _sub_settings.post_processing.display({});
+    if (ImGui::Button("Update")) {
+      opts.post_processing = post_processing_settings;
+    }
+  }
+
   ImGui::End();
   return opts;
 }

@@ -18,8 +18,6 @@ image_export::Component::display(image_export::DisplayContents contents) const {
   ImGui::InputText("Scene Name", file_string.data(), 64);
   options.scene_name = file_string.data();
 
-  ImGui::Checkbox("Gamma Correct", &options.gamma_correct);
-
   return options;
 }
 } // namespace cr::component

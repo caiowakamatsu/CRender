@@ -31,6 +31,8 @@ int main() {
 
   auto render_target_options = cr::component::render_target::Options();
 
+  auto post_processing_options = cr::component::post_processing::Options();
+
   auto display = cr::display(1920, 1080, &logger);
 
   auto configuration =
@@ -134,7 +136,9 @@ int main() {
                      .rays_per_second = static_cast<int>(
                          cpu_renderer.total_rays() / render_time),
                      .total_instances = static_cast<int>(scenes.size()),
-                     .total_render_time = render_time}});
+                     .total_render_time = render_time},
+          .post_process_preview = post_processing_options.gamma_correct}
+          );
     }();
 
     auto update_anything = false;
@@ -143,6 +147,7 @@ int main() {
     update_anything |= input.render_target.has_value();
     update_anything |= input.asset_loader.has_value();
     update_anything |= input.image_export.has_value();
+    update_anything |= input.post_processing.has_value();
 
     if (update_anything) {
       cpu_renderer.stop();
@@ -191,7 +196,7 @@ int main() {
 
         for (auto y = 0; y < height; ++y) {
           for (auto x = 0; x < width; ++x) {
-            const auto gamma = input.image_export->gamma_correct ? 2.2f : 1.0f;
+            const auto gamma = input.post_processing->gamma_correct ? 2.2f : 1.0f;
             const auto base = (x + y * width) * 4;
             const auto write_base = (x + (height - y - 1) * width) * 4;
 
@@ -208,6 +213,10 @@ int main() {
         auto path = fmt::format("./out/{}/render.jpg", input.image_export->scene_name);
         stbi_write_jpg(path.c_str(),
             width, height, 4, char_data.data(), 100);
+      }
+
+      if (input.post_processing.has_value()) {
+        post_processing_options.gamma_correct = input.post_processing.value().gamma_correct;
       }
 
       tasks = configuration.get_tasks(std::thread::hardware_concurrency());

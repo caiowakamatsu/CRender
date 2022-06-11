@@ -15,6 +15,7 @@ public:
   struct Options {};
   struct DisplayContents {
     cr::atomic_image *frame;
+    bool gamma_correct;
   };
 
   struct Component {
