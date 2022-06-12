@@ -13,6 +13,7 @@ post_processing::Component::display(post_processing::DisplayContents contents) c
   static auto options = Options();
 
   ImGui::Checkbox("Gamma Correction", &options.gamma_correct);
+  ImGui::InputFloat("Exposure", &options.exposure);
 
   return options;
 }

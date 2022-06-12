@@ -137,7 +137,7 @@ int main() {
                          cpu_renderer.total_rays() / render_time),
                      .total_instances = static_cast<int>(scenes.size()),
                      .total_render_time = render_time},
-          .post_process_preview = post_processing_options.gamma_correct}
+          .post_processing = post_processing_options}
           );
     }();
 
@@ -216,7 +216,7 @@ int main() {
       }
 
       if (input.post_processing.has_value()) {
-        post_processing_options.gamma_correct = input.post_processing.value().gamma_correct;
+        post_processing_options = input.post_processing.value();
       }
 
       tasks = configuration.get_tasks(std::thread::hardware_concurrency());

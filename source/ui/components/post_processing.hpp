@@ -11,6 +11,7 @@ class post_processing {
 public:
   struct Options {
     bool gamma_correct = true;
+    float exposure = 1.0f;
   };
 
   struct DisplayContents {

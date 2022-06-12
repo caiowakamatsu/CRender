@@ -157,7 +157,7 @@ cr::display::user_input cr::display::render(render_data data) {
   auto input = user_input();
 
   [[maybe_unused]] const auto preview = _components.preview.display(
-      {.frame = data.frame, .gamma_correct = data.post_process_preview});
+      {.frame = data.frame, .post = data.post_processing});
 
   [[maybe_unused]] const auto console =
       _components.console.display({.lines = data.lines});
