@@ -456,10 +456,10 @@ material_metalness(tinygltf::Material *material) {
   const auto emissive_texture =
       material_emissive_texture(material, textures, images, samplers, logger);
   const auto emission = [&]() {
-    if (emission_scalers.has_value())
-      return cr::sampleable<glm::vec3>(emission_scalers.value());
-    else if (emissive_texture.has_value())
+    if (emissive_texture.has_value())
       return cr::sampleable<glm::vec3>(emissive_texture.value());
+    else if (emission_scalers.has_value())
+      return cr::sampleable<glm::vec3>(emission_scalers.value());
     else {
       logger->warning("no emission found for material {}", material->name);
       return cr::sampleable<glm::vec3>(glm::vec3(0.0f));
