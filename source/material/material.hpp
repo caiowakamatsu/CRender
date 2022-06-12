@@ -25,6 +25,7 @@ struct evaluted_ray {
 struct evaluation {
   glm::vec3 bxdf;
   glm::vec3 emission;
+  glm::vec3 albedo;
 };
 
 class material {
@@ -92,7 +93,8 @@ public:
     const auto bxdf = cr::brdf::gltf_brdf(V, L, N, H, base_color,
                                           _roughness.sample(uv.x, uv.y),
                                           _metalness.sample(uv.x, uv.y));
-    return {.bxdf = bxdf, .emission = glm::vec3(emission)};
+    return {
+        .bxdf = bxdf, .emission = glm::vec3(emission), .albedo = base_color};
   }
 
   [[nodiscard]] glm::vec3

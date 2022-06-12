@@ -25,6 +25,7 @@
 #include <cgltf/cgltf.h>
 
 #include <util/logger.hpp>
+#include <util/denoise.hpp>
 
 int main() {
   auto logger = cr::logger();
@@ -43,16 +44,10 @@ int main() {
   auto triangular_scenes = std::vector<std::unique_ptr<cr::triangular_scene>>();
   auto scenes = std::vector<cr::scene<cr::triangular_scene>>();
   auto frame = cr::atomic_image(configuration.width(), configuration.height());
-  auto frame_mutex = std::mutex();
+  auto normal_frame = cr::atomic_image(configuration.width(), configuration.height());
+  auto albedo_frame = cr::atomic_image(configuration.width(), configuration.height());
 
-  auto rendering = std::atomic<bool>(true);
-
-  auto reset_sample_count = std::atomic<bool>(false);
   auto sample_count = uint64_t(0);
-  //  auto triangular_scene =
-  //      cr::triangular_scene("./assets/models/SM_Deccer_Cubes_Textured.glb",
-  //      &logger);
-  //  scenes.emplace_back(&triangular_scene);
 
   auto intersect_scenes =
       [&](const cr::ray &ray) -> std::optional<cr::intersection> {
@@ -78,6 +73,8 @@ int main() {
   cpu_renderer.start(
       cr::render_data{
           .buffer = &frame,
+          .normal_buffer = &normal_frame,
+          .albedo_buffer = &albedo_frame,
           .intersect = intersect_scenes,
           .config = configuration,
       },
@@ -124,7 +121,6 @@ int main() {
     const auto render_time = cpu_renderer.total_time();
 
     const auto input = [&]() {
-      //      std::lock_guard frame_lk(frame_mutex);
       auto logs = logger.logs();
 
       return display.render(
@@ -137,8 +133,7 @@ int main() {
                          cpu_renderer.total_rays() / render_time),
                      .total_instances = static_cast<int>(scenes.size()),
                      .total_render_time = render_time},
-          .post_processing = post_processing_options}
-          );
+           .post_processing = post_processing_options});
     }();
 
     auto update_anything = false;
@@ -166,6 +161,8 @@ int main() {
       if (new_width != configuration.width() ||
           new_height != configuration.height()) {
         frame = cr::atomic_image(new_width, new_height);
+        normal_frame = cr::atomic_image(new_width, new_height);
+        albedo_frame = cr::atomic_image(new_width, new_height);
       }
 
       configuration = cr::scene_configuration(
@@ -184,45 +181,63 @@ int main() {
         scenes.emplace_back(triangular_scenes.back().get());
       }
 
+      if (input.post_processing.has_value()) {
+        post_processing_options = input.post_processing.value();
+      }
+
       if (input.image_export.has_value()) {
         // Export image
         std::filesystem::create_directories("./out/" +
                                             input.image_export->scene_name);
 
-        const auto data = frame.data();
+
+        auto data = frame.view().data;
         const auto width = frame.width();
         const auto height = frame.height();
         auto char_data = std::vector<uint8_t>(width * height * 4);
 
+        if (post_processing_options.denoise) {
+          auto framebuffer_view = frame.view();
+          auto normal_view = normal_frame.view();
+          auto albedo_view = albedo_frame.view();
+          data = cr::denoise(&framebuffer_view, &normal_view, &albedo_view);
+        }
+
         for (auto y = 0; y < height; ++y) {
           for (auto x = 0; x < width; ++x) {
-            const auto gamma = input.post_processing->gamma_correct ? 2.2f : 1.0f;
-            const auto base = (x + y * width) * 4;
+            const auto base = (x + y * width) * 3;
             const auto write_base = (x + (height - y - 1) * width) * 4;
 
-            char_data[write_base + 0] = glm::clamp(
-                glm::pow(data[base + 0], 1.0f / gamma) * 255.0f, 0.0f, 255.0f);
-            char_data[write_base + 1] = glm::clamp(
-                glm::pow(data[base + 1], 1.0f / gamma) * 255.0f, 0.0f, 255.0f);
-            char_data[write_base + 2] = glm::clamp(
-                glm::pow(data[base + 2], 1.0f / gamma) * 255.0f, 0.0f, 255.0f);
+            const auto pixel =
+                glm::vec3(data[base + 0], data[base + 1], data[base + 2]);
+
+            auto post_processed = pixel * post_processing_options.exposure;
+
+            if (post_processing_options.gamma_correct) {
+              post_processed = glm::pow(post_processed, glm::vec3(1.0f / 2.2f));
+            }
+
+            char_data[write_base + 0] = static_cast<uint8_t>(
+                glm::clamp(post_processed.x * 255.0f, 0.0f, 255.0f));
+            char_data[write_base + 1] = static_cast<uint8_t>(
+                glm::clamp(post_processed.y * 255.0f, 0.0f, 255.0f));
+            char_data[write_base + 2] = static_cast<uint8_t>(
+                glm::clamp(post_processed.z * 255.0f, 0.0f, 255.0f));
             char_data[write_base + 3] = 255;
           }
         }
 
-        auto path = fmt::format("./out/{}/render.jpg", input.image_export->scene_name);
-        stbi_write_jpg(path.c_str(),
-            width, height, 4, char_data.data(), 100);
-      }
-
-      if (input.post_processing.has_value()) {
-        post_processing_options = input.post_processing.value();
+        auto path =
+            fmt::format("./out/{}/render.jpg", input.image_export->scene_name);
+        stbi_write_jpg(path.c_str(), width, height, 4, char_data.data(), 100);
       }
 
       tasks = configuration.get_tasks(std::thread::hardware_concurrency());
       cpu_renderer.start(
           cr::render_data{
               .buffer = &frame,
+              .normal_buffer = &normal_frame,
+              .albedo_buffer = &albedo_frame,
               .intersect = intersect_scenes,
               .config = configuration,
           },
@@ -232,7 +247,4 @@ int main() {
   // Todo: handle exiting if we're sampling properly (signal the threads to die)
 
   cpu_renderer.stop();
-
-  rendering = false;
-  //  render_thread.join();
 }

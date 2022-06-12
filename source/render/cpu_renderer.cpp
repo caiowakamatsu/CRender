@@ -11,6 +11,8 @@ struct ray_extension {
   float pdf;
   glm::vec3 bxdf;
   glm::vec3 emission;
+  glm::vec3 normal;
+  glm::vec3 albedo;
   cr::ray next_ray;
 };
 [[nodiscard]] std::optional<ray_extension> extend_ray(
@@ -29,14 +31,16 @@ struct ray_extension {
         material->evalute(ray.direction, ray_evaluation.ray.direction,
                           isect.normal, isect.texcoord);
     const auto cos_theta = glm::dot(-ray.direction, isect.normal);
-
     return ray_extension{
         .cos_theta = cos_theta,
         .pdf = ray_evaluation.pdf,
         .bxdf = evaluated.bxdf,
         .emission = evaluated.emission,
+        .normal = isect.normal,
+        .albedo = evaluated.albedo,
         .next_ray = ray_evaluation.ray,
     };
+
   } else {
     return std::nullopt;
   }
@@ -55,6 +59,9 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
       auto throughput = glm::vec3(1.0f);
       auto accumulated = glm::vec3(0.0f);
 
+      auto normal = glm::vec3(1.0f);
+      auto albedo = glm::vec3(0.0f);
+
       auto ray = data.data->config.ray(x, y, random);
 
       auto current_extension = ::ray_extension();
@@ -70,6 +77,9 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
         accumulated += current_extension.emission;
 
         had_intersection = true;
+
+        normal = current_extension.normal;
+        albedo = current_extension.albedo;
       } else {
         const auto uv =
             glm::vec2(0.5f + std::atan2f(ray.direction.z, ray.direction.x) /
@@ -77,6 +87,7 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
                       0.5f - std::asin(ray.direction.y) / glm::pi<float>());
 
         accumulated = sky.at(uv);
+        albedo = sky.at(uv);
         ;
       }
       total_rays += 1;
@@ -105,6 +116,11 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
             break;
           }
         }
+      }
+
+      if (_sample_count == 0) {
+        data.data->normal_buffer->set(x, y, normal);
+        data.data->albedo_buffer->set(x, y, albedo);
       }
 
       // Who needs safe math, we have isnan!
@@ -168,8 +184,6 @@ double cpu_renderer::total_time() const {
       .count();
 }
 
-size_t cpu_renderer::total_rays() const {
-  return _ray_count;
-}
+size_t cpu_renderer::total_rays() const { return _ray_count; }
 
 } // namespace cr

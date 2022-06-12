@@ -8,7 +8,9 @@ project(crebon)
 
 add_subdirectory(external)
 
-find_package(embree 3.12.1 REQUIRED)
+find_package(embree 3.12.1)
+
+find_package(OpenImageDenoise 1.4.3 REQUIRED)
 
 ##########
 # TARGET #
@@ -35,8 +37,8 @@ add_executable(crebon
 
 #############
 # LIBRARIES #
-#############
-target_link_libraries(crebon PRIVATE glm fmt embree glfw)
+#############aarch64
+target_link_libraries(crebon PRIVATE glm fmt embree glfw OpenImageDenoise)
 
 target_include_directories(crebon PRIVATE source external external/imgui)
 # The external/imgui is a workaround to get imgui to compile

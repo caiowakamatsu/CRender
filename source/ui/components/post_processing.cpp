@@ -14,6 +14,7 @@ post_processing::Component::display(post_processing::DisplayContents contents) c
 
   ImGui::Checkbox("Gamma Correction", &options.gamma_correct);
   ImGui::InputFloat("Exposure", &options.exposure);
+  ImGui::Checkbox("Denoise", &options.denoise);
 
   return options;
 }

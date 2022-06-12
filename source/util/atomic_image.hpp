@@ -43,6 +43,14 @@ void store_float_as_uint32_atomic(uint32_t &val, float f) {
 } // namespace
 
 namespace cr {
+
+struct image_view
+{
+  size_t width;
+  size_t height;
+  std::vector<float> data;
+};
+
 class atomic_image {
 private:
   static constexpr auto ValType_Max = std::numeric_limits<float>::max();
@@ -124,6 +132,22 @@ public:
     ::store_float_as_uint32_atomic(_image_data[base_index + 1], colour.g);
     ::store_float_as_uint32_atomic(_image_data[base_index + 2], colour.b);
     ::store_float_as_uint32_atomic(_image_data[base_index + 3], colour.a);
+  }
+
+  [[nodiscard]] cr::image_view view() noexcept {
+    auto as_3 = std::vector<float>();
+    const auto data = this->data();
+    as_3.reserve(width() + height() * 3);
+    for (size_t i = 0; i < data.size(); i += 4) {
+      as_3.push_back(data[i + 0]);
+      as_3.push_back(data[i + 1]);
+      as_3.push_back(data[i + 2]);
+    }
+    return {
+        .width = _width,
+        .height = _height,
+        .data = as_3
+    };
   }
 
 private:

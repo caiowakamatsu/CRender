@@ -12,6 +12,7 @@ public:
   struct Options {
     bool gamma_correct = true;
     float exposure = 1.0f;
+    bool denoise = false;
   };
 
   struct DisplayContents {
