@@ -16,6 +16,7 @@
 
 #include <stb/stb_image.h>
 
+#include <bit>
 #include <optional>
 #include <span>
 
@@ -67,32 +68,59 @@ struct loaded_node {
   auto joined_indices = std::vector<uint32_t>();
   auto joined_materials = std::vector<uint32_t>();
 
+  const auto read_view = [](auto identity, const tinygltf::BufferView &view,
+                            const tinygltf::Accessor &accessor,
+                            tinygltf::Buffer const *const buffer) {
+    using T = decltype(identity);
+    auto values = std::vector<T>(accessor.count);
+
+    const auto stride = view.byteStride == 0 ? sizeof(T) : view.byteStride;
+    for (size_t i = 0; i < accessor.count; i++) {
+      const auto offset = stride * i;
+      auto value = T();
+      std::memcpy(&value, buffer->data.data() + view.byteOffset + offset,
+                  sizeof(T));
+      values[i] = value;
+    }
+
+    return values;
+  };
+
   for (const auto &primitive : mesh.primitives) {
-    auto indices = std::vector<uint16_t>();
+    auto indices = std::vector<uint32_t>();
     {
       const auto &accessor = model.accessors[primitive.indices];
       const auto &view = model.bufferViews[accessor.bufferView];
       const auto &buffer = model.buffers[view.buffer];
 
-      if (accessor.componentType != TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT ||
+      if ((!(accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE ||
+          accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT ||
+          accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)) ||
           accessor.type != TINYGLTF_TYPE_SCALAR) {
-        logger->error("Failed to read view {}", view.name);
+        logger->error("Failed to read view {}, comp type {}, type {}",
+                      view.name, accessor.componentType, accessor.type);
         exit(-1);
       }
 
-      indices.resize(view.byteLength / sizeof(uint16_t));
-      const auto stride = view.byteStride == 0
-                              ? sizeof(uint16_t)
-                              : view.byteStride; // Is this correct?
-
-      // Todo: add optimised path if the stride is 0, so we can do 1 memcpy
-      for (size_t i = 0; i < accessor.count; i++) {
-        const auto offset = stride * i;
-
-        auto number = uint16_t();
-        std::memcpy(&number, buffer.data.data() + view.byteOffset + offset,
-                    sizeof(uint16_t));
-        indices[i] = number;
+      switch (accessor.componentType) {
+      case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE: {
+        const auto read = read_view(uint8_t(), view, accessor, &buffer);
+        indices.resize(read.size());
+        std::copy(read.begin(), read.end(), indices.begin());
+        break;
+      }
+      case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: {
+        const auto read = read_view(uint16_t(), view, accessor, &buffer);
+        indices.resize(read.size());
+        std::copy(read.begin(), read.end(), indices.begin());
+        break;
+      }
+      case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT: {
+        const auto read = read_view(uint32_t(), view, accessor, &buffer);
+        indices.resize(read.size());
+        std::copy(read.begin(), read.end(), indices.begin());
+        break;
+      }
       }
     }
 
@@ -110,7 +138,8 @@ struct loaded_node {
 
       if (accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT ||
           accessor.type != TINYGLTF_TYPE_VEC3) {
-        logger->error("Failed to read view {}", view.name);
+        logger->error("Failed to read view {}, comp type {}, type {}",
+                      view.name, accessor.componentType, accessor.type);
         exit(-1);
       }
 
@@ -268,7 +297,8 @@ material_albedo(tinygltf::ParameterMap *additionalValues) {
 
 [[nodiscard]] std::optional<cr::image> material_albedo_texture(
     tinygltf::Material *material, std::span<tinygltf::Texture> textures,
-    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers, cr::logger *logger) {
+    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers,
+    cr::logger *logger) {
 
   if (material->pbrMetallicRoughness.baseColorTexture.index != -1) {
     const auto texture =
@@ -298,14 +328,15 @@ material_albedo(tinygltf::ParameterMap *additionalValues) {
 
 [[nodiscard]] std::optional<cr::image> material_emissive_texture(
     tinygltf::Material *material, std::span<tinygltf::Texture> textures,
-    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers, cr::logger *logger) {
+    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers,
+    cr::logger *logger) {
 
   if (material->emissiveTexture.index != -1) {
     const auto texture = textures[material->emissiveTexture.index];
     const auto image = images[texture.source];
     // Todo: use sampler somehow...?
     //			[[maybe_unused]] const auto sampler =
-    //samplers[texture.sampler];
+    // samplers[texture.sampler];
 
     // Check if PNG
     if (image.mimeType.find("png") != std::string::npos) {
@@ -349,7 +380,8 @@ material_roughness(tinygltf::Material *material) {
 
 [[nodiscard]] std::optional<cr::image> material_roughness_texture(
     tinygltf::Material *material, std::span<tinygltf::Texture> textures,
-    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers, cr::logger *logger) {
+    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers,
+    cr::logger *logger) {
 
   if (material->pbrMetallicRoughness.metallicRoughnessTexture.index != -1) {
     const auto texture =
@@ -387,7 +419,8 @@ material_metalness(tinygltf::Material *material) {
 
 [[nodiscard]] std::optional<cr::image> material_metalness_texture(
     tinygltf::Material *material, std::span<tinygltf::Texture> textures,
-    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers, cr::logger *logger) {
+    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers,
+    cr::logger *logger) {
 
   if (material->pbrMetallicRoughness.metallicRoughnessTexture.index != -1) {
     const auto texture =
@@ -418,9 +451,11 @@ material_metalness(tinygltf::Material *material) {
   return material_type_e::diffuse;
 }
 
-[[nodiscard]] std::unique_ptr<cr::material> load_material(
-    tinygltf::Material *material, std::span<tinygltf::Texture> textures,
-    std::span<tinygltf::Image> images, std::span<tinygltf::Sampler> samplers, cr::logger *logger) {
+[[nodiscard]] std::unique_ptr<cr::material>
+load_material(tinygltf::Material *material,
+              std::span<tinygltf::Texture> textures,
+              std::span<tinygltf::Image> images,
+              std::span<tinygltf::Sampler> samplers, cr::logger *logger) {
   // 0.299 ∙ Red + 0.587 ∙ Green + 0.114 ∙ Blue
   auto loaded = std::unique_ptr<cr::material>();
 
