@@ -87,7 +87,7 @@ public:
     const auto H = glm::normalize(V + L); // Half vector
 
     const auto base_color = _base_colour.sample(uv.x, uv.y);
-    const auto emission = glm::vec3(0.0f);
+    const auto emission = _emissiveness.sample(uv.x, uv.y);
 
     const auto bxdf = cr::brdf::gltf_brdf(V, L, N, H, base_color,
                                           _roughness.sample(uv.x, uv.y),

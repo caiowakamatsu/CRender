@@ -286,7 +286,7 @@ material_albedo(tinygltf::ParameterMap *additionalValues) {
 
       auto as_floats = std::vector<float>(image.width * image.height * 4);
       for (size_t i = 0; i < image.image.size(); i++) {
-        as_floats[i] = image.image[i] / 255.0f;
+        as_floats[i] = std::pow(image.image[i] / 255.0f, 11.0f / 5.0f);
       }
 
       return cr::image(as_floats, image.width, image.height);
@@ -366,7 +366,7 @@ material_roughness(tinygltf::Material *material) {
       for (size_t i = 0; i < image.image.size(); i++) {
         const auto channel = i % 4;
         const auto pixel_roughness = image.image[((i / 4) * 4) + 1];
-        as_floats[i] = pixel_roughness;
+        as_floats[i] = pixel_roughness / 255.0f;
       }
 
       return cr::image(as_floats, image.width, image.height);
@@ -404,7 +404,7 @@ material_metalness(tinygltf::Material *material) {
       for (size_t i = 0; i < image.image.size(); i++) {
         const auto channel = i % 4;
         const auto pixel_roughness = image.image[((i / 4) * 4) + 2];
-        as_floats[i] = pixel_roughness;
+        as_floats[i] = pixel_roughness / 255.0f;
       }
 
       return cr::image(as_floats, image.width, image.height);
