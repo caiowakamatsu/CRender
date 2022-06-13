@@ -73,12 +73,31 @@ float cr::brdf::visibility(const glm::vec3 &H, const glm::vec3 &V,
 
 float cr::brdf::diffuse_brdf() { return glm::one_over_pi<float>(); }
 
-float cr::brdf::conductor_fresnal(float f0, float bsdf, float V_H) {
-  return bsdf * (f0 + (1.0f - f0) * std::pow(1.0f - glm::abs(V_H), 5.0f));
+float cr::brdf::conductor_fresnal(float f0, float V_H) {
+  return (f0 + (1.0f - f0) * std::pow(1.0f - glm::abs(V_H), 5.0f));
 }
 
 float cr::brdf::fresnal_mix(float ior, float base, float layer, float V_H) {
   const auto f0 = ((1.0f - ior) / (1.0f + ior)) * ((1.0f - ior) / (1.0f + ior));
   const auto fr = f0 + (1.0f - f0) * std::pow(1.0f - glm::abs(V_H), 5.0f);
   return glm::mix(base, layer, fr);
+}
+
+bool cr::brdf::should_reflect(const glm::vec3 &incoming,
+                              const glm::vec3 &normal) {
+  return false;
+}
+
+cr::brdf::glass_evaluation cr::brdf::glass_brdf(const glm::vec3 &V, const glm::vec3 &L,
+                               const glm::vec3 &N, const glm::vec3 &H,
+                               const glm::vec3 &base_colour,
+                               const float &roughness,
+                               const float &metalness,
+                               float ior) noexcept {
+  const auto f = conductor_fresnal(ior, glm::dot(V, H));
+
+  return {
+      .reflect = f > 0.5f,
+      .bxdf = base_colour,
+  };
 }

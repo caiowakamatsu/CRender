@@ -94,8 +94,8 @@ struct loaded_node {
       const auto &buffer = model.buffers[view.buffer];
 
       if ((!(accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE ||
-          accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT ||
-          accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)) ||
+             accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT ||
+             accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)) ||
           accessor.type != TINYGLTF_TYPE_SCALAR) {
         logger->error("Failed to read view {}, comp type {}, type {}",
                       view.name, accessor.componentType, accessor.type);
@@ -515,8 +515,17 @@ load_material(tinygltf::Material *material,
     }
   }();
 
-  loaded = std::make_unique<cr::gltf_material>(roughness, metalness, emission,
-                                               base_colour);
+  auto lowcase = material->name;
+  for (auto &letter : lowcase)
+    letter = std::tolower(letter);
+
+  if (lowcase.find("glass") == std::string::npos) {
+    loaded = std::make_unique<cr::gltf_material>(roughness, metalness, emission,
+                                                 base_colour);
+  } else {
+    loaded = std::make_unique<cr::glass_material>(roughness, metalness,
+                                                  emission, base_colour);
+  }
 
   return loaded;
 }
