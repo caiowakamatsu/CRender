@@ -76,6 +76,22 @@ Todo: Better getting started guide
 
 To get CRender running locally, head to releases and download the latest release.
 
+### Linux/Unix
+Get intel embree, oneapi, and Threaded Building blocks.
+Install gcc & g++ (or whatever compiler you want), whatever C library you use is (libc6-dev on Debian & Ubuntu), make, and cmake.
+
+On linux you can just install `build-essential` on Debian & Ubuntu derivatives, `base-devel` for Arch & derivatives.
+If you are on Debian/Ubuntu derivatives you also need to install `libxi-dev build-essential xorg libglfw3 libglfw3-dev libxinerama-dev libxcursor-dev`. For Arch & derivatives you need to install their equivilents.
+
+Then 
+1) Clone this repository with `git clone https://github.com/LegendWasTaken/CRender.git`
+2) If you're compiling from the command line
+    1) `cd CRender` (Or what the directory is called)
+    2) `source /opt/intel/oneapi/setvars.sh` to set the variables from embree, intel TBB, and such.
+    3) `cmake .` To configure the build
+    4) `cmake --build .` to actually compile it
+    4) `./crebon` You should find your executable in the folder you ran these commands in
+3) If you're using an IDE with cmake integration, just build the project as you normally would.
 ## Usage
 
 Todo: Better usage guide

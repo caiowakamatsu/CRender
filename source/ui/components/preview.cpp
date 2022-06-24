@@ -14,6 +14,17 @@ cr::component::preview::Options
 cr::component::preview::Component::display(DisplayContents contents) const {
   ImGui::Begin("Preview");
 
+  static auto in_post = false;
+
+  ImGui::BeginTabBar("display_preview_tab");
+  if (ImGui::TabItemButton("Raw Output")) {
+    in_post = false;
+  }
+  if (ImGui::TabItemButton("Post Processed")) {
+    in_post = true;
+  }
+  ImGui::EndTabBar();
+
   static auto texture = GLuint();
   static auto first = true;
 
@@ -47,13 +58,30 @@ cr::component::preview::Component::display(DisplayContents contents) const {
   const auto start = (win_size - theoretical_size) * 0.5f;
   const auto end = start + theoretical_size;
 
+  const auto post_processing = in_post;
+  const auto process_pixel =
+      [post_processing, &contents]() -> std::function<glm::vec4(glm::vec4)> {
+    if (post_processing) {
+      return [&contents](glm::vec4 pixel) -> glm::vec4 {
+        const auto exposed = pixel * contents.post.exposure;
+
+        if (contents.post.gamma_correct)
+          return glm::pow(exposed, glm::vec4(1.0f / 2.2f));
+        else
+          return exposed;
+      };
+    } else {
+      return [](glm::vec4 pixel) -> glm::vec4 { return pixel; };
+    }
+  }();
+
   auto data = std::vector<glm::vec3>(window_size.x * window_size.y);
   {
     for (size_t y = start.y; y < end.y; y++) {
       for (size_t x = start.x; x < end.x; x++) {
-        data[x + y * window_size.x] =
-            contents.frame->get_uv((x - start.x) / theoretical_size.x,
-                                   1.0f - ((y - start.y) / theoretical_size.y));
+        data[x + y * window_size.x] = process_pixel(contents.frame->get_uv(
+            (x - start.x) / theoretical_size.x,
+            1.0f - ((y - start.y) / theoretical_size.y)));
       }
     }
   }

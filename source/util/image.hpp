@@ -17,6 +17,7 @@
 #include <util/atomic_image.hpp>
 
 namespace cr {
+
 class image {
 private:
   static constexpr auto ValType_Max = std::numeric_limits<float>::max();
@@ -122,6 +123,14 @@ public:
     _image_data[base_index + 1] = colour.g;
     _image_data[base_index + 2] = colour.b;
     _image_data[base_index + 3] = colour.a;
+  }
+
+  [[nodiscard]] image_view view() noexcept {
+    return {
+      .width = _width,
+      .height = _height,
+      .data = as_float3_buffer()
+    };
   }
 
 private:

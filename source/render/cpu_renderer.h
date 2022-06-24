@@ -17,6 +17,8 @@
 namespace cr {
 struct render_data {
   cr::atomic_image *buffer;
+  cr::atomic_image *normal_buffer;
+  cr::atomic_image *albedo_buffer;
   std::function<std::optional<cr::intersection>(const cr::ray &)> intersect;
   const cr::scene_configuration config;
 };
@@ -42,7 +44,7 @@ private:
   void _thread_dispatch(thread_render_data data);
 
 public:
-  sky sky;
+  sky skybox;
 
   explicit cpu_renderer(int thread_count, component::skybox::Options options, int target_sample_count);
 

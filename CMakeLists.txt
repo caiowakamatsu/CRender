@@ -8,7 +8,9 @@ project(crebon)
 
 add_subdirectory(external)
 
-find_package(embree 3.12.1 REQUIRED)
+find_package(embree 3.12.1)
+
+find_package(OpenImageDenoise 1.4.3 REQUIRED)
 
 ##########
 # TARGET #
@@ -31,12 +33,12 @@ add_executable(crebon
         source/ui/components/settings.cpp
         source/ui/input_devices.cpp
         source/material/brdf.cpp
-        source/render/cpu_renderer.cpp source/ui/components/render_target.cpp source/ui/components/render_target.h source/ui/components/export.cpp source/ui/components/export.hpp source/ui/components/asset_loader.cpp source/ui/components/asset_loader.hpp source/render/sky.cpp source/render/sky.hpp source/ui/components/skybox.cpp source/ui/components/skybox.hpp source/ui/components/stats.cpp source/ui/components/stats.hpp source/util/logger.hpp)
+        source/render/cpu_renderer.cpp source/ui/components/render_target.cpp source/ui/components/render_target.h source/ui/components/export.cpp source/ui/components/export.hpp source/ui/components/asset_loader.cpp source/ui/components/asset_loader.hpp source/render/sky.cpp source/render/sky.hpp source/ui/components/skybox.cpp source/ui/components/skybox.hpp source/ui/components/stats.cpp source/ui/components/stats.hpp source/util/logger.hpp source/ui/components/post_processing.cpp)
 
 #############
 # LIBRARIES #
-#############
-target_link_libraries(crebon PRIVATE glm fmt embree glfw)
+#############aarch64
+target_link_libraries(crebon PRIVATE glm fmt embree glfw OpenImageDenoise)
 
 target_include_directories(crebon PRIVATE source external external/imgui)
 # The external/imgui is a workaround to get imgui to compile

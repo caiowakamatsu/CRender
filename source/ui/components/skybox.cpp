@@ -42,7 +42,7 @@ skybox::Component::display(skybox::DisplayContents contents) const {
   }
   // translate sun_dir from a direction to cartesian coordinates
   const auto uv = glm::vec2(
-      0.5f + std::atan2f(dir.z, dir.x) / (2.0f * std::numbers::pi_v<float>),
+      0.5f + std::atan2(dir.z, dir.x) / (2.0f * std::numbers::pi_v<float>),
       0.5f - std::asin(dir.y) / std::numbers::pi_v<float>);
   options.sun_pos = uv;
 

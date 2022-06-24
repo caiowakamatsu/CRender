@@ -15,7 +15,6 @@ class image_export {
 public:
   struct Options {
     std::string scene_name = std::string(512, '\0');
-    bool gamma_correct = true;
   };
   struct DisplayContents {
     cr::atomic_image *image;

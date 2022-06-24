@@ -6,6 +6,7 @@
 #define CREBON_PREVIEW_HPP
 
 #include <util/image.hpp>
+#include <ui/components/post_processing.hpp> // ideally this shouldn't exist but...
 
 #include <mutex>
 
@@ -14,7 +15,8 @@ struct preview {
 public:
   struct Options {};
   struct DisplayContents {
-    cr::atomic_image *frame;
+    cr::atomic_image *frame {};
+    cr::component::post_processing::Options post;
   };
 
   struct Component {

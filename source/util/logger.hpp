@@ -25,16 +25,19 @@ private:
 
 public:
   void info(std::string_view fmt, auto &&... args) {
+    fmt::print(std::string(fmt) + "\n", std::forward<decltype(args)>(args)...);
     auto lock = std::lock_guard(_mutex);
     _logs.emplace_back(level::info, fmt::format(fmt, std::forward<decltype(args)>(args)...));
   }
 
   void warning(std::string_view fmt, auto &&... args) {
+    fmt::print(std::string(fmt) + "\n", std::forward<decltype(args)>(args)...);
     auto lock = std::lock_guard(_mutex);
     _logs.emplace_back(level::warning, fmt::format(fmt, std::forward<decltype(args)>(args)...));
   }
 
   void error(std::string_view fmt, auto &&... args) {
+    fmt::print(std::string(fmt) + "\n", std::forward<decltype(args)>(args)...);
     auto lock = std::lock_guard(_mutex);
     _logs.emplace_back(level::error, fmt::format(fmt, std::forward<decltype(args)>(args)...));
   }

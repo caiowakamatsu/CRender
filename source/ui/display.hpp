@@ -36,6 +36,7 @@ public:
     cr::atomic_image *frame;
     std::vector<std::pair<cr::logger::level, std::string>> *lines;
     cr::component::stats::DisplayContents stats;
+    cr::component::post_processing::Options post_processing;
   };
   struct user_input : public component::settings::Options {};
   [[nodiscard]] user_input render(render_data data);

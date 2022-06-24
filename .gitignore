@@ -1,3 +1,11 @@
 /cmake-*/
 imgui.ini
 out/*
+_deps/*
+CMakeFiles/*
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+crebon
+external/CMakeFiles/CMakeDirectoryInformation.cmake
+external/CMakeFiles/progress.marks
