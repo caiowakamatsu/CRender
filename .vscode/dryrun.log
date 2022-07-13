@@ -4,21 +4,6 @@ make: Entering directory '/media/yohello/hrm2/code-stuff/CRender'
 /usr/local/bin/cmake -E cmake_progress_start /media/yohello/hrm2/code-stuff/CRender/CMakeFiles /media/yohello/hrm2/code-stuff/CRender//CMakeFiles/progress.marks
 make -s -f CMakeFiles/Makefile2 all
 make[1]: Entering directory '/media/yohello/hrm2/code-stuff/CRender'
-make -s -f _deps/fmt-build/CMakeFiles/fmt.dir/build.make _deps/fmt-build/CMakeFiles/fmt.dir/depend
-make[2]: Entering directory '/media/yohello/hrm2/code-stuff/CRender'
-cd /media/yohello/hrm2/code-stuff/CRender && /usr/local/bin/cmake -E cmake_depends "Unix Makefiles" /media/yohello/hrm2/code-stuff/CRender /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-src /media/yohello/hrm2/code-stuff/CRender /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-build /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-build/CMakeFiles/fmt.dir/DependInfo.cmake --color=
-make[2]: Leaving directory '/media/yohello/hrm2/code-stuff/CRender'
-make -s -f _deps/fmt-build/CMakeFiles/fmt.dir/build.make _deps/fmt-build/CMakeFiles/fmt.dir/build
-make[2]: Entering directory '/media/yohello/hrm2/code-stuff/CRender'
-/usr/local/bin/cmake -E cmake_echo_color --switch= --green --progress-dir=/media/yohello/hrm2/code-stuff/CRender/CMakeFiles --progress-num=26 "Building CXX object _deps/fmt-build/CMakeFiles/fmt.dir/src/format.cc.o"
-cd /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-build && /usr/bin/c++  -I/media/yohello/hrm2/code-stuff/CRender/_deps/fmt-src/include -std=gnu++2a -MD -MT _deps/fmt-build/CMakeFiles/fmt.dir/src/format.cc.o -MF CMakeFiles/fmt.dir/src/format.cc.o.d -o CMakeFiles/fmt.dir/src/format.cc.o -c /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-src/src/format.cc
-/usr/local/bin/cmake -E cmake_echo_color --switch= --green --progress-dir=/media/yohello/hrm2/code-stuff/CRender/CMakeFiles --progress-num=27 "Building CXX object _deps/fmt-build/CMakeFiles/fmt.dir/src/os.cc.o"
-cd /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-build && /usr/bin/c++  -I/media/yohello/hrm2/code-stuff/CRender/_deps/fmt-src/include -std=gnu++2a -MD -MT _deps/fmt-build/CMakeFiles/fmt.dir/src/os.cc.o -MF CMakeFiles/fmt.dir/src/os.cc.o.d -o CMakeFiles/fmt.dir/src/os.cc.o -c /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-src/src/os.cc
-/usr/local/bin/cmake -E cmake_echo_color --switch= --green --bold --progress-dir=/media/yohello/hrm2/code-stuff/CRender/CMakeFiles --progress-num=28 "Linking CXX static library libfmt.a"
-cd /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-build && /usr/local/bin/cmake -P CMakeFiles/fmt.dir/cmake_clean_target.cmake
-cd /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-build && /usr/local/bin/cmake -E cmake_link_script CMakeFiles/fmt.dir/link.txt --verbose=
-make[2]: Leaving directory '/media/yohello/hrm2/code-stuff/CRender'
-/usr/local/bin/cmake -E cmake_echo_color --switch= --progress-dir=/media/yohello/hrm2/code-stuff/CRender/CMakeFiles --progress-num=26,27,28 "Built target fmt"
 make -s -f _deps/glfw-build/src/CMakeFiles/glfw.dir/build.make _deps/glfw-build/src/CMakeFiles/glfw.dir/depend
 make[2]: Entering directory '/media/yohello/hrm2/code-stuff/CRender'
 cd /media/yohello/hrm2/code-stuff/CRender && /usr/local/bin/cmake -E cmake_depends "Unix Makefiles" /media/yohello/hrm2/code-stuff/CRender /media/yohello/hrm2/code-stuff/CRender/_deps/glfw-src/src /media/yohello/hrm2/code-stuff/CRender /media/yohello/hrm2/code-stuff/CRender/_deps/glfw-build/src /media/yohello/hrm2/code-stuff/CRender/_deps/glfw-build/src/CMakeFiles/glfw.dir/DependInfo.cmake --color=
@@ -62,11 +47,27 @@ cd /media/yohello/hrm2/code-stuff/CRender/_deps/glfw-build/src && /usr/local/bin
 cd /media/yohello/hrm2/code-stuff/CRender/_deps/glfw-build/src && /usr/local/bin/cmake -E cmake_link_script CMakeFiles/glfw.dir/link.txt --verbose=
 make[2]: Leaving directory '/media/yohello/hrm2/code-stuff/CRender'
 /usr/local/bin/cmake -E cmake_echo_color --switch= --progress-dir=/media/yohello/hrm2/code-stuff/CRender/CMakeFiles --progress-num=29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45 "Built target glfw"
+make -s -f _deps/fmt-build/CMakeFiles/fmt.dir/build.make _deps/fmt-build/CMakeFiles/fmt.dir/depend
+make[2]: Entering directory '/media/yohello/hrm2/code-stuff/CRender'
+cd /media/yohello/hrm2/code-stuff/CRender && /usr/local/bin/cmake -E cmake_depends "Unix Makefiles" /media/yohello/hrm2/code-stuff/CRender /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-src /media/yohello/hrm2/code-stuff/CRender /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-build /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-build/CMakeFiles/fmt.dir/DependInfo.cmake --color=
+make[2]: Leaving directory '/media/yohello/hrm2/code-stuff/CRender'
+make -s -f _deps/fmt-build/CMakeFiles/fmt.dir/build.make _deps/fmt-build/CMakeFiles/fmt.dir/build
+make[2]: Entering directory '/media/yohello/hrm2/code-stuff/CRender'
+/usr/local/bin/cmake -E cmake_echo_color --switch= --green --progress-dir=/media/yohello/hrm2/code-stuff/CRender/CMakeFiles --progress-num=26 "Building CXX object _deps/fmt-build/CMakeFiles/fmt.dir/src/format.cc.o"
+cd /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-build && /usr/bin/c++  -I/media/yohello/hrm2/code-stuff/CRender/_deps/fmt-src/include -std=gnu++2a -MD -MT _deps/fmt-build/CMakeFiles/fmt.dir/src/format.cc.o -MF CMakeFiles/fmt.dir/src/format.cc.o.d -o CMakeFiles/fmt.dir/src/format.cc.o -c /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-src/src/format.cc
+/usr/local/bin/cmake -E cmake_echo_color --switch= --green --progress-dir=/media/yohello/hrm2/code-stuff/CRender/CMakeFiles --progress-num=27 "Building CXX object _deps/fmt-build/CMakeFiles/fmt.dir/src/os.cc.o"
+cd /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-build && /usr/bin/c++  -I/media/yohello/hrm2/code-stuff/CRender/_deps/fmt-src/include -std=gnu++2a -MD -MT _deps/fmt-build/CMakeFiles/fmt.dir/src/os.cc.o -MF CMakeFiles/fmt.dir/src/os.cc.o.d -o CMakeFiles/fmt.dir/src/os.cc.o -c /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-src/src/os.cc
+/usr/local/bin/cmake -E cmake_echo_color --switch= --green --bold --progress-dir=/media/yohello/hrm2/code-stuff/CRender/CMakeFiles --progress-num=28 "Linking CXX static library libfmt.a"
+cd /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-build && /usr/local/bin/cmake -P CMakeFiles/fmt.dir/cmake_clean_target.cmake
+cd /media/yohello/hrm2/code-stuff/CRender/_deps/fmt-build && /usr/local/bin/cmake -E cmake_link_script CMakeFiles/fmt.dir/link.txt --verbose=
+make[2]: Leaving directory '/media/yohello/hrm2/code-stuff/CRender'
+/usr/local/bin/cmake -E cmake_echo_color --switch= --progress-dir=/media/yohello/hrm2/code-stuff/CRender/CMakeFiles --progress-num=26,27,28 "Built target fmt"
 make -s -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/depend
 make[2]: Entering directory '/media/yohello/hrm2/code-stuff/CRender'
 cd /media/yohello/hrm2/code-stuff/CRender && /usr/local/bin/cmake -E cmake_depends "Unix Makefiles" /media/yohello/hrm2/code-stuff/CRender /media/yohello/hrm2/code-stuff/CRender /media/yohello/hrm2/code-stuff/CRender /media/yohello/hrm2/code-stuff/CRender /media/yohello/hrm2/code-stuff/CRender/CMakeFiles/crebon.dir/DependInfo.cmake --color=
 make[2]: Leaving directory '/media/yohello/hrm2/code-stuff/CRender'
 make -s -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/build
+ 
 make[2]: Entering directory '/media/yohello/hrm2/code-stuff/CRender'
 /usr/local/bin/cmake -E cmake_echo_color --switch= --green --progress-dir=/media/yohello/hrm2/code-stuff/CRender/CMakeFiles --progress-num=1 "Building CXX object CMakeFiles/crebon.dir/source/main.cpp.o"
 /usr/bin/c++ -DGLFW_INCLUDE_NONE -DIMGUI_HAS_DOCKING -DIMGUI_IMPL_OPENGL_LOADER_GLAD -DOIDN_FILTER_RT -DOIDN_FILTER_RTLIGHTMAP -I/media/yohello/hrm2/code-stuff/CRender/source -I/media/yohello/hrm2/code-stuff/CRender/external -I/media/yohello/hrm2/code-stuff/CRender/external/imgui -I/media/yohello/hrm2/code-stuff/CRender/_deps/glm-src/glm/.. -I/media/yohello/hrm2/code-stuff/CRender/_deps/fmt-src/include -I/media/yohello/hrm2/code-stuff/CRender/_deps/glfw-src/include -isystem /opt/intel/oneapi/embree/3.13.3/include -isystem /opt/intel/oneapi/oidn/1.4.3/include -std=gnu++2a -MD -MT CMakeFiles/crebon.dir/source/main.cpp.o -MF CMakeFiles/crebon.dir/source/main.cpp.o.d -o CMakeFiles/crebon.dir/source/main.cpp.o -c /media/yohello/hrm2/code-stuff/CRender/source/main.cpp

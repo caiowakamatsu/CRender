@@ -9,3 +9,5 @@ Makefile
 crebon
 external/CMakeFiles/CMakeDirectoryInformation.cmake
 external/CMakeFiles/progress.marks
+.vscode/
+build/

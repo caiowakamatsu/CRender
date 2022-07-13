@@ -1,3 +1,2 @@
-CMakeFiles/crebon.dir/source/render/sky.cpp.o \
- CMakeFiles/crebon.dir/source/render/sky.cpp.o: /dev/null \
+CMakeFiles/crebon.dir/source/render/sky.cpp.o: /dev/null \
  /usr/include/stdc-predef.h

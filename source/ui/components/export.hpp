@@ -1,5 +1,6 @@
 //
 // Created by howto on 24/5/2022.
+// Modified by Yohwllo
 //
 
 #ifndef CREBON_EXPORT_HPP
@@ -15,6 +16,7 @@ class image_export {
 public:
   struct Options {
     std::string scene_name = std::string(512, '\0');
+    int image_type = 0;
   };
   struct DisplayContents {
     cr::atomic_image *image;
