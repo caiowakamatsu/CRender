@@ -180,6 +180,7 @@ int main()
         albedo_frame = cr::atomic_image(new_width, new_height);
       }
 
+      // Why is this here
       configuration = cr::scene_configuration(
           glm::vec3(translated_point) + configuration.origin(),
           rotation + configuration.rotation(), new_width, new_height,
@@ -287,4 +288,10 @@ int main()
 
 /* For the idiot who is supposed to make input not cancerous
 general class, which takes input as `input.some_crap.has_value()`
+
+
+For the idiot part TWO
+
+Make a class of event listeners
+Make child classes with a different function as the update one
 */

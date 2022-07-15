@@ -6,7 +6,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Wed Jul 13 04:06:12 2022
+# Make data base, printed on Fri Jul 15 03:39:19 2022
 
 # Variables
 
@@ -56,8 +56,6 @@ XAUTHORITY = /home/yohello/.Xauthority
 .LOADED := 
 # default
 .INCLUDE_DIRS = /usr/local/include /usr/include /usr/include
-# makefile (from 'Makefile', line 51)
-CMAKE_COMMAND = /usr/local/bin/cmake
 # makefile
 MAKEFLAGS = pqrR
 # environment
@@ -86,22 +84,18 @@ HISTSIZE =
 XCURSOR_THEME = Sweet-cursors
 # environment
 XDG_SESSION_DESKTOP = KDE
-# makefile (from 'Makefile', line 1)
-MAKEFILE_LIST := Makefile
-# makefile (from 'Makefile', line 63)
-CMAKE_BINARY_DIR = /media/yohello/hrm2/code-stuff/CRender
+# makefile
+MAKEFILE_LIST := 
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 2369368
+VSCODE_PID = 3315973
 # environment
 HISTIGNORE = &:[ ]*:exit:ls:bg:fg:history:clear
 # environment
 XDG_SESSION_TYPE = x11
 # automatic
 ?D = $(patsubst %/,%,$(dir $?))
-# makefile (from 'Makefile', line 60)
-CMAKE_SOURCE_DIR = /media/yohello/hrm2/code-stuff/CRender
 # environment
 SESSION_MANAGER = local/yohello-deb:@/tmp/.ICE-unix/1986,unix/yohello-deb:/tmp/.ICE-unix/1986
 # automatic
@@ -124,7 +118,7 @@ HISTFILESIZE =
 ONEAPI_ROOT = /opt/intel/oneapi
 # default
 MAKE_HOST := x86_64-pc-linux-gnu
-# makefile (from 'Makefile', line 48)
+# makefile
 SHELL = /bin/sh
 # environment
 CLASSPATH = /opt/intel/oneapi/mpi/2021.6.0//lib/mpi.jar
@@ -157,6 +151,8 @@ LESSCLOSE = /usr/bin/lesspipe %s %s
 # environment
 KDE_APPLICATIONS_AS_SCOPE = 1
 # environment
+AUTOJUMP_SOURCED = 1
+# environment
 XDG_SEAT = seat0
 # environment
 GTK_IM_MODULE = ibus
@@ -180,8 +176,6 @@ GNUMAKEFLAGS :=
 QT_SCREEN_SCALE_FACTORS = DVI-D-0=1;HDMI-0=1;DP-0=1;DP-1=1;
 # environment
 CLUTTER_IM_MODULE = ibus
-# makefile (from 'Makefile', line 57)
-EQUALS = =
 # environment
 CPATH = /opt/intel/oneapi/tbb/2021.6.0/env/../include:/opt/intel/oneapi/mpi/2021.6.0//include
 # environment
@@ -189,9 +183,9 @@ LOGNAME = yohello
 # environment
 XDG_VTNR = 7
 # makefile
-.DEFAULT_GOAL := default_target
-# makefile (from 'Makefile', line 54)
-RM = /usr/local/bin/cmake -E rm -f
+.DEFAULT_GOAL := 
+# environment
+AUTOJUMP_ERROR_PATH = /home/yohello/.local/share/autojump/errors.log
 # environment
 DISPLAY = :0
 # environment
@@ -210,8 +204,6 @@ PYTHONPATH = /opt/intel/oneapi/ospray_studio/0.10.0/lib
 SSH_AGENT_PID = 1780
 # environment
 PAGER = less
-# makefile (from 'Makefile', line 35)
-MAKESILENT = -s
 # environment
 _ = /usr/share/code/code
 # environment
@@ -257,7 +249,7 @@ KDE_SESSION_VERSION = 5
 # environment
 KDE_FULL_SESSION = true
 # variable set hash-table stats:
-# Load=123/1024=12%, Rehash=0, Collisions=7/162=4%
+# Load=119/1024=12%, Rehash=0, Collisions=7/146=5%
 
 # Pattern-specific Variable Values
 
@@ -265,709 +257,22 @@ KDE_FULL_SESSION = true
 
 # Directories
 
-# RCS: could not be stat'd.
-# SCCS: could not be stat'd.
-# . (device 2081, inode 59906208): 25 files, no impossibilities.
+# . (device 2081, inode 59906208): 17 files, no impossibilities.
 
-# 25 files, no impossibilities in 3 directories.
+# 17 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
-%: %,v
+# No implicit rules.
 
-%: RCS/%
-
-%: RCS/%,v
-
-%: SCCS/s.%
-
-%: s.%
-
-%.hpux_make_needs_suffix_list:
-
-# 6 implicit rules, 0 (0.0%) terminal.
 # Files
-
-source/scene/triangular_scene.s: source/scene/triangular_scene.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
- 
-#  File does not exist.
-#  File has not been updated.
-
-source/scene/triangular_scene.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 443):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/scene/triangular_scene.cpp.s
-
-source/ui/components/asset_loader.s: source/ui/components/asset_loader.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/console.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 483):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/console.cpp.i
-
-source/ui/components/skybox.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 619):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/skybox.cpp.o
-
-depend:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 116):
-	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
-
-external/imgui/imgui_draw.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 243):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/imgui_draw.cpp.i
-
-source/util/glad.i: source/util/glad.c.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-external/imgui/imgui.o: external/imgui/imgui.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/util/glad.c.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 723):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/util/glad.c.i
-
-source/scene/sphere_scene.i: source/scene/sphere_scene.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/skybox.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 627):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/skybox.cpp.i
-
-default_target: all
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/export.o: source/ui/components/export.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/main.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 323):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/main.cpp.s
-
-source/ui/components/console.s: source/ui/components/console.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/render_target.o: source/ui/components/render_target.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/scene/sphere_scene.o: source/scene/sphere_scene.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-external/imgui/imgui.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 211):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/imgui.cpp.o
-
-source/ui/components/render_target.i: source/ui/components/render_target.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/settings.i: source/ui/components/settings.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-external/imgui/imgui.s: external/imgui/imgui.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-external/imgui/imgui_tables.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 259):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/imgui_tables.cpp.o
-
-edit_cache/fast: edit_cache
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/console.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 475):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/console.cpp.o
-
-source/ui/components/asset_loader.o: source/ui/components/asset_loader.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/display.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 683):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/display.cpp.s
-
-source/ui/components/settings.s: source/ui/components/settings.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/display.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 675):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/display.cpp.i
-
-source/ui/components/render_target.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 571):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/render_target.cpp.o
-
-external/imgui/imgui_tables.s: external/imgui/imgui_tables.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/skybox.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 635):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/skybox.cpp.s
-
-source/material/brdf.i: source/material/brdf.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
 
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-11 16:17:27.60437143
+#  File does not exist.
 #  File has been updated.
-#  Successfully updated.
-
-rebuild_cache:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 80):
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/local/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-
-source/scene/triangular_scene.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 435):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/scene/triangular_scene.cpp.i
-
-source/render/sky.i: source/render/sky.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-external/imgui/imgui_widgets.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 291):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/imgui_widgets.cpp.i
-
-source/ui/components/preview.s: source/ui/components/preview.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/render_target.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 587):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/render_target.cpp.s
-
-external/imgui/backends/imgui_impl_opengl3.cpp.o:
-#  Phony target (prerequisite of .PHONY).
- 
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 187):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/backends/imgui_impl_opengl3.cpp.o
-
-source/ui/components/post_processing.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 531):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/post_processing.cpp.i
-
-source/ui/display.i: source/ui/display.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-external/imgui/imgui.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 219):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/imgui.cpp.i
-
-source/ui/components/stats.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 643):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/stats.cpp.o
-
-source/render/cpu_renderer.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 371):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/render/cpu_renderer.cpp.s
-
-source/ui/components/preview.o: source/ui/components/preview.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-external/imgui/imgui_draw.s: external/imgui/imgui_draw.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/stats.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 659):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/stats.cpp.s
-
-.SILENT:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-external/imgui/imgui_tables.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 267):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/imgui_tables.cpp.i
-
-source/ui/components/stats.o: source/ui/components/stats.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/asset_loader.i: source/ui/components/asset_loader.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/asset_loader.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 451):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/asset_loader.cpp.o
-
-external/imgui/imgui_widgets.o: external/imgui/imgui_widgets.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-clean:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 97):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 clean
-
-cmake_force:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/render/sky.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 379):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/render/sky.cpp.o
-
-preinstall/fast:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 111):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 preinstall
-
-source/ui/components/export.i: source/ui/components/export.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/material/brdf.s: source/material/brdf.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/scene/triangular_scene.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 427):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/scene/triangular_scene.cpp.o
-
-source/ui/components/preview.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 563):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/preview.cpp.s
-
-source/main.s: source/main.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/render/sky.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 387):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/render/sky.cpp.i
-
-external/imgui/backends/imgui_impl_opengl3.i: external/imgui/backends/imgui_impl_opengl3.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-external/imgui/imgui_draw.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 251):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/imgui_draw.cpp.s
-
-source/ui/components/skybox.o: source/ui/components/skybox.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-external/imgui/backends/imgui_impl_glfw.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 171):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/backends/imgui_impl_glfw.cpp.i
-
-edit_cache:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 70):
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/usr/local/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-
-source/ui/display.o: source/ui/display.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/skybox.i: source/ui/components/skybox.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/display.s: source/ui/display.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/main.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 315):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/main.cpp.i
-
-source/ui/components/export.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 499):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/export.cpp.o
-
-crebon/fast:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 129):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/build
-
-source/ui/components/console.i: source/ui/components/console.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-external/imgui/imgui_tables.i: external/imgui/imgui_tables.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-rebuild_cache/fast: rebuild_cache
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/settings.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 603):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/settings.cpp.i
-
-external/imgui/imgui_widgets.i: external/imgui/imgui_widgets.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/export.s: source/ui/components/export.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/settings.o: source/ui/components/settings.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-# Not a target:
-.hpux_make_needs_suffix_list:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-source/ui/components/console.o: source/ui/components/console.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/input_devices.i: source/ui/input_devices.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
- 
-#  File has not been updated.
-
-source/render/cpu_renderer.o: source/render/cpu_renderer.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/render/cpu_renderer.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 363):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/render/cpu_renderer.cpp.i
-
-source/ui/components/stats.s: source/ui/components/stats.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/render/cpu_renderer.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 355):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/render/cpu_renderer.cpp.o
-
-fmt: cmake_check_build_system
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 137):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 fmt
-
-source/scene/triangular_scene.i: source/scene/triangular_scene.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/stats.i: source/ui/components/stats.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-preinstall: all
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 106):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 preinstall
-
-external/imgui/imgui.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 227):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/imgui.cpp.s
-
-source/material/brdf.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 331):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/material/brdf.cpp.o
-
-external/imgui/imgui_widgets.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 283):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/imgui_widgets.cpp.o
+#  Failed to be updated.
 
 # Not a target:
 .DEFAULT:
@@ -975,643 +280,44 @@ external/imgui/imgui_widgets.cpp.o:
 #  Modification time never checked.
 #  File has not been updated.
 
-external/imgui/backends/imgui_impl_glfw.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 179):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/backends/imgui_impl_glfw.cpp.s
-
-source/render/sky.o: source/render/sky.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-all: cmake_check_build_system
-#  Phony target (prerequisite of .PHONY).
+# Not a target:
+all:
 #  Command line target.
-#  Implicit rule search has not been done.
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has not been updated.
+
+# Not a target:
+makefile:
+#  Implicit rule search has been done.
 #  File does not exist.
 #  File has been updated.
-#  Needs to be updated (-q is set).
-# variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/6=0%
-#  recipe to execute (from 'Makefile', line 90):
-	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm2/code-stuff/CRender/CMakeFiles /media/yohello/hrm2/code-stuff/CRender//CMakeFiles/progress.marks
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm2/code-stuff/CRender/CMakeFiles 0
+#  Failed to be updated.
 
-source/ui/components/post_processing.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 539):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/post_processing.cpp.s
-
-external/imgui/backends/imgui_impl_glfw.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 163):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/backends/imgui_impl_glfw.cpp.o
-
-help:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 736):
-	@echo "The following are some of the valid targets for this Makefile:"
-	@echo "... all (the default if no target is provided)"
-	@echo "... clean"
-	@echo "... depend"
-	@echo "... edit_cache"
-	@echo "... rebuild_cache"
-	@echo "... crebon"
-	@echo "... fmt"
-	@echo "... glfw"
-	@echo "... external/imgui/backends/imgui_impl_glfw.o"
-	@echo "... external/imgui/backends/imgui_impl_glfw.i"
-	@echo "... external/imgui/backends/imgui_impl_glfw.s"
-	@echo "... external/imgui/backends/imgui_impl_opengl3.o"
-	@echo "... external/imgui/backends/imgui_impl_opengl3.i"
-	@echo "... external/imgui/backends/imgui_impl_opengl3.s"
-	@echo "... external/imgui/imgui.o"
-	@echo "... external/imgui/imgui.i"
-	@echo "... external/imgui/imgui.s"
-	@echo "... external/imgui/imgui_draw.o"
-	@echo "... external/imgui/imgui_draw.i"
-	@echo "... external/imgui/imgui_draw.s"
-	@echo "... external/imgui/imgui_tables.o"
-	@echo "... external/imgui/imgui_tables.i"
-	@echo "... external/imgui/imgui_tables.s"
-	@echo "... external/imgui/imgui_widgets.o"
-	@echo "... external/imgui/imgui_widgets.i"
-	@echo "... external/imgui/imgui_widgets.s"
-	@echo "... source/main.o"
-	@echo "... source/main.i"
-	@echo "... source/main.s"
-	@echo "... source/material/brdf.o"
-	@echo "... source/material/brdf.i"
-	@echo "... source/material/brdf.s"
-	@echo "... source/render/cpu_renderer.o"
-	@echo "... source/render/cpu_renderer.i"
-	@echo "... source/render/cpu_renderer.s"
-	@echo "... source/render/sky.o"
-	@echo "... source/render/sky.i"
-	@echo "... source/render/sky.s"
-	@echo "... source/scene/sphere_scene.o"
-	@echo "... source/scene/sphere_scene.i"
-	@echo "... source/scene/sphere_scene.s"
-	@echo "... source/scene/triangular_scene.o"
-	@echo "... source/scene/triangular_scene.i"
-	@echo "... source/scene/triangular_scene.s"
-	@echo "... source/ui/components/asset_loader.o"
-	@echo "... source/ui/components/asset_loader.i"
-	@echo "... source/ui/components/asset_loader.s"
-	@echo "... source/ui/components/console.o"
-	@echo "... source/ui/components/console.i"
-	@echo "... source/ui/components/console.s"
-	@echo "... source/ui/components/export.o"
-	@echo "... source/ui/components/export.i"
-	@echo "... source/ui/components/export.s"
-	@echo "... source/ui/components/post_processing.o"
-	@echo "... source/ui/components/post_processing.i"
-	@echo "... source/ui/components/post_processing.s"
-	@echo "... source/ui/components/preview.o"
-	@echo "... source/ui/components/preview.i"
-	@echo "... source/ui/components/preview.s"
-	@echo "... source/ui/components/render_target.o"
-	@echo "... source/ui/components/render_target.i"
-	@echo "... source/ui/components/render_target.s"
-	@echo "... source/ui/components/settings.o"
-	@echo "... source/ui/components/settings.i"
-	@echo "... source/ui/components/settings.s"
-	@echo "... source/ui/components/skybox.o"
-	@echo "... source/ui/components/skybox.i"
-	@echo "... source/ui/components/skybox.s"
-	@echo "... source/ui/components/stats.o"
-	@echo "... source/ui/components/stats.i"
-	@echo "... source/ui/components/stats.s"
-	@echo "... source/ui/display.o"
-	@echo "... source/ui/display.i"
-	@echo "... source/ui/display.s"
-	@echo "... source/ui/input_devices.o"
-	@echo "... source/ui/input_devices.i"
-	@echo "... source/ui/input_devices.s"
-	@echo "... source/util/glad.o"
-	@echo "... source/util/glad.i"
-	@echo "... source/util/glad.s"
-
-source/scene/sphere_scene.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 411):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/scene/sphere_scene.cpp.i
-
-source/ui/input_devices.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 707):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/input_devices.cpp.s
-
-source/ui/components/export.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 515):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/export.cpp.s
-
-source/scene/sphere_scene.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 419):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/scene/sphere_scene.cpp.s
-
-clean/fast: clean
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/render/cpu_renderer.s: source/render/cpu_renderer.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-external/imgui/imgui_draw.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 235):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/imgui_draw.cpp.o
-
-source/ui/components/post_processing.i: source/ui/components/post_processing.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/post_processing.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 523):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/post_processing.cpp.o
-
-source/util/glad.s: source/util/glad.c.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/post_processing.o: source/ui/components/post_processing.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/input_devices.s: source/ui/input_devices.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
- 
-external/imgui/imgui_tables.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 275):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/imgui_tables.cpp.s
-
-external/imgui/backends/imgui_impl_glfw.o: external/imgui/backends/imgui_impl_glfw.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-external/imgui/imgui_draw.o: external/imgui/imgui_draw.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/display.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 667):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/display.cpp.o
-
-source/material/brdf.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 347):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/material/brdf.cpp.s
-
-fmt/fast:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 142):
-	$(MAKE) $(MAKESILENT) -f _deps/fmt-build/CMakeFiles/fmt.dir/build.make _deps/fmt-build/CMakeFiles/fmt.dir/build
-
-source/render/sky.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 395):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/render/sky.cpp.s
-
-glfw: cmake_check_build_system
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 150):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 glfw
-
-source/util/glad.o: source/util/glad.c.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/render/sky.s: source/render/sky.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-external/imgui/backends/imgui_impl_glfw.i: external/imgui/backends/imgui_impl_glfw.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-.NOTPARALLEL:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-source/render/cpu_renderer.i: source/render/cpu_renderer.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/settings.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 611):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/settings.cpp.s
-
-external/imgui/backends/imgui_impl_opengl3.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 195):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/backends/imgui_impl_opengl3.cpp.i
-
-source/scene/sphere_scene.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 403):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/scene/sphere_scene.cpp.o
-
-source/ui/components/render_target.s: source/ui/components/render_target.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/preview.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 547):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/preview.cpp.o
-
-source/ui/input_devices.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 691):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/input_devices.cpp.o
-
-external/imgui/imgui_widgets.s: external/imgui/imgui_widgets.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/stats.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 651):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/stats.cpp.i
-
-source/ui/components/preview.i: source/ui/components/preview.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-cmake_check_build_system:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  Implicit/static pattern stem: ''
+# Not a target:
+GNUmakefile:
+#  Implicit rule search has been done.
 #  File does not exist.
 #  File has been updated.
-#  Needs to be updated (-q is set).
-# automatic
-# @ := cmake_check_build_system
-# automatic
-# * := 
-# automatic
-# < := 
-# automatic
-# + := 
-# automatic
-# % := 
-# automatic
-# ^ := 
-# automatic
-# ? := 
-# automatic
-# | := 
-# variable set hash-table stats:
-# Load=8/32=25%, Rehash=0, Collisions=1/14=7%
-#  recipe to execute (from 'Makefile', line 828):
-	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
-
-source/material/brdf.o: source/material/brdf.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/export.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 507):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/export.cpp.i
-
-glfw/fast:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 155):
-	$(MAKE) $(MAKESILENT) -f _deps/glfw-build/src/CMakeFiles/glfw.dir/build.make _deps/glfw-build/src/CMakeFiles/glfw.dir/build
-
-source/ui/components/console.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 491):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/console.cpp.s
-
-external/imgui/backends/imgui_impl_opengl3.s: external/imgui/backends/imgui_impl_opengl3.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/main.i: source/main.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/material/brdf.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 339):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/material/brdf.cpp.i
-
-external/imgui/backends/imgui_impl_opengl3.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 203):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/backends/imgui_impl_opengl3.cpp.s
-
-external/imgui/imgui_widgets.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 299):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/external/imgui/imgui_widgets.cpp.s
-
-source/scene/triangular_scene.o: source/scene/triangular_scene.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/post_processing.s: source/ui/components/post_processing.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/input_devices.o: source/ui/input_devices.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/input_devices.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 699):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/input_devices.cpp.i
-
-source/ui/components/asset_loader.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 459):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/asset_loader.cpp.i
-
-source/main.o: source/main.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-.SUFFIXES: .hpux_make_needs_suffix_list
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
- 
-source/ui/components/settings.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 595):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/settings.cpp.o
-
-source/ui/components/skybox.s: source/ui/components/skybox.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/scene/sphere_scene.s: source/scene/sphere_scene.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/util/glad.c.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 715):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/util/glad.c.o
-
-.PHONY: default_target cmake_force edit_cache edit_cache/fast rebuild_cache rebuild_cache/fast all clean clean/fast preinstall preinstall/fast depend crebon crebon/fast fmt fmt/fast glfw glfw/fast external/imgui/backends/imgui_impl_glfw.o external/imgui/backends/imgui_impl_glfw.cpp.o external/imgui/backends/imgui_impl_glfw.i external/imgui/backends/imgui_impl_glfw.cpp.i external/imgui/backends/imgui_impl_glfw.s external/imgui/backends/imgui_impl_glfw.cpp.s external/imgui/backends/imgui_impl_opengl3.o external/imgui/backends/imgui_impl_opengl3.cpp.o external/imgui/backends/imgui_impl_opengl3.i external/imgui/backends/imgui_impl_opengl3.cpp.i external/imgui/backends/imgui_impl_opengl3.s external/imgui/backends/imgui_impl_opengl3.cpp.s external/imgui/imgui.o external/imgui/imgui.cpp.o external/imgui/imgui.i external/imgui/imgui.cpp.i external/imgui/imgui.s external/imgui/imgui.cpp.s external/imgui/imgui_draw.o external/imgui/imgui_draw.cpp.o external/imgui/imgui_draw.i external/imgui/imgui_draw.cpp.i external/imgui/imgui_draw.s external/imgui/imgui_draw.cpp.s external/imgui/imgui_tables.o external/imgui/imgui_tables.cpp.o external/imgui/imgui_tables.i external/imgui/imgui_tables.cpp.i external/imgui/imgui_tables.s external/imgui/imgui_tables.cpp.s external/imgui/imgui_widgets.o external/imgui/imgui_widgets.cpp.o external/imgui/imgui_widgets.i external/imgui/imgui_widgets.cpp.i external/imgui/imgui_widgets.s external/imgui/imgui_widgets.cpp.s source/main.o source/main.cpp.o source/main.i source/main.cpp.i source/main.s source/main.cpp.s source/material/brdf.o source/material/brdf.cpp.o source/material/brdf.i source/material/brdf.cpp.i source/material/brdf.s source/material/brdf.cpp.s source/render/cpu_renderer.o source/render/cpu_renderer.cpp.o source/render/cpu_renderer.i source/render/cpu_renderer.cpp.i source/render/cpu_renderer.s source/render/cpu_renderer.cpp.s source/render/sky.o source/render/sky.cpp.o source/render/sky.i source/render/sky.cpp.i source/render/sky.s source/render/sky.cpp.s source/scene/sphere_scene.o source/scene/sphere_scene.cpp.o source/scene/sphere_scene.i source/scene/sphere_scene.cpp.i source/scene/sphere_scene.s source/scene/sphere_scene.cpp.s source/scene/triangular_scene.o source/scene/triangular_scene.cpp.o source/scene/triangular_scene.i source/scene/triangular_scene.cpp.i source/scene/triangular_scene.s source/scene/triangular_scene.cpp.s source/ui/components/asset_loader.o source/ui/components/asset_loader.cpp.o source/ui/components/asset_loader.i source/ui/components/asset_loader.cpp.i source/ui/components/asset_loader.s source/ui/components/asset_loader.cpp.s source/ui/components/console.o source/ui/components/console.cpp.o source/ui/components/console.i source/ui/components/console.cpp.i source/ui/components/console.s source/ui/components/console.cpp.s source/ui/components/export.o source/ui/components/export.cpp.o source/ui/components/export.i source/ui/components/export.cpp.i source/ui/components/export.s source/ui/components/export.cpp.s source/ui/components/post_processing.o source/ui/components/post_processing.cpp.o source/ui/components/post_processing.i source/ui/components/post_processing.cpp.i source/ui/components/post_processing.s source/ui/components/post_processing.cpp.s source/ui/components/preview.o source/ui/components/preview.cpp.o source/ui/components/preview.i source/ui/components/preview.cpp.i source/ui/components/preview.s source/ui/components/preview.cpp.s source/ui/components/render_target.o source/ui/components/render_target.cpp.o source/ui/components/render_target.i source/ui/components/render_target.cpp.i source/ui/components/render_target.s source/ui/components/render_target.cpp.s source/ui/components/settings.o source/ui/components/settings.cpp.o source/ui/components/settings.i source/ui/components/settings.cpp.i source/ui/components/settings.s source/ui/components/settings.cpp.s source/ui/components/skybox.o source/ui/components/skybox.cpp.o source/ui/components/skybox.i source/ui/components/skybox.cpp.i source/ui/components/skybox.s source/ui/components/skybox.cpp.s source/ui/components/stats.o source/ui/components/stats.cpp.o source/ui/components/stats.i source/ui/components/stats.cpp.i source/ui/components/stats.s source/ui/components/stats.cpp.s source/ui/display.o source/ui/display.cpp.o source/ui/display.i source/ui/display.cpp.i source/ui/display.s source/ui/display.cpp.s source/ui/input_devices.o source/ui/input_devices.cpp.o source/ui/input_devices.i source/ui/input_devices.cpp.i source/ui/input_devices.s source/ui/input_devices.cpp.s source/util/glad.o source/util/glad.c.o source/util/glad.i source/util/glad.c.i source/util/glad.s source/util/glad.c.s help cmake_check_build_system
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-external/imgui/backends/imgui_impl_glfw.s: external/imgui/backends/imgui_impl_glfw.cpp.s
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-external/imgui/imgui.i: external/imgui/imgui.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-crebon: cmake_check_build_system
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 124):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 crebon
-
-source/main.cpp.o:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 307):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/main.cpp.o
-
-source/util/glad.c.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 731):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/util/glad.c.s
-
-external/imgui/imgui_draw.i: external/imgui/imgui_draw.cpp.i
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-external/imgui/backends/imgui_impl_opengl3.o: external/imgui/backends/imgui_impl_opengl3.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/preview.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 555):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/preview.cpp.i
-
-external/imgui/imgui_tables.o: external/imgui/imgui_tables.cpp.o
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-
-source/ui/components/asset_loader.cpp.s:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 467):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/asset_loader.cpp.s
-
-source/ui/components/render_target.cpp.i:
-#  Phony target (prerequisite of .PHONY).
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 579):
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/crebon.dir/build.make CMakeFiles/crebon.dir/source/ui/components/render_target.cpp.i
+#  Failed to be updated.
 
 # files hash-table stats:
-# Load=171/1024=17%, Rehash=0, Collisions=33/667=5%
+ 
+make: *** No rule to make target 'all'.  Stop.
+
+# Load=6/1024=1%, Rehash=0, Collisions=0/15=0%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 205 / storage = 5152 B / avg = 25 B
-# current buf: size = 8162 B / used = 5152 B / count = 205 / avg = 25 B
+# strcache buffers: 1 (0) / strings = 25 / storage = 255 B / avg = 10 B
+# current buf: size = 8162 B / used = 255 B / count = 25 / avg = 10 B
 
-# strcache performance: lookups = 958 / hit rate = 78%
+# strcache performance: lookups = 28 / hit rate = 10%
 # hash-table stats:
-# Load=205/8192=3%, Rehash=0, Collisions=18/958=2%
-# Finished Make data base on Wed Jul 13 04:06:12 2022
+# Load=25/8192=0%, Rehash=0, Collisions=0/28=0%
+# Finished Make data base on Fri Jul 15 03:39:19 2022
 
  
