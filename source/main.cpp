@@ -8,6 +8,8 @@
 
 #include <ui/display.hpp>
 
+#include <CRender.hpp>
+
 #include <fmt/core.h>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -31,6 +33,8 @@
 
 int main()
 {
+
+// Below this
   auto logger = cr::logger();
 
   auto render_target_options = cr::component::render_target::Options();
@@ -72,10 +76,15 @@ int main()
     return result;
   };
 
+
+// Above this Gon be in the class
+
+
   auto cpu_renderer =
       cr::cpu_renderer(int(std::thread::hardware_concurrency()), {},
                        render_target_options.samples_per_pixel);
 
+// These too
   auto tasks = configuration.get_tasks(std::thread::hardware_concurrency());
   cpu_renderer.start(
       cr::render_data{
@@ -88,7 +97,9 @@ int main()
       tasks);
 
   auto mouse_pos_initialized = false;
-  auto previous_mouse_pos = glm::vec2();
+  auto previous_mouse_pos    = glm::vec2();
+// Uptill this
+
 
   while (!display.should_close())
   {
@@ -118,6 +129,7 @@ int main()
         rotation.x += 1.0f;
     }
 
+// jere
     const auto mouse_pos = glm::vec2(display.mouse_position());
     if (!mouse_pos_initialized)
     {
@@ -128,7 +140,10 @@ int main()
     {
       const auto delta = previous_mouse_pos - mouse_pos;
     }
+// down to here
 
+// why tf
+// but I hafta to include it too ig
     const auto total_sample_count = cpu_renderer.total_samples();
     const auto render_time = cpu_renderer.total_time();
 
@@ -149,6 +164,8 @@ int main()
            .post_processing = post_processing_options});
     }();
 
+
+// THIS IS IN THER 4 SURE
     auto update_anything = false;
     update_anything |= origin != glm::vec3() || rotation != glm::vec3();
     update_anything |= input.skybox.has_value();
@@ -184,7 +201,7 @@ int main()
       configuration = cr::scene_configuration(
           glm::vec3(translated_point) + configuration.origin(),
           rotation + configuration.rotation(), new_width, new_height,
-          configuration.fov(), configuration.bounces());
+        vec_of_functions  configuration.fov(), configuration.bounces());
 
       if (input.skybox.has_value())
       {
@@ -286,12 +303,5 @@ int main()
 }
 
 
-/* For the idiot who is supposed to make input not cancerous
-general class, which takes input as `input.some_crap.has_value()`
-
-
-For the idiot part TWO
-
-Make a class of event listeners
-Make child classes with a different function as the update one
+/* 
 */

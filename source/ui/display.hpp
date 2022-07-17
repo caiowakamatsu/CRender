@@ -22,7 +22,6 @@
 #include <ui/components/stats.hpp>
 
 #include <ui/components/component.hpp>
-#include <ui/input_handling.hpp>
 
 
 namespace cr {

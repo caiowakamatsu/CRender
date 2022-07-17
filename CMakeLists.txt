@@ -50,8 +50,9 @@ add_executable(crebon
         source/ui/components/stats.hpp 
         source/util/logger.hpp 
         source/ui/components/post_processing.cpp
-        source/ui/input_handling.hpp
-        source/ui/input_handling.cpp)
+#        source/ui/input_handling.hpp
+#        source/ui/input_handling.cpp
+        source/CRender.hpp)
 
 #############
 # LIBRARIES #
