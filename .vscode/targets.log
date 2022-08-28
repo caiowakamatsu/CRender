@@ -1,0 +1,1666 @@
+make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+# GNU Make 4.3
+# Built for x86_64-pc-linux-gnu
+# Copyright (C) 1988-2020 Free Software Foundation, Inc.
+# License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+# This is free software: you are free to change and redistribute it.
+# There is NO WARRANTY, to the extent permitted by law.
+
+# Make data base, printed on Sun Jul 17 03:19:33 2022
+
+# Variables
+
+# environment
+GDK_BACKEND = x11
+# environment
+LC_ALL = C
+# environment
+GTK_RC_FILES = /etc/gtk/gtkrc:/home/yohello/.gtkrc:/home/yohello/.config/gtkrc
+# environment
+CMAKE_PREFIX_PATH = /opt/intel/oneapi/tbb/2021.6.0/env/..
+# environment
+OSH = /home/yohello/.oh-my-bash
+# environment
+VSCODE_CWD = /home/yohello
+# default
+MAKE_COMMAND := make
+# environment
+QT_ACCESSIBILITY = 1
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# default
+.VARIABLES := 
+# environment
+PWD = /media/yohello/hrm2/code-stuff/CRender
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# environment
+LSCOLORS = Gxfxcxdxdxegedabagacad
+# environment
+XDG_DATA_DIRS = /home/yohello/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
+# automatic
+%F = $(notdir $%)
+# environment
+VSCODE_CODE_CACHE_PATH = /home/yohello/.config/Code/CachedData/b06ae3b2d2dbfe28bca3134cc6be65935cdfea6a
+# environment
+XDG_SESSION_PATH = /org/freedesktop/DisplayManager/Session1
+# environment
+LANG = C
+# environment
+XAUTHORITY = /home/yohello/.Xauthority
+# default
+.LOADED := 
+# default
+.INCLUDE_DIRS = /usr/local/include /usr/include /usr/include
+# makefile (from 'Makefile', line 51)
+CMAKE_COMMAND = /usr/local/bin/cmake
+# makefile
+MAKEFLAGS = pqrR
+# environment
+PKG_CONFIG_PATH = /opt/intel/oneapi/tbb/2021.6.0/env/../lib/pkgconfig:/opt/intel/oneapi/rkcommon/1.9.0/lib/pkgconfig:/opt/intel/oneapi/ospray/2.9.0/lib/pkgconfig:/opt/intel/oneapi/openvkl/1.2.0/lib/pkgconfig:/opt/intel/oneapi/oidn/1.4.3/lib/pkgconfig:/opt/intel/oneapi/mpi/2021.6.0/lib/pkgconfig:/opt/intel/oneapi/embree/3.13.3/lib/pkgconfig:/opt/intel/oneapi/embree-3.13.3/3.13.3/lib/pkgconfig:/opt/intel/oneapi/embree/3.13.3/lib/pkgconfig:/opt/intel/oneapi/embree-3.13.3/3.13.3/lib/pkgconfig
+# makefile
+CURDIR := /media/yohello/hrm2/code-stuff/CRender
+# environment
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
+# environment
+LESSOPEN = | /usr/bin/lesspipe %s
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# environment
+PAM_KWALLET5_LOGIN = /run/user/1000/kwallet5.socket
+# environment
+MFLAGS = -pqrR
+# environment
+SSH_AUTH_SOCK = /tmp/ssh-RCTI1J5zjl3Y/agent.1673
+# default
+.SHELLFLAGS := -c
+# environment
+HISTSIZE = 
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# environment
+XCURSOR_THEME = Sweet-cursors
+# environment
+XDG_SESSION_DESKTOP = KDE
+# makefile (from 'Makefile', line 1)
+MAKEFILE_LIST := Makefile
+# makefile (from 'Makefile', line 63)
+CMAKE_BINARY_DIR = /media/yohello/hrm2/code-stuff/CRender
+# automatic
+@F = $(notdir $@)
+# environment
+VSCODE_PID = 73529
+# environment
+HISTIGNORE = &:[ ]*:exit:ls:bg:fg:history:clear
+# environment
+XDG_SESSION_TYPE = x11
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# makefile (from 'Makefile', line 60)
+CMAKE_SOURCE_DIR = /media/yohello/hrm2/code-stuff/CRender
+# environment
+SESSION_MANAGER = local/yohello-deb:@/tmp/.ICE-unix/1986,unix/yohello-deb:/tmp/.ICE-unix/1986
+# automatic
+*F = $(notdir $*)
+# environment
+MANPATH = /opt/intel/oneapi/mpi/2021.6.0/man:/opt/intel/oneapi/embree/3.13.3/share/man:/opt/intel/oneapi/embree-3.13.3/3.13.3/share/man:/opt/intel/oneapi/embree/3.13.3/share/man:/opt/intel/oneapi/embree-3.13.3/3.13.3/share/man::
+# environment
+CHROME_DESKTOP = code-url-handler.desktop
+# environment
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# environment
+FI_PROVIDER_PATH = /opt/intel/oneapi/mpi/2021.6.0//libfabric/lib/prov:/usr/lib64/libfabric
+# environment
+VSCODE_NLS_CONFIG = {"locale":"en-gb","availableLanguages":{},"_languagePackSupport":true}
+# environment
+HISTFILESIZE = 
+# environment
+ONEAPI_ROOT = /opt/intel/oneapi
+# default
+MAKE_HOST := x86_64-pc-linux-gnu
+# makefile (from 'Makefile', line 48)
+SHELL = /bin/sh
+# environment
+CLASSPATH = /opt/intel/oneapi/mpi/2021.6.0//lib/mpi.jar
+# default
+MAKECMDGOALS := all
+# environment
+XMODIFIERS = @im=ibus
+# environment
+LD_LIBRARY_PATH = /opt/intel/oneapi/tbb/2021.6.0/env/../lib/intel64/gcc4.8:/opt/intel/oneapi/rkcommon/1.9.0/lib:/opt/intel/oneapi/ospray_studio/0.10.0/lib:/opt/intel/oneapi/ospray/2.9.0/lib:/opt/intel/oneapi/openvkl/1.2.0/lib:/opt/intel/oneapi/oidn/1.4.3/lib:/opt/intel/oneapi/mpi/2021.6.0//libfabric/lib:/opt/intel/oneapi/mpi/2021.6.0//lib/release:/opt/intel/oneapi/mpi/2021.6.0//lib:/opt/intel/oneapi/ispc/1.17.0/lib/lib64:/opt/intel/oneapi/embree/3.13.3/lib:/opt/intel/oneapi/embree-3.13.3/3.13.3/lib:/opt/intel/oneapi/embree/3.13.3/lib:/opt/intel/oneapi/embree-3.13.3/3.13.3/lib
+# environment
+SHLVL = 0
+# environment
+MAKELEVEL := 0
+# default
+MAKE = $(MAKE_COMMAND)
+# environment
+PATH = /home/yohello/.local/bin:/usr/local/bin~:/usr/local/cuda-11.7/bin:/opt/intel/oneapi/ospray_studio/0.10.0/bin:/opt/intel/oneapi/ospray/2.9.0/bin:/opt/intel/oneapi/openvkl/1.2.0/bin:/opt/intel/oneapi/oidn/1.4.3/bin:/opt/intel/oneapi/mpi/2021.6.0//libfabric/bin:/opt/intel/oneapi/mpi/2021.6.0//bin:/opt/intel/oneapi/ispc/1.17.0/bin:/opt/intel/oneapi/embree/3.13.3/bin:/opt/intel/oneapi/embree-3.13.3/3.13.3/bin:/opt/intel/oneapi/embree/3.13.3/bin:/opt/intel/oneapi/embree-3.13.3/3.13.3/bin:/home/yohello/.cargo/bin:/home/yohello/kde/src/kdesrc-build:/home/yohello/.local/bin:/home/yohello/kde/src/kdesrc-build:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
+# default
+MAKEFILES := 
+# environment
+LANGUAGE = en_CA:en
+# automatic
+^F = $(notdir $^)
+# environment
+I_MPI_ROOT = /opt/intel/oneapi/mpi/2021.6.0
+# environment
+LESSCLOSE = /usr/bin/lesspipe %s %s
+# automatic
+?F = $(notdir $?)
+# environment
+KDE_APPLICATIONS_AS_SCOPE = 1
+# environment
+AUTOJUMP_SOURCED = 1
+# environment
+XDG_SEAT = seat0
+# environment
+GTK_IM_MODULE = ibus
+# environment
+XDG_CURRENT_DESKTOP = KDE
+# environment
+LS_COLORS = 
+# automatic
++F = $(notdir $+)
+# environment
+XDG_SEAT_PATH = /org/freedesktop/DisplayManager/Seat0
+# environment
+LESS = -R
+# environment
+DESKTOP_SESSION = plasma
+# environment
+ORIGINAL_XDG_CURRENT_DESKTOP = KDE
+# 'override' directive
+GNUMAKEFLAGS := 
+# environment
+QT_SCREEN_SCALE_FACTORS = DVI-D-0=1;HDMI-0=1;DP-0=1;DP-1=1;
+# environment
+CLUTTER_IM_MODULE = ibus
+# makefile (from 'Makefile', line 57)
+EQUALS = =
+# environment
+CPATH = /opt/intel/oneapi/tbb/2021.6.0/env/../include:/opt/intel/oneapi/mpi/2021.6.0//include
+# environment
+LOGNAME = yohello
+# environment
+XDG_VTNR = 7
+# makefile
+.DEFAULT_GOAL := default_target
+# makefile (from 'Makefile', line 54)
+RM = /usr/local/bin/cmake -E rm -f
+# environment
+AUTOJUMP_ERROR_PATH = /home/yohello/.local/share/autojump/errors.log
+# environment
+DISPLAY = :0
+# environment
+USER = yohello
+# environment
+GTK_MODULES = gail:atk-bridge
+# environment
+LIBRARY_PATH = /opt/intel/oneapi/tbb/2021.6.0/env/../lib/intel64/gcc4.8:/opt/intel/oneapi/mpi/2021.6.0//libfabric/lib:/opt/intel/oneapi/mpi/2021.6.0//lib/release:/opt/intel/oneapi/mpi/2021.6.0//lib
+# default
+MAKE_VERSION := 4.3
+# environment
+KDE_SESSION_UID = 1000
+# environment
+PYTHONPATH = /opt/intel/oneapi/ospray_studio/0.10.0/lib
+# environment
+SSH_AGENT_PID = 1780
+# environment
+PAGER = less
+# makefile (from 'Makefile', line 35)
+MAKESILENT = -s
+# environment
+_ = /usr/share/code/code
+# environment
+XDG_RUNTIME_DIR = /run/user/1000
+# environment
+GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
+# environment
+LC_CTYPE = en_CA.UTF-8
+# environment
+XDG_SESSION_CLASS = user
+# environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+# environment
+GTK2_RC_FILES = /etc/gtk-2.0/gtkrc:/home/yohello/.gtkrc-2.0:/home/yohello/.config/gtkrc-2.0
+# environment
+HOME = /home/yohello
+# environment
+QT_IM_MODULE = ibus
+# environment
+TBBROOT = /opt/intel/oneapi/tbb/2021.6.0/env/..
+# environment
+VSCODE_IPC_HOOK = /run/user/1000/vscode-1014eca9-1.69.1-main.sock
+# environment
+ELECTRON_RUN_AS_NODE = 1
+# environment
+XDG_SESSION_ID = 3
+# environment
+XCURSOR_SIZE = 24
+# default
+.RECIPEPREFIX := 
+# automatic
+<F = $(notdir $<)
+# default
+SUFFIXES := 
+# environment
+QT_AUTO_SCREEN_SCALE_FACTOR = 0
+# environment
+SETVARS_COMPLETED = 1
+# environment
+KDE_SESSION_VERSION = 5
+# default
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync check-symlink load
+# environment
+KDE_FULL_SESSION = true
+# variable set hash-table stats:
+# Load=125/1024=12%, Rehash=0, Collisions=7/164=4%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# RCS: could not be stat'd.
+# SCCS: could not be stat'd.
+# . (device 2081, inode 59906208): 24 files, no impossibilities.
+
+# 24 files, no impossibilities in 3 directories.
+
+# Implicit Rules
+
+%: %,v
+
+%: RCS/%
+
+%: RCS/%,v
+
+%: SCCS/s.%
+
+%: s.%
+
+ 
+%.hpux_make_needs_suffix_list:
+
+# 6 implicit rules, 0 (0.0%) terminal.
+# Files
+
+src/render/timer.o: src/render/timer.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_demo.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 227):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_demo.cpp.s
+
+src/render/timer.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 651):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/timer.cpp.i
+
+src/imgui/imgui_tables.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 307):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_tables.cpp.o
+
+src/objects/model.s: src/objects/model.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_draw.i: src/imgui/imgui_draw.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/main.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 387):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/main.cpp.i
+
+src/main.i: src/main.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_draw.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 243):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_draw.cpp.i
+
+src/imgui/imgui_tables.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 315):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_tables.cpp.i
+
+src/imgui/imgui.s: src/imgui/imgui.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+depend:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 116):
+	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+
+src/imgui/imgui_impl_glfw.o: src/imgui/imgui_impl_glfw.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_widgets.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 347):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_widgets.cpp.s
+
+src/imgui/imgui.o: src/imgui/imgui.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/material/material.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 523):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/material/material.cpp.o
+
+src/main.s: src/main.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+default_target: all
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/objects/model.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 419):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/objects/model.cpp.s
+
+src/imgui/imgui_draw.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 235):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_draw.cpp.o
+
+src/imgui/imnodes.s: src/imgui/imnodes.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/camera.i: src/render/camera.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/ui/nodes/node_editor.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 707):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/ui/nodes/node_editor.cpp.s
+
+src/util/logger.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 747):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/util/logger.cpp.i
+
+src/objects/thread_pool.i: src/objects/thread_pool.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/ray.o: src/render/ray.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/scene.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 627):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/scene.cpp.i
+
+src/imgui/imgui_impl_opengl3.s: src/imgui/imgui_impl_opengl3.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_impl_opengl3.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 299):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_impl_opengl3.cpp.s
+
+src/render/camera.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 451):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/camera.cpp.o
+
+src/render/draft/draft_renderer.o: src/render/draft/draft_renderer.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/objects/model.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 411):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/objects/model.cpp.i
+
+edit_cache/fast: edit_cache
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/glad/glad.c.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 171):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/glad/glad.c.i
+
+src/render/renderer.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 603):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/renderer.cpp.i
+
+src/render/entities/registry.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 515):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/entities/registry.cpp.s
+
+src/imgui/imgui_widgets.s: src/imgui/imgui_widgets.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_widgets.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 339):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_widgets.cpp.i
+
+src/render/renderer.i: src/render/renderer.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+# Not a target:
+ 
+Makefile:
+#  Implicit rule search has been done.
+#  Last modified 2022-07-15 04:11:38.616752346
+#  File has been updated.
+#  Successfully updated.
+
+src/objects/thread_pool.o: src/objects/thread_pool.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/objects/thread_pool.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 427):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/objects/thread_pool.cpp.o
+
+rebuild_cache:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 80):
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
+	/usr/local/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+
+src/render/scene.s: src/render/scene.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/objects/model.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 403):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/objects/model.cpp.o
+
+src/render/post/post_processor.o: src/render/post/post_processor.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/glad/glad.o: src/glad/glad.c.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_impl_glfw.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 259):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_impl_glfw.cpp.o
+
+src/ui/nodes/node_editor.s: src/ui/nodes/node_editor.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+.SILENT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+src/objects/thread_pool.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 435):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/objects/thread_pool.cpp.i
+
+src/glad/glad.i: src/glad/glad.c.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_impl_glfw.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 275):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_impl_glfw.cpp.s
+
+src/imgui/imgui_demo.o: src/imgui/imgui_demo.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/ray.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 579):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/ray.cpp.i
+
+src/render/ray.s: src/render/ray.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+clean:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 97):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 clean
+
+cmake_force:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imnodes.i: src/imgui/imnodes.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/draft/draft_renderer.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 483):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/draft/draft_renderer.cpp.i
+
+preinstall/fast:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 111):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 preinstall
+
+src/render/camera.o: src/render/camera.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/util/logger.s: src/util/logger.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/util/logger.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 755):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/util/logger.cpp.s
+
+src/imgui/imnodes.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 371):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imnodes.cpp.s
+
+src/ui/display.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 675):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/ui/display.cpp.i
+
+src/render/ray.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 587):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/ray.cpp.s
+
+src/render/material/material.s: src/render/material/material.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+edit_cache:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 70):
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
+	/usr/local/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+
+src/imgui/imgui_demo.s: src/imgui/imgui_demo.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_impl_opengl3.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 291):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_impl_opengl3.cpp.i
+
+src/render/draft/draft_renderer.s: src/render/draft/draft_renderer.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/post/post_processor.s: src/render/post/post_processor.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/ui/display.o: src/ui/display.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_demo.i: src/imgui/imgui_demo.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_impl_opengl3.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 283):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_impl_opengl3.cpp.o
+
+src/render/timer.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 659):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/timer.cpp.s
+
+rebuild_cache/fast: rebuild_cache
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+# Not a target:
+.hpux_make_needs_suffix_list:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+src/imgui/imgui_draw.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 251):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_draw.cpp.s
+
+ 
+src/objects/model.o: src/objects/model.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 195):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui.cpp.i
+
+CRender: cmake_check_build_system
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 124):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CRender
+
+src/imgui/imgui_impl_glfw.i: src/imgui/imgui_impl_glfw.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_tables.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 323):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_tables.cpp.s
+
+src/imgui/imgui_tables.o: src/imgui/imgui_tables.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/post/post_processor.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 547):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/post/post_processor.cpp.o
+
+src/util/logger.i: src/util/logger.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+fmt: cmake_check_build_system
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 150):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 fmt
+
+src/render/post/post_processor.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 563):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/post/post_processor.cpp.s
+
+src/render/draft/draft_renderer.i: src/render/draft/draft_renderer.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+preinstall: all
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 106):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 preinstall
+
+src/render/material/material.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 539):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/material/material.cpp.s
+
+src/imgui/imgui_draw.s: src/imgui/imgui_draw.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/main.o: src/main.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/util/asset_loader.o: src/util/asset_loader.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_demo.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 219):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_demo.cpp.i
+
+src/imgui/imgui_draw.o: src/imgui/imgui_draw.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+src/render/camera.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 467):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/camera.cpp.s
+
+src/render/material/material.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 531):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/material/material.cpp.i
+
+all: cmake_check_build_system
+#  Phony target (prerequisite of .PHONY).
+#  Command line target.
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/6=0%
+#  recipe to execute (from 'Makefile', line 90):
+	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm2/code-stuff/CRender/CMakeFiles /media/yohello/hrm2/code-stuff/CRender//CMakeFiles/progress.marks
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
+	$(CMAKE_COMMAND) -E cmake_progress_start /media/yohello/hrm2/code-stuff/CRender/CMakeFiles 0
+
+src/imgui/imnodes.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 355):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imnodes.cpp.o
+
+src/imgui/imgui_demo.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 211):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_demo.cpp.o
+
+help:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 760):
+	@echo "The following are some of the valid targets for this Makefile:"
+	@echo "... all (the default if no target is provided)"
+	@echo "... clean"
+	@echo "... depend"
+	@echo "... edit_cache"
+	@echo "... rebuild_cache"
+	@echo "... CRender"
+	@echo "... fmt"
+	@echo "... glfw"
+	@echo "... src/glad/glad.o"
+	@echo "... src/glad/glad.i"
+	@echo "... src/glad/glad.s"
+	@echo "... src/imgui/imgui.o"
+	@echo "... src/imgui/imgui.i"
+	@echo "... src/imgui/imgui.s"
+	@echo "... src/imgui/imgui_demo.o"
+	@echo "... src/imgui/imgui_demo.i"
+	@echo "... src/imgui/imgui_demo.s"
+	@echo "... src/imgui/imgui_draw.o"
+	@echo "... src/imgui/imgui_draw.i"
+	@echo "... src/imgui/imgui_draw.s"
+	@echo "... src/imgui/imgui_impl_glfw.o"
+	@echo "... src/imgui/imgui_impl_glfw.i"
+	@echo "... src/imgui/imgui_impl_glfw.s"
+	@echo "... src/imgui/imgui_impl_opengl3.o"
+	@echo "... src/imgui/imgui_impl_opengl3.i"
+	@echo "... src/imgui/imgui_impl_opengl3.s"
+	@echo "... src/imgui/imgui_tables.o"
+	@echo "... src/imgui/imgui_tables.i"
+	@echo "... src/imgui/imgui_tables.s"
+	@echo "... src/imgui/imgui_widgets.o"
+	@echo "... src/imgui/imgui_widgets.i"
+	@echo "... src/imgui/imgui_widgets.s"
+	@echo "... src/imgui/imnodes.o"
+	@echo "... src/imgui/imnodes.i"
+	@echo "... src/imgui/imnodes.s"
+	@echo "... src/main.o"
+	@echo "... src/main.i"
+	@echo "... src/main.s"
+	@echo "... src/objects/model.o"
+	@echo "... src/objects/model.i"
+	@echo "... src/objects/model.s"
+	@echo "... src/objects/thread_pool.o"
+	@echo "... src/objects/thread_pool.i"
+	@echo "... src/objects/thread_pool.s"
+	@echo "... src/render/camera.o"
+	@echo "... src/render/camera.i"
+	@echo "... src/render/camera.s"
+	@echo "... src/render/draft/draft_renderer.o"
+	@echo "... src/render/draft/draft_renderer.i"
+	@echo "... src/render/draft/draft_renderer.s"
+	@echo "... src/render/entities/registry.o"
+	@echo "... src/render/entities/registry.i"
+	@echo "... src/render/entities/registry.s"
+	@echo "... src/render/material/material.o"
+	@echo "... src/render/material/material.i"
+	@echo "... src/render/material/material.s"
+	@echo "... src/render/post/post_processor.o"
+	@echo "... src/render/post/post_processor.i"
+	@echo "... src/render/post/post_processor.s"
+	@echo "... src/render/ray.o"
+	@echo "... src/render/ray.i"
+	@echo "... src/render/ray.s"
+	@echo "... src/render/renderer.o"
+	@echo "... src/render/renderer.i"
+	@echo "... src/render/renderer.s"
+	@echo "... src/render/scene.o"
+	@echo "... src/render/scene.i"
+	@echo "... src/render/scene.s"
+	@echo "... src/render/timer.o"
+	@echo "... src/render/timer.i"
+	@echo "... src/render/timer.s"
+	@echo "... src/ui/display.o"
+	@echo "... src/ui/display.i"
+	@echo "... src/ui/display.s"
+	@echo "... src/ui/nodes/node_editor.o"
+	@echo "... src/ui/nodes/node_editor.i"
+	@echo "... src/ui/nodes/node_editor.s"
+	@echo "... src/util/asset_loader.o"
+	@echo "... src/util/asset_loader.i"
+	@echo "... src/util/asset_loader.s"
+	@echo "... src/util/logger.o"
+	@echo "... src/util/logger.i"
+	@echo "... src/util/logger.s"
+
+src/ui/display.i: src/ui/display.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_widgets.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 331):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_widgets.cpp.o
+
+src/ui/nodes/node_editor.i: src/ui/nodes/node_editor.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_impl_opengl3.o: src/imgui/imgui_impl_opengl3.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/timer.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 643):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/timer.cpp.o
+
+src/util/asset_loader.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+ 
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 715):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/util/asset_loader.cpp.o
+
+src/imgui/imgui_widgets.i: src/imgui/imgui_widgets.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+clean/fast: clean
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/objects/thread_pool.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 443):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/objects/thread_pool.cpp.s
+
+src/render/draft/draft_renderer.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 491):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/draft/draft_renderer.cpp.s
+
+src/render/ray.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 571):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/ray.cpp.o
+
+src/ui/display.s: src/ui/display.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/renderer.o: src/render/renderer.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/glad/glad.c.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 179):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/glad/glad.c.s
+
+src/util/asset_loader.i: src/util/asset_loader.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/glad/glad.c.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 163):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/glad/glad.c.o
+
+src/imgui/imgui.i: src/imgui/imgui.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imnodes.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 363):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imnodes.cpp.i
+
+src/imgui/imgui_impl_glfw.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 267):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui_impl_glfw.cpp.i
+
+src/objects/thread_pool.s: src/objects/thread_pool.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/entities/registry.i: src/render/entities/registry.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imnodes.o: src/imgui/imnodes.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+fmt/fast:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 155):
+	$(MAKE) $(MAKESILENT) -f _deps/fmt-build/CMakeFiles/fmt.dir/build.make _deps/fmt-build/CMakeFiles/fmt.dir/build
+
+src/render/renderer.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 611):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/renderer.cpp.s
+
+glfw: cmake_check_build_system
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 137):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 glfw
+
+src/render/entities/registry.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 499):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/entities/registry.cpp.o
+
+src/imgui/imgui.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 187):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui.cpp.o
+
+src/render/scene.i: src/render/scene.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/renderer.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 595):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/renderer.cpp.o
+
+src/imgui/imgui_impl_opengl3.i: src/imgui/imgui_impl_opengl3.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/util/logger.o: src/util/logger.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+.NOTPARALLEL:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+src/render/scene.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 619):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/scene.cpp.o
+
+CRender/fast:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 129):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/build
+
+src/render/timer.s: src/render/timer.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_tables.s: src/imgui/imgui_tables.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 203):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/imgui/imgui.cpp.s
+
+src/util/asset_loader.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 723):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/util/asset_loader.cpp.i
+
+src/render/draft/draft_renderer.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 475):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/draft/draft_renderer.cpp.o
+
+src/render/post/post_processor.i: src/render/post/post_processor.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+cmake_check_build_system:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  Implicit/static pattern stem: ''
+#  File does not exist.
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# automatic
+# @ := cmake_check_build_system
+# automatic
+# * := 
+# automatic
+# < := 
+# automatic
+# + := 
+# automatic
+# % := 
+# automatic
+# ^ := 
+# automatic
+# ? := 
+# automatic
+# | := 
+# variable set hash-table stats:
+# Load=8/32=25%, Rehash=0, Collisions=1/14=7%
+#  recipe to execute (from 'Makefile', line 855):
+	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+
+src/render/material/material.o: src/render/material/material.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/entities/registry.o: src/render/entities/registry.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/material/material.i: src/render/material/material.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+ 
+#  File does not exist.
+#  File has not been updated.
+
+src/render/timer.i: src/render/timer.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/util/asset_loader.s: src/util/asset_loader.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/imgui/imgui_impl_glfw.s: src/imgui/imgui_impl_glfw.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+glfw/fast:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 142):
+	$(MAKE) $(MAKESILENT) -f _deps/glfw-build/src/CMakeFiles/glfw.dir/build.make _deps/glfw-build/src/CMakeFiles/glfw.dir/build
+
+src/render/camera.s: src/render/camera.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/util/asset_loader.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 731):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/util/asset_loader.cpp.s
+
+src/ui/nodes/node_editor.o: src/ui/nodes/node_editor.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/ui/nodes/node_editor.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 699):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/ui/nodes/node_editor.cpp.i
+
+src/util/logger.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 739):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/util/logger.cpp.o
+
+src/main.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 379):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/main.cpp.o
+
+src/render/scene.o: src/render/scene.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+.SUFFIXES: .hpux_make_needs_suffix_list
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+src/render/ray.i: src/render/ray.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/entities/registry.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 507):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/entities/registry.cpp.i
+
+src/ui/nodes/node_editor.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 691):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/ui/nodes/node_editor.cpp.o
+
+src/render/renderer.s: src/render/renderer.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+.PHONY: default_target cmake_force edit_cache edit_cache/fast rebuild_cache rebuild_cache/fast all clean clean/fast preinstall preinstall/fast depend CRender CRender/fast glfw glfw/fast fmt fmt/fast src/glad/glad.o src/glad/glad.c.o src/glad/glad.i src/glad/glad.c.i src/glad/glad.s src/glad/glad.c.s src/imgui/imgui.o src/imgui/imgui.cpp.o src/imgui/imgui.i src/imgui/imgui.cpp.i src/imgui/imgui.s src/imgui/imgui.cpp.s src/imgui/imgui_demo.o src/imgui/imgui_demo.cpp.o src/imgui/imgui_demo.i src/imgui/imgui_demo.cpp.i src/imgui/imgui_demo.s src/imgui/imgui_demo.cpp.s src/imgui/imgui_draw.o src/imgui/imgui_draw.cpp.o src/imgui/imgui_draw.i src/imgui/imgui_draw.cpp.i src/imgui/imgui_draw.s src/imgui/imgui_draw.cpp.s src/imgui/imgui_impl_glfw.o src/imgui/imgui_impl_glfw.cpp.o src/imgui/imgui_impl_glfw.i src/imgui/imgui_impl_glfw.cpp.i src/imgui/imgui_impl_glfw.s src/imgui/imgui_impl_glfw.cpp.s src/imgui/imgui_impl_opengl3.o src/imgui/imgui_impl_opengl3.cpp.o src/imgui/imgui_impl_opengl3.i src/imgui/imgui_impl_opengl3.cpp.i src/imgui/imgui_impl_opengl3.s src/imgui/imgui_impl_opengl3.cpp.s src/imgui/imgui_tables.o src/imgui/imgui_tables.cpp.o src/imgui/imgui_tables.i src/imgui/imgui_tables.cpp.i src/imgui/imgui_tables.s src/imgui/imgui_tables.cpp.s src/imgui/imgui_widgets.o src/imgui/imgui_widgets.cpp.o src/imgui/imgui_widgets.i src/imgui/imgui_widgets.cpp.i src/imgui/imgui_widgets.s src/imgui/imgui_widgets.cpp.s src/imgui/imnodes.o src/imgui/imnodes.cpp.o src/imgui/imnodes.i src/imgui/imnodes.cpp.i src/imgui/imnodes.s src/imgui/imnodes.cpp.s src/main.o src/main.cpp.o src/main.i src/main.cpp.i src/main.s src/main.cpp.s src/objects/model.o src/objects/model.cpp.o src/objects/model.i src/objects/model.cpp.i src/objects/model.s src/objects/model.cpp.s src/objects/thread_pool.o src/objects/thread_pool.cpp.o src/objects/thread_pool.i src/objects/thread_pool.cpp.i src/objects/thread_pool.s src/objects/thread_pool.cpp.s src/render/camera.o src/render/camera.cpp.o src/render/camera.i src/render/camera.cpp.i src/render/camera.s src/render/camera.cpp.s src/render/draft/draft_renderer.o src/render/draft/draft_renderer.cpp.o src/render/draft/draft_renderer.i src/render/draft/draft_renderer.cpp.i src/render/draft/draft_renderer.s src/render/draft/draft_renderer.cpp.s src/render/entities/registry.o src/render/entities/registry.cpp.o src/render/entities/registry.i src/render/entities/registry.cpp.i src/render/entities/registry.s src/render/entities/registry.cpp.s src/render/material/material.o src/render/material/material.cpp.o src/render/material/material.i src/render/material/material.cpp.i src/render/material/material.s src/render/material/material.cpp.s src/render/post/post_processor.o src/render/post/post_processor.cpp.o src/render/post/post_processor.i src/render/post/post_processor.cpp.i src/render/post/post_processor.s src/render/post/post_processor.cpp.s src/render/ray.o src/render/ray.cpp.o src/render/ray.i src/render/ray.cpp.i src/render/ray.s src/render/ray.cpp.s src/render/renderer.o src/render/renderer.cpp.o src/render/renderer.i src/render/renderer.cpp.i src/render/renderer.s src/render/renderer.cpp.s src/render/scene.o src/render/scene.cpp.o src/render/scene.i src/render/scene.cpp.i src/render/scene.s src/render/scene.cpp.s src/render/timer.o src/render/timer.cpp.o src/render/timer.i src/render/timer.cpp.i src/render/timer.s src/render/timer.cpp.s src/ui/display.o src/ui/display.cpp.o src/ui/display.i src/ui/display.cpp.i src/ui/display.s src/ui/display.cpp.s src/ui/nodes/node_editor.o src/ui/nodes/node_editor.cpp.o src/ui/nodes/node_editor.i src/ui/nodes/node_editor.cpp.i src/ui/nodes/node_editor.s src/ui/nodes/node_editor.cpp.s src/util/asset_loader.o src/util/asset_loader.cpp.o src/util/asset_loader.i src/util/asset_loader.cpp.i src/util/asset_loader.s src/util/asset_loader.cpp.s src/util/logger.o src/util/logger.cpp.o src/util/logger.i src/util/logger.cpp.i src/util/logger.s src/util/logger.cpp.s help cmake_check_build_system
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+src/main.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 395):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/main.cpp.s
+
+src/ui/display.cpp.o:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 667):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/ui/display.cpp.o
+
+src/imgui/imgui_widgets.o: src/imgui/imgui_widgets.cpp.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/post/post_processor.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 555):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/post/post_processor.cpp.i
+
+src/render/entities/registry.s: src/render/entities/registry.cpp.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/ui/display.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 683):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/ui/display.cpp.s
+
+src/glad/glad.s: src/glad/glad.c.s
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/render/scene.cpp.s:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 635):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/scene.cpp.s
+
+src/render/camera.cpp.i:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 459):
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CRender.dir/build.make CMakeFiles/CRender.dir/src/render/camera.cpp.i
+
+src/imgui/imgui_tables.i: src/imgui/imgui_tables.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+src/objects/model.i: src/objects/model.cpp.i
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+# files hash-table stats:
+# Load=177/1024=17%, Rehash=0, Collisions=52/691=8%
+# VPATH Search Paths
+
+# No 'vpath' search paths.
+
+# No general ('VPATH' variable) search path.
+
+# strcache buffers: 1 (0) / strings = 210 / storage = 4401 B / avg = 20 B
+# current buf: size = 8162 B / used = 4401 B / count = 210 / avg = 20 B
+
+# strcache performance: lookups = 990 / hit rate = 78%
+# hash-table stats:
+# Load=210/8192=3%, Rehash=0, Collisions=4/990=0%
+# Finished Make data base on Sun Jul 17 03:19:33 2022
+
+ 

@@ -1,0 +1,17 @@
+info to deal with:
+
+frame
+normal_frame
+albedo_frame
+configuration (cr:scene_configuration)
+cpu_renderer
+triangular_scenes
+scenes
+post_processing_options
+tasks
+display
+settings
+sample_count
+intersect_scenes
+mouse_pos_initialized
+previous_mouse_pos

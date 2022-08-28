@@ -15,44 +15,52 @@
 
 #include <ui/components/component.hpp>
 
-namespace cr::component {
+namespace cr::component
+{
 
-// Todo: at some point make this fully configurable / reusable
-class settings {
-public:
-  struct Options {
-    std::optional<component::render_target::Options> render_target;
-    std::optional<component::image_export::Options> image_export;
-    std::optional<component::asset_loader::Options> asset_loader;
-    std::optional<component::skybox::Options> skybox;
-    std::optional<component::post_processing::Options> post_processing;
-  };
-  struct DisplayContents {};
-
-  struct Component {
-  private:
-    enum class sub_settings {
-      render_target,
-      image_export,
-      asset_loader,
-      skybox,
-      post_processing,
+  // Todo: at some point make this fully configurable / reusable
+  class settings
+  {
+  public:
+    struct Options
+    {
+      std::optional<component::render_target::Options> render_target;
+      std::optional<component::image_export::Options> image_export;
+      std::optional<component::asset_loader::Options> asset_loader;
+      std::optional<component::skybox::Options> skybox;
+      std::optional<component::post_processing::Options> post_processing;
+    };
+    struct DisplayContents
+    {
     };
 
-    struct {
-      component::interface<component::render_target> render_target;
-      component::interface<component::image_export> image_export;
-      component::interface<component::asset_loader> asset_loader;
-      component::interface<component::skybox> skybox;
-      component::interface<component::post_processing> post_processing;
-    } _sub_settings{};
+    struct Component
+    {
+    private:
+      enum class sub_settings
+      {
+        render_target,
+        image_export,
+        asset_loader,
+        skybox,
+        post_processing,
+      };
 
-    std::optional<sub_settings> _selected;
+      struct
+      {
+        component::interface<component::render_target> render_target;
+        component::interface<component::image_export> image_export;
+        component::interface<component::asset_loader> asset_loader;
+        component::interface<component::skybox> skybox;
+        component::interface<component::post_processing> post_processing;
+      } _sub_settings{};
 
-  public:
-    [[nodiscard]] settings::Options display(DisplayContents contents);
+      std::optional<sub_settings> _selected;
+
+    public:
+      [[nodiscard]] settings::Options display(DisplayContents contents);
+    };
   };
-};
 } // namespace cr::component
 
 #endif // CREBON_SETTINGS_HPP

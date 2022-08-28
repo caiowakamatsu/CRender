@@ -23,6 +23,7 @@
 
 #include <ui/components/component.hpp>
 
+
 namespace cr {
 class display {
 public:

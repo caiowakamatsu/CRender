@@ -44,7 +44,7 @@ private:
   void _thread_dispatch(thread_render_data data);
 
 public:
-  sky sky;
+  sky skybox;
 
   explicit cpu_renderer(int thread_count, component::skybox::Options options, int target_sample_count);
 

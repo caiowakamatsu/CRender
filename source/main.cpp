@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include <render/cpu_renderer.h>
 
 #include <scene/scene.hpp>
@@ -5,6 +7,8 @@
 #include <scene/triangular_scene.hpp>
 
 #include <ui/display.hpp>
+
+#include <CRender.hpp>
 
 #include <fmt/core.h>
 
@@ -27,7 +31,10 @@
 #include <util/logger.hpp>
 #include <util/denoise.hpp>
 
-int main() {
+int main()
+{
+
+// Below this
   auto logger = cr::logger();
 
   auto render_target_options = cr::component::render_target::Options();
@@ -50,13 +57,17 @@ int main() {
   auto sample_count = uint64_t(0);
 
   auto intersect_scenes =
-      [&](const cr::ray &ray) -> std::optional<cr::intersection> {
+      [&](const cr::ray &ray) -> std::optional<cr::intersection>
+  {
     auto result = std::optional<cr::intersection>();
 
-    for (auto &scene : scenes) {
+    for (auto &scene : scenes)
+    {
       auto intersection = scene.intersect(ray);
-      if (intersection) {
-        if (!result || result->distance > intersection->distance) {
+      if (intersection)
+      {
+        if (!result || result->distance > intersection->distance)
+        {
           result = intersection;
         }
       }
@@ -65,10 +76,15 @@ int main() {
     return result;
   };
 
+
+// Above this Gon be in the class
+
+
   auto cpu_renderer =
       cr::cpu_renderer(int(std::thread::hardware_concurrency()), {},
                        render_target_options.samples_per_pixel);
 
+// These too
   auto tasks = configuration.get_tasks(std::thread::hardware_concurrency());
   cpu_renderer.start(
       cr::render_data{
@@ -81,15 +97,19 @@ int main() {
       tasks);
 
   auto mouse_pos_initialized = false;
-  auto previous_mouse_pos = glm::vec2();
+  auto previous_mouse_pos    = glm::vec2();
+// Uptill this
 
-  while (!display.should_close()) {
+
+  while (!display.should_close())
+  {
     auto lines = std::vector<std::string>();
 
     auto origin = glm::vec3();
     auto rotation = glm::vec3();
 
-    if (!ImGui::GetIO().WantCaptureKeyboard) {
+    if (!ImGui::GetIO().WantCaptureKeyboard)
+    {
       if (display.key_down(cr::keyboard::key_code::key_s))
         origin.z += -1.0f;
       if (display.key_down(cr::keyboard::key_code::key_w))
@@ -109,18 +129,26 @@ int main() {
         rotation.x += 1.0f;
     }
 
+// jere
     const auto mouse_pos = glm::vec2(display.mouse_position());
-    if (!mouse_pos_initialized) {
+    if (!mouse_pos_initialized)
+    {
       mouse_pos_initialized = true;
       previous_mouse_pos = mouse_pos;
-    } else {
+    }
+    else
+    {
       const auto delta = previous_mouse_pos - mouse_pos;
     }
+// down to here
 
+// why tf
+// but I hafta to include it too ig
     const auto total_sample_count = cpu_renderer.total_samples();
     const auto render_time = cpu_renderer.total_time();
 
-    const auto input = [&]() {
+    const auto input = [&]()
+    {
       auto logs = logger.logs();
 
       return display.render(
@@ -136,6 +164,8 @@ int main() {
            .post_processing = post_processing_options});
     }();
 
+
+// THIS IS IN THER 4 SURE
     auto update_anything = false;
     update_anything |= origin != glm::vec3() || rotation != glm::vec3();
     update_anything |= input.skybox.has_value();
@@ -144,7 +174,8 @@ int main() {
     update_anything |= input.image_export.has_value();
     update_anything |= input.post_processing.has_value();
 
-    if (update_anything) {
+    if (update_anything)
+    {
       cpu_renderer.stop();
 
       const auto matrix = configuration.matrix();
@@ -159,77 +190,99 @@ int main() {
                                   : configuration.height();
 
       if (new_width != configuration.width() ||
-          new_height != configuration.height()) {
+          new_height != configuration.height())
+      {
         frame = cr::atomic_image(new_width, new_height);
         normal_frame = cr::atomic_image(new_width, new_height);
         albedo_frame = cr::atomic_image(new_width, new_height);
       }
 
+      // Why is this here
       configuration = cr::scene_configuration(
           glm::vec3(translated_point) + configuration.origin(),
           rotation + configuration.rotation(), new_width, new_height,
-          configuration.fov(), configuration.bounces());
+        vec_of_functions  configuration.fov(), configuration.bounces());
 
-      if (input.skybox.has_value()) {
-        cpu_renderer.sky.use_settings(input.skybox.value());
+      if (input.skybox.has_value())
+      {
+        cpu_renderer.skybox.use_settings(input.skybox.value());
       }
 
-      if (input.asset_loader.has_value()) {
+      if (input.asset_loader.has_value())
+      {
         auto scene = std::make_unique<cr::triangular_scene>(
             input.asset_loader->load, &logger);
         triangular_scenes.push_back(std::move(scene));
         scenes.emplace_back(triangular_scenes.back().get());
       }
 
-      if (input.post_processing.has_value()) {
+      if (input.post_processing.has_value())
+      {
         post_processing_options = input.post_processing.value();
       }
 
-      if (input.image_export.has_value()) {
+      if (input.image_export.has_value())
+      {
         // Export image
-        std::filesystem::create_directories("./out/" +
-                                            input.image_export->scene_name);
+        std::filesystem::create_directories("./out/" + input.image_export->scene_name);
 
+        // 0 = jpg
+        // 1 = exr
+        if (input.image_export->image_type == 0)
+        {
+          auto data = frame.view().data;
+          const auto width = frame.width();
+          const auto height = frame.height();
+          auto char_data = std::vector<uint8_t>(width * height * 4);
 
-        auto data = frame.view().data;
-        const auto width = frame.width();
-        const auto height = frame.height();
-        auto char_data = std::vector<uint8_t>(width * height * 4);
-
-        if (post_processing_options.denoise) {
-          auto framebuffer_view = frame.view();
-          auto normal_view = normal_frame.view();
-          auto albedo_view = albedo_frame.view();
-          data = cr::denoise(&framebuffer_view, &normal_view, &albedo_view);
-        }
-
-        for (auto y = 0; y < height; ++y) {
-          for (auto x = 0; x < width; ++x) {
-            const auto base = (x + y * width) * 3;
-            const auto write_base = (x + (height - y - 1) * width) * 4;
-
-            const auto pixel =
-                glm::vec3(data[base + 0], data[base + 1], data[base + 2]);
-
-            auto post_processed = pixel * post_processing_options.exposure;
-
-            if (post_processing_options.gamma_correct) {
-              post_processed = glm::pow(post_processed, glm::vec3(1.0f / 2.2f));
-            }
-
-            char_data[write_base + 0] = static_cast<uint8_t>(
-                glm::clamp(post_processed.x * 255.0f, 0.0f, 255.0f));
-            char_data[write_base + 1] = static_cast<uint8_t>(
-                glm::clamp(post_processed.y * 255.0f, 0.0f, 255.0f));
-            char_data[write_base + 2] = static_cast<uint8_t>(
-                glm::clamp(post_processed.z * 255.0f, 0.0f, 255.0f));
-            char_data[write_base + 3] = 255;
+          if (post_processing_options.denoise)
+          {
+            auto framebuffer_view = frame.view();
+            auto normal_view = normal_frame.view();
+            auto albedo_view = albedo_frame.view();
+            data = cr::denoise(&framebuffer_view, &normal_view, &albedo_view);
           }
+
+          for (auto y = 0; y < height; ++y)
+          {
+            for (auto x = 0; x < width; ++x)
+            {
+              const auto base = (x + y * width) * 3;
+              const auto write_base = (x + (height - y - 1) * width) * 4;
+
+              const auto pixel =
+                  glm::vec3(data[base + 0], data[base + 1], data[base + 2]);
+
+              auto post_processed = pixel * post_processing_options.exposure;
+
+              if (post_processing_options.gamma_correct)
+              {
+                post_processed = glm::pow(post_processed, glm::vec3(1.0f / 2.2f));
+              }
+
+              // where the image gets written to a jpg image
+              char_data[write_base + 0] = static_cast<uint8_t>(
+                  glm::clamp(post_processed.x * 255.0f, 0.0f, 255.0f));
+              char_data[write_base + 1] = static_cast<uint8_t>(
+                  glm::clamp(post_processed.y * 255.0f, 0.0f, 255.0f));
+              char_data[write_base + 2] = static_cast<uint8_t>(
+                  glm::clamp(post_processed.z * 255.0f, 0.0f, 255.0f));
+              char_data[write_base + 3] = 255;
+            }
+          }
+
+          auto path =
+              fmt::format("./out/{}/render.jpg", input.image_export->scene_name);
+          stbi_write_jpg(path.c_str(), width, height, 4, char_data.data(), 100);
         }
 
-        auto path =
-            fmt::format("./out/{}/render.jpg", input.image_export->scene_name);
-        stbi_write_jpg(path.c_str(), width, height, 4, char_data.data(), 100);
+        // Exr output
+        else if(input.image_export->image_type == 1)
+        {
+          std::cout << "uwu" << '\n';
+        }
+
+
       }
 
       tasks = configuration.get_tasks(std::thread::hardware_concurrency());
@@ -248,3 +301,7 @@ int main() {
 
   cpu_renderer.stop();
 }
+
+
+/* 
+*/
