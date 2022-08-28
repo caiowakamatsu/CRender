@@ -82,12 +82,12 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
         albedo = current_extension.albedo;
       } else {
         const auto uv =
-            glm::vec2(0.5f + std::atan2f(ray.direction.z, ray.direction.x) /
+            glm::vec2(0.5f + std::atan2(ray.direction.z, ray.direction.x) /
                                  (2.0f * glm::pi<float>()),
                       0.5f - std::asin(ray.direction.y) / glm::pi<float>());
 
-        accumulated = sky.at(uv);
-        albedo = sky.at(uv);
+        accumulated = sky_.at(uv);
+        albedo = sky_.at(uv);
         ;
       }
       total_rays += 1;
@@ -107,11 +107,11 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
             accumulated += throughput * current_extension.emission;
           } else {
             const auto uv =
-                glm::vec2(0.5f + std::atan2f(ray.direction.z, ray.direction.x) /
+                glm::vec2(0.5f + std::atan2(ray.direction.z, ray.direction.x) /
                                      (2.0f * glm::pi<float>()),
                           0.5f - std::asin(ray.direction.y) / glm::pi<float>());
 
-            accumulated += throughput * sky.at(uv);
+            accumulated += throughput * sky_.at(uv);
             ;
             break;
           }
@@ -140,7 +140,7 @@ void cpu_renderer::_thread_dispatch(thread_render_data data) {
 
 cpu_renderer::cpu_renderer(int thread_count, component::skybox::Options options,
                            int target_sample_count)
-    : _pool(thread_count), sky(options), _rendering(false), _sample_count(0),
+    : _pool(thread_count), sky_(options), _rendering(false), _sample_count(0),
       _ray_count(0), _target_sample_count(target_sample_count) {}
 
 void cpu_renderer::start(render_data data,

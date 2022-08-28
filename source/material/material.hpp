@@ -30,6 +30,8 @@ struct evaluation {
 
 class material {
 public:
+  virtual ~material() = default;
+  
   [[nodiscard]] virtual evaluted_ray
   evalute_ray(const glm::vec3 &incident, const glm::vec3 &normal,
               const glm::vec3 &point, cr::random *random) const noexcept = 0;
@@ -128,13 +130,13 @@ public:
               cr::random *random) const noexcept override {
 
     const auto reflect = 0.2f > random->next_float();
-//    const auto reflect = false;
+    //    const auto reflect = false;
 
     auto out_direction = reflect ? glm::reflect(incident, normal) : incident;
 
-    return {
-        .pdf = 1.0f,
-        .ray = cr::ray(point + normal * (reflect ? 0.01f : -0.01f), out_direction)};
+    return {.pdf = 1.0f,
+            .ray = cr::ray(point + normal * (reflect ? 0.01f : -0.01f),
+                           out_direction)};
   }
 
   [[nodiscard]] evaluation
