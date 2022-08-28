@@ -1,0 +1,9 @@
+[submodule "external/glfw"]
+	path = external/glfw
+	url = https://github.com/glfw/glfw
+[submodule "external/fmt"]
+	path = external/fmt
+	url = https://github.com/fmtlib/fmt
+[submodule "external/glm"]
+	path = external/glm
+	url = https://github.com/g-truc/glm

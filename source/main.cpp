@@ -171,7 +171,7 @@ int main() {
           configuration.fov(), configuration.bounces());
 
       if (input.skybox.has_value()) {
-        cpu_renderer.sky.use_settings(input.skybox.value());
+        cpu_renderer.sky_.use_settings(input.skybox.value());
       }
 
       if (input.asset_loader.has_value()) {

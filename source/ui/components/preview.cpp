@@ -10,6 +10,9 @@
 
 #include <glad/glad.h>
 
+#include <algorithm>
+#include <functional>
+
 cr::component::preview::Options
 cr::component::preview::Component::display(DisplayContents contents) const {
   ImGui::Begin("Preview");
@@ -91,7 +94,7 @@ cr::component::preview::Component::display(DisplayContents contents) const {
                GL_RGB, GL_FLOAT, data.data());
 
   if (!first) {
-    ImGui::Image((void *)texture, window_size);
+    ImGui::Image((void *)(uint64_t)texture, window_size);
   }
 
   ImGui::End();
